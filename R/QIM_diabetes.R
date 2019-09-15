@@ -128,10 +128,14 @@ list_qim_diabetes <- function(dMeasure_obj,
       diabetes_list <- self$dM$contact_diabetes_list %>>%
         dplyr::select(-c(Count, Latest)) # don't need these fields
       diabetesID <- diabetes_list %>>%
-        dplyr::pull(InternalID)
+        dplyr::pull(InternalID) %>>%
+        c(-1) # prevent empty ID list (bad for SQL filter!)
     } else {
       # choose from appointment book alone
-      diabetesID <- self$dM$diabetes_list()
+      if (!lazy) {
+        self$dM$filter_appointments()
+      }
+      diabetesID <- c(self$dM$diabetes_list(), -1)
       diabetes_list <- self$dM$db$patients %>>%
         dplyr::filter(InternalID %in% diabetesID) %>>%
         dplyr::select(Firstname, Surname, InternalID) %>>%
@@ -140,8 +144,6 @@ list_qim_diabetes <- function(dMeasure_obj,
         dplyr::select(Patient, InternalID)
       # derived from self$appointments_filtered
     }
-    diabetesID <- c(diabetesID, -1)
-    # prevent empty ID list (bad for SQL filter!)
 
     fluvaxList <- self$dM$influenzaVax_obs(diabetesID,
                                            date_from = ifelse(ignoreOld,

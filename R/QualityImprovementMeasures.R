@@ -22,7 +22,7 @@ dMeasureQIM <- R6::R6Class("dMeasureQIM",
                                self$dM <- dMeasure_obj
                                if (length(public_init_fields$name) > 0) { # only if any defined
                                  for (i in 1:length(public_init_fields$name)) {
-                                   if (public_init_fields$obj[[i]] == "dMeasure") {
+                                   if (public_init_fields$obj[[i]] == "dMeasureQIM") {
                                      self[[public_init_fields$name[[i]]]] <-
                                        eval(public_init_fields$value[[i]]) # could 'quote' the value
                                    }
@@ -30,7 +30,7 @@ dMeasureQIM <- R6::R6Class("dMeasureQIM",
                                }
                                if (length(private_init_fields$name) > 0) { # only if any defined
                                  for (i in 1:length(private_init_fields$name)) {
-                                   if (private_init_fields$obj[[i]] == "dMeasure") {
+                                   if (private_init_fields$obj[[i]] == "dMeasureQIM") {
                                      private[[private_init_fields$name[[i]]]] <-
                                        eval(private_init_fields$value[[i]]) # could 'quote' the value
                                    }
@@ -42,7 +42,7 @@ dMeasureQIM <- R6::R6Class("dMeasureQIM",
                                  # note that this is for reading (from programs calling this object) only!
                                  if (length(reactive_fields$name) > 0) { # only if any .reactive() defined
                                    for (i in 1:length(reactive_fields$name)) {
-                                     if (reactive_fields$obj[[i]] == "dMeasure") {
+                                     if (reactive_fields$obj[[i]] == "dMeasureQIM") {
                                        self[[reactive_fields$name[[i]]]] <- shiny::reactiveVal(
                                          eval(reactive_fields$value[[i]]) # could 'quote' the value
                                        )
@@ -51,7 +51,7 @@ dMeasureQIM <- R6::R6Class("dMeasureQIM",
                                  }
                                  if (length(reactive_event$name) > 0) { # only if any .reactive() defined
                                    for (i in 1:length(reactive_event$name)) {
-                                     if (reactive_event$obj[[i]] == "dMeasure") {
+                                     if (reactive_event$obj[[i]] == "dMeasureQIM") {
                                        self[[reactive_event$name[[i]]]] <-
                                          eval(reactive_event$value[[i]]) # could 'quote' the value
                                      }

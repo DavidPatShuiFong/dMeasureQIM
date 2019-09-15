@@ -116,9 +116,13 @@ list_qim_65plus <- function(dMeasure_obj,
       sixtyfiveplus_list <- self$dM$contact_65plus_list %>>%
         dplyr::select(-c(Count, Latest))  # don't need these fields
       sixtyfiveplusID <- sixtyfiveplus_list %>>%
-        dplyr::pull(InternalID)
+        dplyr::pull(InternalID) %>>%
+        c(-1) # make sure not empty vector, which is bad for SQL filter
     } else {
-      sixtyfiveplusID <- c(self$dM$sixtyfiveplus_list())
+      if (!lazy) {
+        self$dM$filter_appointments()
+      }
+      sixtyfiveplusID <- c(self$dM$sixtyfiveplus_list(), -1)
       sixtyfiveplus_list <- self$dM$db$patients %>>%
         dplyr::filter(InternalID %in% sixtyfiveplusID) %>>%
         dplyr::select(Firstname, Surname, InternalID) %>>%
@@ -127,8 +131,6 @@ list_qim_65plus <- function(dMeasure_obj,
         dplyr::select(Patient, InternalID)
       # derived from self$appointments_filtered
     }
-    sixtyfiveplusID <- c(sixtyfiveplusID, -1)
-    # prevent empty ID list (bad for SQL filter!)
 
     fluvaxList <- self$dM$influenzaVax_obs(sixtyfiveplusID,
                                            date_from = ifelse(ignoreOld,

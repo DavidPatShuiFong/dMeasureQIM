@@ -115,9 +115,13 @@ list_qim_copd <- function(dMeasure_obj,
       }
       copd_list <- self$dM$contact_chroniclungdisease_list %>>%
         dplyr::select(-c(Count, Latest)) # don't need these fields
-      copdID <- copd_list %>>% dplyr::pull(InternalID)
+      copdID <- copd_list %>>% dplyr::pull(InternalID) %>>%
+        c(-1) # make sure not empty vector, which is bad for SQL filter
     } else {
-      copdID <- c(self$dM$chroniclungdisease_list())
+      if (!lazy) {
+        self$dM$filter_appointments()
+      }
+      copdID <- c(self$dM$chroniclungdisease_list(), -1)
       copd_list <- self$dM$db$patients %>>%
         dplyr::filter(InternalID %in% copdID) %>>%
         dplyr::select(Firstname, Surname, InternalID) %>>%
@@ -126,8 +130,6 @@ list_qim_copd <- function(dMeasure_obj,
         dplyr::select(Patient, InternalID)
       # derived from self$appointments_filtered
     }
-    copdID <- c(copdID, -1)
-    # prevent empty ID list (bad for SQL filter!)
 
     fluvaxList <- self$dM$influenzaVax_obs(copdID,
                                            date_from = ifelse(ignoreOld,

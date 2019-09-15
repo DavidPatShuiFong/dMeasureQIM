@@ -214,13 +214,17 @@ list_qim_cvdRisk <- function(dMeasure_obj,
       cvdRisk_list <- dplyr::distinct(cvdRisk_list) # remove duplicates
 
       cvdRiskID <- cvdRisk_list %>>%
-        dplyr::pull(InternalID)
+        dplyr::pull(InternalID) %>>%
+        c(-1) # make sure not empty vector, which is bad for SQL filter
     } else {
-      cvdRiskID <- self$dM$fortyfiveseventyfour_list()
+      if (!lazy) {
+        self$dM$filter_appointments()
+      }
+      cvdRiskID <- c(self$dM$fortyfiveseventyfour_list(), -1)
       if ("Include ATSI 35-44" %in% self$qim_cvdRisk_measure) {
         cvdRiskID <- c(cvdRiskID, self$dM$ATSI_35_44_list())}
       if (!("Exclude 75+" %in% self$qim_cvdRisk_measure)) {
-        cvdRiskID <- c(cvdRiskID, self$dM$seventyfiveplus_list)}
+        cvdRiskID <- c(cvdRiskID, self$dM$seventyfiveplus_list())}
       cvdRiskID <- unique(cvdRiskID) # remove duplicates
       cvdRisk_list <- self$dM$db$patients %>>%
         dplyr::filter(InternalID %in% cvdRiskID) %>>%
@@ -230,9 +234,6 @@ list_qim_cvdRisk <- function(dMeasure_obj,
         dplyr::select(Patient, InternalID)
       # derived from self$appointments_filtered
     }
-
-    cvdRiskID <- c(cvdRiskID, -1)
-    # add a dummy ID to prevent empty vector
 
     cvdID <- self$dM$cvd_list(data.frame(InternalID = cvdRiskID, Date = date_to))
     # known cardiovascular disease is excluded by default

@@ -137,7 +137,7 @@ list_qim_15plus <- function(dMeasure_obj,
     if (contact == "contact") {
       # from contact list
       if (!lazy) {
-        self$dM$list_contact_15plus(contact, date_from, date_to, clinicians,
+        self$dM$list_contact_15plus(date_from, date_to, clinicians,
                                     min_contact, min_date,
                                     contact_type,
                                     lazy)
@@ -145,9 +145,13 @@ list_qim_15plus <- function(dMeasure_obj,
       fifteen_plus_list <- self$dM$contact_15plus_list %>>%
         dplyr::select(-c(Count, Latest)) # don't need these fields
       fifteen_plusID <- fifteen_plus_list %>>%
-        dplyr::pull(InternalID)
+        dplyr::pull(InternalID) %>>%
+        c(-1) # make sure not empty list, bad for SQL filter!
     } else {
-      fifteen_plusID <- self$dM$fifteenplus_list()
+      if (!lazy) {
+        self$dM$filter_appointments()
+      }
+      fifteen_plusID <- c(self$dM$fifteenplus_list(), -1)
       fifteen_plus_list <- self$dM$db$patients %>>%
         dplyr::filter(InternalID %in% fifteen_plusID) %>>%
         dplyr::select(Firstname, Surname, InternalID) %>>%
@@ -156,8 +160,6 @@ list_qim_15plus <- function(dMeasure_obj,
         dplyr::select(Patient, InternalID)
       # derived from self$appointments_filtered
     }
-    fifteen_plusID <- c(fifteen_plusID, -1)
-    # prevent empty ID list (bad for SQL filter!
 
     smokingList <- self$dM$smoking_obs(fifteen_plusID,
                                     date_from = ifelse(ignoreOld,

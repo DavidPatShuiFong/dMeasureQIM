@@ -121,9 +121,13 @@ list_qim_cst <- function(dMeasure_obj,
       screen_cst <- self$dM$contact_cst_list %>>%
         dplyr::select(-c(Count, Latest)) # don't need these fields
       screen_cst_id <- self$dM$contact_cst_list %>>%
-        dplyr::pull(InternalID)
+        dplyr::pull(InternalID) %>>%
+        c(-1) # make sure not empty list
     } else {
-      screen_cst_id <- c(self$dM$cst_eligible_list())
+      if (!lazy) {
+        self$dM$filter_appointments()
+      }
+      screen_cst_id <- c(self$dM$cst_eligible_list(), -1)
       screen_cst <- self$dM$db$patients %>>%
         dplyr::filter(InternalID %in% screen_cst_id) %>>%
         dplyr::select(Firstname, Surname, InternalID) %>>%
@@ -132,8 +136,6 @@ list_qim_cst <- function(dMeasure_obj,
         dplyr::select(Patient, InternalID)
       # derived from self$appointments_filtered
     }
-    screen_cst_id <- c(screen_cst_id, -1)
-    # prevent empty ID list (bad for SQL filter!)
 
     self$qim_cst_list <- screen_cst %>>%
       dplyr::left_join(
