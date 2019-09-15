@@ -4,7 +4,7 @@
 \alias{report_qim_copd}
 \title{Chronic Obstructive Pulmonary Disease Quality Improvement Measure report, in the contact list}
 \usage{
-report_qim_copd(dMeasure_obj, contact = "contact", date_from = NA,
+report_qim_copd(dMeasure_obj, contact = NA, date_from = NA,
   date_to = NA, clinicians = NA, min_contact = NA,
   contact_type = NA, min_date = NA, demographic = NA,
   ignoreOld = NA, lazy = FALSE)
@@ -12,9 +12,9 @@ report_qim_copd(dMeasure_obj, contact = "contact", date_from = NA,
 \arguments{
 \item{dMeasure_obj}{dMeasure R6 object}
 
-\item{contact}{types which are accepted. default is "contact"
-"contact" chooses the 'contact system dM$list_contact_diabetes ('active' patients)
-anything else chooses the 'appointment' system dM$diabetes_list}
+\item{contact}{patient list. default is self$qim_contact
+TRUE chooses the 'contact system dM$list_contact_diabetes ('active' patients)
+FALSE chooses the 'appointment' system dM$diabetes_list}
 
 \item{date_from}{start date. default is $date_a}
 

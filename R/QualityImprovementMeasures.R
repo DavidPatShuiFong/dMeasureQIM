@@ -99,6 +99,28 @@ dMeasureQIM <- R6::R6Class("dMeasureQIM",
 })
 .reactive(dMeasureQIM, "qim_ignoreOldR", TRUE)
 
+##### patient list to use ############################################
+# if TRUE, then use 'contact' list. otherwise use appointment list
+# this doesn't affect QIM_active, but affects other methods
+
+.private(dMeasureQIM, ".qim_contact", TRUE)
+.active(dMeasureQIM, "qim_contact", function(value) {
+  # is the 'contact' patient list being used?
+  #  this can be a combination (or even none of...) appointments, visits and billings
+  #  with various criteria. dM$contact_count_list
+  # if false, the 'appointment' list is being used from dM$appointments_filtered
+  if (missing(value)) {
+    return(private$.qim_contact)
+  }
+  if (is.logical(value)) {
+    private$.qim_contact <- value
+    private$set_reactive(self$qim_contactR, value)
+  } else {
+    warning("$qim_contact only accepts logical values (TRUE/FALSE).")
+  }
+})
+.reactive(dMeasureQIM, "qim_contactR", TRUE)
+
 ##### demographic groupings for reporting ############################################
 
 .active(dMeasureQIM, "qim_demographicGroupings", function(value) {

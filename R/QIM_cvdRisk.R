@@ -106,9 +106,9 @@ NULL
 #' the reference date for 'most recent' measurement is 'date_to'
 #'
 #' @param dMeasure_obj dMeasure R6 object
-#' @param contact types which are accepted. default is "contact"
-#'     "contact" chooses the 'contact system dM$list_contact_diabetes ('active' patients)
-#'     anything else chooses the 'appointment' system dM$diabetes_list
+#' @param contact patient list. default is self$qim_contact
+#'     TRUE chooses the 'contact system dM$list_contact_diabetes ('active' patients)
+#'     FALSE chooses the 'appointment' system dM$diabetes_list
 #' @param date_from start date. default is $date_a
 #' @param date_to end date (inclusive). default is $date_b
 #' @param clinicians list of clinicians to view. default is $clinicians
@@ -122,7 +122,7 @@ NULL
 #' @return dataframe of Patient (name), InternalID and measures
 #' @export
 list_qim_cvdRisk <- function(dMeasure_obj,
-                             contact = "contact",
+                             contact = NA,
                              date_from = NA,
                              date_to = NA,
                              clinicians = NA,
@@ -137,7 +137,7 @@ list_qim_cvdRisk <- function(dMeasure_obj,
                                 lazy)
 }
 
-.public(dMeasureQIM, "list_qim_cvdRisk", function(contact = "contact",
+.public(dMeasureQIM, "list_qim_cvdRisk", function(contact = NA,
                                                   date_from = NA,
                                                   date_to = NA,
                                                   clinicians = NA,
@@ -147,6 +147,9 @@ list_qim_cvdRisk <- function(dMeasure_obj,
                                                   ignoreOld = NA,
                                                   lazy = FALSE) {
 
+  if (is.na(contact)) {
+    contact <- self$qim_contact
+  }
   if (is.na(date_from)) {
     date_from <- self$dM$date_a
   }
@@ -187,7 +190,7 @@ list_qim_cvdRisk <- function(dMeasure_obj,
       query = "cvdRisk_qim",
       data = list(date_from, date_to, clinicians))}
 
-    if (contact == "contact") {
+    if (contact) {
       if (!lazy) {
         self$dM$list_contact_45_74(date_from, date_to, clinicians,
                                    min_contact, min_date,
@@ -211,7 +214,8 @@ list_qim_cvdRisk <- function(dMeasure_obj,
         cvdRisk_list <- rbind(cvdRisk_list, self$dM$contact_ATSI_35_44_list)}
       if (!("Exclude 75+" %in% self$qim_cvdRisk_measure)) {
         cvdRisk_list <- rbind(cvdRisk_list, self$dM$contact_75plus_list)}
-      cvdRisk_list <- dplyr::distinct(cvdRisk_list) # remove duplicates
+      cvdRisk_list <- dplyr::distinct(cvdRisk_list) %>>% # remove duplicates
+        dplyr::select(-c(Count, Latest)) %>>% # don't need these fields
 
       cvdRiskID <- cvdRisk_list %>>%
         dplyr::pull(InternalID) %>>%
@@ -253,7 +257,6 @@ list_qim_cvdRisk <- function(dMeasure_obj,
       self$dM$LVH_list(data.frame(InternalID = cvdRiskID, Date = date_to))
 
     self$qim_cvdRisk_list <- cvdRisk_list %>>%
-      dplyr::select(-c(Count, Latest)) %>>% # don't need these fields
       dplyr::mutate(CardiovascularDisease = InternalID %in% cvdID) %>>%
       dplyr::mutate(Diabetes = InternalID %in% diabetesID) %>>%
       dplyr::left_join(self$dM$smoking_obs(cvdRiskID,
@@ -322,6 +325,7 @@ list_qim_cvdRisk <- function(dMeasure_obj,
                       self$dM$contact_75plus_listR(),
                       self$dM$contact_ATSI_35_44_listR(),
                       self$dM$appointments_filteredR(),
+                      self$qim_contactR(),
                       self$qim_ignoreOldR(),
                       self$qim_cvdRisk_measureR()), {
                         self$list_qim_cvdRisk(lazy = TRUE)
@@ -409,9 +413,9 @@ list_qim_cvdRisk <- function(dMeasure_obj,
 #' the reference date for 'most recent' measurement is 'date_to'
 #'
 #' @param dMeasure_obj dMeasure R6 object
-#' @param contact types which are accepted. default is "contact"
-#'     "contact" chooses the 'contact system dM$list_contact_diabetes ('active' patients)
-#'     anything else chooses the 'appointment' system dM$diabetes_list
+#' @param contact patient list. default is self$qim_contact
+#'     TRUE chooses the 'contact system dM$list_contact_diabetes ('active' patients)
+#'     FALSE chooses the 'appointment' system dM$diabetes_list
 #' @param date_from start date. default is $date_a
 #' @param date_to end date (inclusive). default is $date_b
 #' @param clinicians list of clinicians to view. default is $clinicians
@@ -425,7 +429,7 @@ list_qim_cvdRisk <- function(dMeasure_obj,
 #' @return dataframe of Patient (name), InternalID, appointment details and measures
 #' @export
 list_qim_cvdRisk_appointments <- function(dMeasure_obj,
-                                          contact = "contact",
+                                          contact = NA,
                                           date_from = NA,
                                           date_to = NA,
                                           clinicians = NA,
@@ -440,7 +444,7 @@ list_qim_cvdRisk_appointments <- function(dMeasure_obj,
                                              lazy)
 }
 
-.public(dMeasureQIM, "list_qim_cvdRisk_appointments", function(contact = "contact",
+.public(dMeasureQIM, "list_qim_cvdRisk_appointments", function(contact = NA,
                                                                date_from = NA,
                                                                date_to = NA,
                                                                clinicians = NA,
@@ -450,6 +454,9 @@ list_qim_cvdRisk_appointments <- function(dMeasure_obj,
                                                                ignoreOld = NA,
                                                                lazy = FALSE) {
 
+  if (is.na(contact)) {
+    contact <- self$qim_contact
+  }
   if (is.na(date_from)) {
     date_from <- self$dM$date_a
   }
@@ -533,9 +540,9 @@ list_qim_cvdRisk_appointments <- function(dMeasure_obj,
 #' the reference date for 'most recent' measurement is 'date_to'
 #'
 #' @param dMeasure_obj dMeasure R6 object
-#' @param contact types which are accepted. default is "contact"
-#'     "contact" chooses the 'contact system dM$list_contact_diabetes ('active' patients)
-#'     anything else chooses the 'appointment' system dM$diabetes_list
+#' @param contact patient list. default is self$qim_contact
+#'     TRUE chooses the 'contact system dM$list_contact_diabetes ('active' patients)
+#'     FALSE chooses the 'appointment' system dM$diabetes_list
 #' @param date_from start date. default is $date_a
 #' @param date_to end date (inclusive). default is $date_b
 #' @param clinicians list of clinicians to view. default is $clinicians
@@ -552,7 +559,7 @@ list_qim_cvdRisk_appointments <- function(dMeasure_obj,
 #' @return dataframe of Patient (name), Demographic, Measure (done or not), Count, Proportion
 #' @export
 report_qim_cvdRisk <- function(dMeasure_obj,
-                               contact = "contact",
+                               contact = NA,
                                date_from = NA,
                                date_to = NA,
                                clinicians = NA,
@@ -567,7 +574,7 @@ report_qim_cvdRisk <- function(dMeasure_obj,
                                   demographic,
                                   ignoreOld, lazy)
 }
-.public(dMeasureQIM, "report_qim_cvdRisk", function(contact = "contact",
+.public(dMeasureQIM, "report_qim_cvdRisk", function(contact = NA,
                                                     date_from = NA,
                                                     date_to = NA,
                                                     clinicians = NA,
@@ -578,6 +585,9 @@ report_qim_cvdRisk <- function(dMeasure_obj,
                                                     ignoreOld = NA,
                                                     lazy = FALSE) {
 
+  if (is.na(contact)) {
+    contact <- self$qim_contact
+  }
   if (is.na(date_from)) {
     date_from <- self$dM$date_a
   }
