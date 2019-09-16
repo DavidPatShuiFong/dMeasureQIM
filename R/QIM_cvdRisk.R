@@ -215,7 +215,7 @@ list_qim_cvdRisk <- function(dMeasure_obj,
       if (!("Exclude 75+" %in% self$qim_cvdRisk_measure)) {
         cvdRisk_list <- rbind(cvdRisk_list, self$dM$contact_75plus_list)}
       cvdRisk_list <- dplyr::distinct(cvdRisk_list) %>>% # remove duplicates
-        dplyr::select(-c(Count, Latest)) %>>% # don't need these fields
+        dplyr::select(-c(Count, Latest)) # don't need these fields
 
       cvdRiskID <- cvdRisk_list %>>%
         dplyr::pull(InternalID) %>>%
