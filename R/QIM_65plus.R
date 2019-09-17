@@ -457,10 +457,7 @@ report_qim_65plus <- function(dMeasure_obj,
                   shiny::eventReactive(
                     c(self$qim_65plus_listR(),
                       self$qim_demographicGroupR()), {
-                        # update if reactive version of $date_a $date_b
-                        # or $clinicians are updated.
                         # or change in demographic grouping
-                        # or change in measures
                         self$report_qim_65plus(lazy = TRUE)
                         # re-calculates the counts
                       })

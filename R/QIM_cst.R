@@ -235,10 +235,7 @@ list_qim_cst <- function(dMeasure_obj,
                       self$dM$appointments_filteredR(),
                       self$qim_contactR(),
                       self$qim_ignoreOldR()), {
-                        # update if reactive version of $date_a $date_b
-                        # or $clinicians are updated.
                         self$list_qim_cst(lazy = TRUE)
-                        # re-calculates the counts
                       })
                 ))
 
@@ -379,8 +376,6 @@ list_qim_cst_appointments <- function(dMeasure_obj,
                   shiny::eventReactive(
                     c(self$qim_cst_listR(),
                       self$dM$appointments_filtered_timeR()), {
-                        # update if reactive version of $date_a $date_b
-                        # or $clinicians are updated.
                         self$list_qim_cst_appointments(lazy = TRUE)
                         # re-calculates the counts
                       })
@@ -526,8 +521,6 @@ report_qim_cst <- function(dMeasure_obj,
                   shiny::eventReactive(
                     c(self$qim_cst_listR(),
                       self$qim_demographicGroupR()), {
-                        # update if reactive version of $date_a $date_b
-                        # or $clinicians are updated.
                         # or change in demographic grouping
                         self$report_qim_cst(lazy = TRUE)
                         # re-calculates the counts

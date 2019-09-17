@@ -454,7 +454,7 @@ report_qim_copd <- function(dMeasure_obj,
                   shiny::eventReactive(
                     c(self$qim_copd_listR(),
                       self$qim_demographicGroupR()), {
-                        # react to change in demographic grouping
+                        # react to change in demographic grouping or list
                         self$report_qim_copd(lazy = TRUE)
                       })
                 ))

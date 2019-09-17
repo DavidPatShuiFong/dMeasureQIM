@@ -684,8 +684,6 @@ report_qim_15plus <- function(dMeasure_obj,
                     c(self$qim_15plus_listR(),
                       self$qim_demographicGroupR(),
                       self$qim_15plus_measureR()), {
-                        # update if reactive version of $date_a $date_b
-                        # or $clinicians are updated.
                         # or change in demographic grouping
                         # or change in measures
                         self$report_qim_15plus(lazy = TRUE)

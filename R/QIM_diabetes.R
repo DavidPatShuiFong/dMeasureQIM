@@ -213,10 +213,7 @@ list_qim_diabetes <- function(dMeasure_obj,
                       self$dM$appointments_filteredR(),
                       self$qim_contactR(),
                       self$qim_ignoreOldR()), {
-                        # update if reactive version of $date_a $date_b
-                        # or $clinicians are updated.
                         self$list_qim_diabetes(lazy = TRUE)
-                        # re-calculates the counts
                       })
                 ))
 
@@ -548,8 +545,6 @@ report_qim_diabetes <- function(dMeasure_obj,
                     c(self$qim_diabetes_listR(),
                       self$qim_demographicGroupR(),
                       self$qim_diabetes_measureR()), {
-                        # update if reactive version of $date_a $date_b
-                        # or $clinicians are updated.
                         # or change in demographic grouping
                         # or change in measures
                         self$report_qim_diabetes(lazy = TRUE)

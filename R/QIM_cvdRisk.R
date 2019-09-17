@@ -369,10 +369,7 @@ list_qim_cvdRisk <- function(dMeasure_obj,
                    BPDate = as.Date(integer(0),
                                     origin = "1970-01-01"),
                    BP  = character(),
-                   Sex = character(), Ethnicity = character(),
-                   RecordNo = character(), MaritalStatus = character(), Sexuality = character(),
                    frisk = double(), friskHI = character(),
-                   Age5 = numeric(),
                    stringsAsFactors = FALSE))
 
 #' List of patient with information to complete cardiovascular risk assessment and appointment details
@@ -662,10 +659,8 @@ report_qim_cvdRisk <- function(dMeasure_obj,
                   shiny::eventReactive(
                     c(self$qim_cvdRisk_listR(),
                       self$qim_demographicGroupR()), {
-                        # update if reactive version of $date_a $date_b
-                        # or $clinicians are updated.
-                        # or change in demographic grouping
-                        # or change in measures
+                        # update if change in demographic grouping
+                        # or change in list
                         self$report_qim_cvdRisk(lazy = TRUE)
                         # re-calculates the counts
                       })
