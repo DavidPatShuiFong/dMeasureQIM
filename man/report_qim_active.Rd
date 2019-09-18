@@ -21,6 +21,8 @@ report_qim_active(dMeasure_obj, date_from = NA, date_to = NA,
 
 \item{min_date}{most recent contact must be at least min_date. default is $contact_minDate, initially -Inf}
 
+\item{contact_type}{contact types which are accepted. default is $contact_type}
+
 \item{demographic}{demographic groupings for reporting.
 if not supplied, reads $qim_demographicGroup
 list of available demographic groups in $qim_demographicGroupings}

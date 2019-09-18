@@ -105,7 +105,7 @@ list_qim_diabetes <- function(dMeasure_obj,
     min_date <- self$dM$contact_minDate
   }
   if (is.na(ignoreOld)) {
-    ignoreOld <- self$dM$qim_ignoreOld
+    ignoreOld <- self$qim_ignoreOld
   }
 
   # no additional clinician filtering based on privileges or user restrictions

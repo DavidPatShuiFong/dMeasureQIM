@@ -198,7 +198,7 @@ list_qim_cst <- function(dMeasure_obj,
                                                 TestDate),
                       TestName = dplyr::if_else(OutOfDateTest == 2,
                                                 as.character(NA),
-                                                TestName))}
+                                                as.character(TestName)))}
        else {.}) %>>%
       dplyr::select(-c(TestAge, OutOfDateTest)) %>>%
       # dplyr::select(-c(TestAge, OutOfDateTest)) %>>% # don't need these columns any more

@@ -289,7 +289,7 @@ list_qim_65plus_appointments <- function(dMeasure_obj,
       data = list(date_from, date_to, clinicians))}
 
     if (!lazy) {
-      self$list_qim_65plus(date_from, date_to, clinicians,
+      self$list_qim_65plus(contact, date_from, date_to, clinicians,
                            min_contact, min_date,
                            contact_type, ignoreOld,
                            lazy)
@@ -424,7 +424,7 @@ report_qim_65plus <- function(dMeasure_obj,
       data = list(date_from, date_to, clinicians))}
 
     if (!lazy) {
-      self$list_qim_65plus(date_from, date_to, clinicians,
+      self$list_qim_65plus(contact, date_from, date_to, clinicians,
                            min_contact, min_date, contact_type,
                            ignoreOld, lazy)
     }
