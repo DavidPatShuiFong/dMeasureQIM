@@ -12,9 +12,9 @@ list_qim_cst_appointments(dMeasure_obj, contact = NA, date_from = NA,
 \arguments{
 \item{dMeasure_obj}{dMeasure R6 object}
 
-\item{contact}{patient list. default is self$qim_contact
-TRUE chooses the 'contact system dM$list_contact_diabetes ('active' patients)
-FALSE chooses the 'appointment' system dM$diabetes_list}
+\item{contact}{patient list. default is $qim_contact.
+TRUE chooses the 'contact' system $list_contact_diabetes ('active' patients) from dMeasure object.
+FALSE chooses the 'appointment' system $diabetes_list from dMeasure object.}
 
 \item{date_from}{start date. default is $date_a}
 

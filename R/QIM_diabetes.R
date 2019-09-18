@@ -42,9 +42,9 @@ NULL
 #' the reference date for 'most recent' measurement is 'date_to'
 #'
 #' @param dMeasure_obj dMeasure R6 object
-#' @param contact patient list. default is self$qim_contact
-#'     TRUE chooses the 'contact system dM$list_contact_diabetes ('active' patients)
-#'     FALSE chooses the 'appointment' system dM$diabetes_list
+#' @param contact patient list. default is $qim_contact.
+#'     TRUE chooses the 'contact' system $list_contact_diabetes ('active' patients) from dMeasure object.
+#'     FALSE chooses the 'appointment' system $diabetes_list from dMeasure object.
 #' @param date_from start date. default is $date_a
 #' @param date_to end date (inclusive). default is $date_b
 #' @param clinicians list of clinicians to view. default is dM$clinicians
@@ -273,19 +273,21 @@ list_qim_diabetes <- function(dMeasure_obj,
 #' List of diabetics, with Quality Improvement Measures, in contact list plus appointment details
 #'
 #' Filtered by date, and chosen clinicians.
-#' Note that a 'contact' could potentially be defined as something else other than
-#' an appointment! (e.g. billing, or record of visit)
+#'  Note that a 'contact' could potentially be defined as something else other than
+#'  an appointment! (e.g. billing, or record of visit)
 #'
 #' QIM 01 - HbA1C - most recent. the QIM measure is within last twelve months
+#'
 #' QIM 05 - Influenza immunization - most recent. the QIM measure is within last 15 months
+#'
 #' QIM 10 - Blood pressure - most recent. the QIM measure is within the last six months
 #'
 #' the reference date for 'most recent' measurement is 'date_to'
 #'
 #' @param dMeasure_obj dMeasure R6 object
-#' @param contact patient list. default is self$qim_contact
-#'     TRUE chooses the 'contact system dM$list_contact_diabetes ('active' patients)
-#'     FALSE chooses the 'appointment' system dM$diabetes_list
+#' @param contact patient list. default is $qim_contact.
+#'     TRUE chooses the 'contact' system $list_contact_diabetes ('active' patients) from $dMeasure object.
+#'     FALSE chooses the 'appointment' system $diabetes_list from dMeasure object.
 #' @param date_from start date. default is $date_a
 #' @param date_to end date (inclusive). default is $date_b
 #' @param clinicians list of clinicians to view. default is $clinicians
@@ -408,9 +410,9 @@ list_qim_diabetes_appointments <- function(dMeasure_obj,
 #' the reference date for 'most recent' measurement is 'date_to'
 #'
 #' @param dMeasure_obj dMeasure R6 object
-#' @param contact patient list. default is self$qim_contact
-#'     TRUE chooses the 'contact system dM$list_contact_diabetes ('active' patients)
-#'     FALSE chooses the 'appointment' system dM$diabetes_list
+#' @param contact patient list. default is $qim_contact.
+#'     TRUE chooses the 'contact' system $list_contact_diabetes ('active' patients) from dMeasure object.
+#'     FALSE chooses the 'appointment' system $diabetes_list from dMeasure object.
 #' @param date_from start date. default is $date_a
 #' @param date_to end date (inclusive). default is $date_b
 #' @param clinicians list of clinicians to view. default is $clinicians

@@ -59,9 +59,9 @@ NULL
 #' the reference date for 'most recent' measurement is 'date_to'
 #'
 #' @param dMeasure_obj dMeasure R6 object
-#' @param contact patient list. default is self$qim_contact
-#'     TRUE chooses the 'contact system dM$list_contact_diabetes ('active' patients)
-#'     FALSE chooses the 'appointment' system dM$diabetes_list
+#' @param contact patient list. default is $qim_contact.
+#'     TRUE chooses the 'contact' system $list_contact_diabetes ('active' patients) from dMeasure object.
+#'     FALSE chooses the 'appointment' system $diabetes_list from dMeasure object.
 #' @param date_from start date. default is $date_a
 #' @param date_to end date (inclusive). default is $date_b
 #' @param clinicians list of clinicians to view. default is $clinicians
@@ -415,9 +415,9 @@ list_qim_15plus <- function(dMeasure_obj,
 #' the reference date for 'most recent' measurement is 'date_to'
 #'
 #' @param dMeasure_obj dMeasure R6 object
-#' @param contact patient list. default is self$qim_contact
-#'     TRUE chooses the 'contact system dM$list_contact_diabetes ('active' patients)
-#'     FALSE chooses the 'appointment' system dM$diabetes_list
+#' @param contact patient list. default is $qim_contact.
+#'     TRUE chooses the 'contact' system $list_contact_diabetes ('active' patients) from dMeasure object.
+#'     FALSE chooses the 'appointment' system $diabetes_list from dMeasure object.
 #' @param date_from start date. default is $date_a
 #' @param date_to end date (inclusive). default is $date_b
 #' @param clinicians list of clinicians to view. default is $clinicians
@@ -544,9 +544,9 @@ list_qim_15plus_appointments <- function(dMeasure_obj,
 #' the reference date for 'most recent' measurement is 'date_to'
 #'
 #' @param dMeasure_obj dMeasure R6 object
-#' @param contact patient list. default is self$qim_contact
-#'     TRUE chooses the 'contact system dM$list_contact_diabetes ('active' patients)
-#'     FALSE chooses the 'appointment' system dM$diabetes_list
+#' @param contact patient list. default is $qim_contact.
+#'     TRUE chooses the 'contact' system $list_contact_diabetes ('active' patients) from dMeasure object.
+#'     FALSE chooses the 'appointment' system $diabetes_list from dMeasure object.
 #' @param date_from start date. default is $date_a
 #' @param date_to end date (inclusive). default is $date_b
 #' @param clinicians list of clinicians to view. default is $clinicians

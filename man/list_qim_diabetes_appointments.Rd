@@ -11,9 +11,9 @@ list_qim_diabetes_appointments(dMeasure_obj, contact = NA,
 \arguments{
 \item{dMeasure_obj}{dMeasure R6 object}
 
-\item{contact}{patient list. default is self$qim_contact
-TRUE chooses the 'contact system dM$list_contact_diabetes ('active' patients)
-FALSE chooses the 'appointment' system dM$diabetes_list}
+\item{contact}{patient list. default is $qim_contact.
+TRUE chooses the 'contact' system $list_contact_diabetes ('active' patients) from $dMeasure object.
+FALSE chooses the 'appointment' system $diabetes_list from dMeasure object.}
 
 \item{date_from}{start date. default is $date_a}
 
@@ -37,12 +37,14 @@ dataframe of Patient (name), InternalID, appointment details and measures
 }
 \description{
 Filtered by date, and chosen clinicians.
-Note that a 'contact' could potentially be defined as something else other than
-an appointment! (e.g. billing, or record of visit)
+ Note that a 'contact' could potentially be defined as something else other than
+ an appointment! (e.g. billing, or record of visit)
 }
 \details{
 QIM 01 - HbA1C - most recent. the QIM measure is within last twelve months
+
 QIM 05 - Influenza immunization - most recent. the QIM measure is within last 15 months
+
 QIM 10 - Blood pressure - most recent. the QIM measure is within the last six months
 
 the reference date for 'most recent' measurement is 'date_to'
