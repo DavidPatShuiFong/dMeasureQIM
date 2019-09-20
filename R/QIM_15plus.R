@@ -1,5 +1,9 @@
 ##### QIM 15+ ##################################################################
 
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
 #' dMeasureQIM - Practice Incentive Program Quality Improvement Measures fields and methods
 #'
 #' @name qim_15plus

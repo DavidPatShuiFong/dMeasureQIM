@@ -6,7 +6,7 @@ Author: David P.S. Fong
 Maintainer: David P.S. Fong <vkelim@bigpond.com>
 Description: R6 object (and methods) to report and list Quality Improvement Measures.
     Used by (and requires) dMeasure to access Best Practice database.
-License: see LICENSE file, Mozilla Public License v2.0
+License: file LICENSE Mozilla Public License v2.0
 Encoding: UTF-8
 LazyData: true
 Imports:
