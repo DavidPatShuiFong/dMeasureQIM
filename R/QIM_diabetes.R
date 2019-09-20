@@ -553,6 +553,7 @@ report_qim_diabetes <- function(dMeasure_obj,
                       self$qim_diabetes_measureR()), {
                         # or change in demographic grouping
                         # or change in measures
+                        # or the diabetes list
                         self$report_qim_diabetes(lazy = TRUE)
                         # re-calculates the counts
                       })

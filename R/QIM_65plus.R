@@ -180,8 +180,9 @@ list_qim_65plus <- function(dMeasure_obj,
                       self$dM$appointments_filteredR(),
                       self$qim_contactR(),
                       self$qim_ignoreOldR()), {
-                        # update if reactive version of $date_a $date_b
-                        # or $clinicians are updated.
+                        # update if reactive version of contact or appointment lists
+                        # choice between contact or appointment list ($qim_contact)
+                        # or whether or not to ignore old measures
                         self$list_qim_65plus(lazy = TRUE)
                         # re-calculates the counts
                       })
@@ -318,8 +319,8 @@ list_qim_65plus_appointments <- function(dMeasure_obj,
                   shiny::eventReactive(
                     c(self$qim_65plus_listR(),
                       self$dM$appointments_filtered_timeR()), {
-                        # update if reactive version of $date_a $date_b
-                        # or $clinicians are updated.
+                        # update if reactive version of 65plus_list
+                        # or appointment list
                         self$list_qim_65plus_appointments(lazy = TRUE)
                         # re-calculates the counts
                       })
@@ -462,6 +463,7 @@ report_qim_65plus <- function(dMeasure_obj,
                     c(self$qim_65plus_listR(),
                       self$qim_demographicGroupR()), {
                         # or change in demographic grouping
+                        # or the 65plus_list
                         self$report_qim_65plus(lazy = TRUE)
                         # re-calculates the counts
                       })

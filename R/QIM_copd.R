@@ -178,8 +178,9 @@ list_qim_copd <- function(dMeasure_obj,
                       self$dM$appointments_filteredR(),
                       self$qim_contactR(),
                       self$qim_ignoreOldR()), {
-                        # update if reactive version of $date_a $date_b
-                        # or $clinicians are updated.
+                        # update if reactive version of contact lists, appointment list,
+                        # choice between contact or appointment list ($qim_contactR),
+                        # or whether or not to ignore old measurements
                         self$list_qim_copd(lazy = TRUE)
                         # re-calculates the counts
                       })

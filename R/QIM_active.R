@@ -134,8 +134,7 @@ list_qim_active <- function(dMeasure_obj,
                 quote(
                   shiny::eventReactive(
                     c(self$dM$contact_count_listR()), {
-                      # update if reactive version of $date_a $date_b
-                      # or $clinicians are updated.
+                      # update if reactive version of dM$contact_count_list changes
                       self$list_qim_active(lazy = TRUE)
                       # re-calculates the counts
                     })
@@ -258,8 +257,7 @@ report_qim_active <- function(dMeasure_obj,
                   shiny::eventReactive(
                     c(self$qim_active_listR(),
                       self$qim_demographicGroupR()), {
-                        # update if reactive version of $date_a $date_b
-                        # or $clinicians are updated.
+                        # uupdate if change in active list,
                         # or change in demographic grouping
                         self$report_qim_active(lazy = TRUE)
                         # re-calculates the counts
