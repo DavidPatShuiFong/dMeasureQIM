@@ -13,7 +13,8 @@ Imports:
     dplyr,
     dbplyr,
     R6,
-    pipeR
+    pipeR,
+    framinghamRiskEquation
 Suggests:
     shiny
 RoxygenNote: 6.1.1

@@ -307,7 +307,7 @@ list_qim_cvdRisk <- function(dMeasure_obj,
                        by = "InternalID",
                        copy = TRUE) %>>%
       dplyr::mutate(Age = dMeasure::calc_age(as.Date(DOB), date_to)) %>>%
-      {dplyr::left_join(., dMeasure::framingham_riskequation(.),
+      {dplyr::left_join(., framinghamRiskEquation::framingham_riskequation(.),
                         by = "InternalID")} %>>%
       dplyr::mutate(Age5 = floor(Age / 5) * 5) %>>%
       # round age group to nearest 5 years
