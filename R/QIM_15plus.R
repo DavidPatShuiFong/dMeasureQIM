@@ -62,7 +62,7 @@ NULL
 #'
 #' the reference date for 'most recent' measurement is 'date_to'
 #'
-#' @param dMeasure_obj dMeasure R6 object
+#' @param dMeasureQIM_obj dMeasureQIM R6 object
 #' @param contact patient list. default is $qim_contact.
 #'     TRUE chooses the 'contact' system $list_contact_diabetes ('active' patients) from dMeasure object.
 #'     FALSE chooses the 'appointment' system $diabetes_list from dMeasure object.
@@ -78,7 +78,7 @@ NULL
 #'
 #' @return dataframe of Patient (name), InternalID, measures
 #' @export
-list_qim_15plus <- function(dMeasure_obj,
+list_qim_15plus <- function(dMeasureQIM_obj,
                             contact = NA,
                             date_from = NA,
                             date_to = NA,
@@ -88,10 +88,10 @@ list_qim_15plus <- function(dMeasure_obj,
                             contact_type = NA,
                             ignoreOld = NA,
                             lazy = FALSE) {
-  dMeasure_obj$list_qim_15plus(contact, date_from, date_to, clinicians,
-                               min_contact, min_date, contact_type,
-                               ignoreOld,
-                               lazy)
+  dMeasureQIM_obj$list_qim_15plus(contact, date_from, date_to, clinicians,
+                                  min_contact, min_date, contact_type,
+                                  ignoreOld,
+                                  lazy)
 }
 
 .public(dMeasureQIM, "list_qim_15plus", function(contact = NA,
@@ -169,12 +169,12 @@ list_qim_15plus <- function(dMeasure_obj,
     }
 
     smokingList <- self$dM$smoking_obs(fifteen_plusID,
-                                    date_from = ifelse(ignoreOld,
-                                                       NA,
-                                                       as.Date(-Inf, origin = "1970-01-01")),
-                                    # if ignoreOld, then influenza_vax will (given NA)
-                                    # calculate date_from as fifteen months before date_to
-                                    date_to = date_to)
+                                       date_from = ifelse(ignoreOld,
+                                                          NA,
+                                                          as.Date(-Inf, origin = "1970-01-01")),
+                                       # if ignoreOld, then influenza_vax will (given NA)
+                                       # calculate date_from as fifteen months before date_to
+                                       date_to = date_to)
 
     measure_cols <- c(BMIDate = as.Date(NA),
                       BMIValue = as.numeric(NA),
@@ -419,7 +419,7 @@ list_qim_15plus <- function(dMeasure_obj,
 #'
 #' the reference date for 'most recent' measurement is 'date_to'
 #'
-#' @param dMeasure_obj dMeasure R6 object
+#' @param dMeasureQIM_obj dMeasureQIM R6 object
 #' @param contact patient list. default is $qim_contact.
 #'     TRUE chooses the 'contact' system $list_contact_diabetes ('active' patients) from dMeasure object.
 #'     FALSE chooses the 'appointment' system $diabetes_list from dMeasure object.
@@ -435,7 +435,7 @@ list_qim_15plus <- function(dMeasure_obj,
 #'
 #' @return dataframe of Patient (name), InternalID, appointment details and measures
 #' @export
-list_qim_15plus_appointments <- function(dMeasure_obj,
+list_qim_15plus_appointments <- function(dMeasureQIM_obj,
                                          contact = NA,
                                          date_from = NA,
                                          date_to = NA,
@@ -445,10 +445,10 @@ list_qim_15plus_appointments <- function(dMeasure_obj,
                                          contact_type = NA,
                                          ignoreOld = NA,
                                          lazy = FALSE) {
-  dMeasure_obj$list_qim_15plus_appointments(contact, date_from, date_to, clinicians,
-                                            min_contact, min_date, contact_type,
-                                            ignoreOld,
-                                            lazy)
+  dMeasureQIM_obj$list_qim_15plus_appointments(contact, date_from, date_to, clinicians,
+                                               min_contact, min_date, contact_type,
+                                               ignoreOld,
+                                               lazy)
 }
 
 .public(dMeasureQIM, "list_qim_15plus_appointments", function(contact = NA,
@@ -504,7 +504,7 @@ list_qim_15plus_appointments <- function(dMeasure_obj,
                            contact_type, ignoreOld,
                            lazy)
       self$dM$filter_appointments_time(date_from, date_to, clinicians,
-                                    lazy = lazy)
+                                       lazy = lazy)
     }
 
     self$qim_15plus_list_appointments <- self$qim_15plus_list %>>%
@@ -548,7 +548,7 @@ list_qim_15plus_appointments <- function(dMeasure_obj,
 #'
 #' the reference date for 'most recent' measurement is 'date_to'
 #'
-#' @param dMeasure_obj dMeasure R6 object
+#' @param dMeasureQIM_obj dMeasureQIM R6 object
 #' @param contact patient list. default is $qim_contact.
 #'     TRUE chooses the 'contact' system $list_contact_diabetes ('active' patients) from dMeasure object.
 #'     FALSE chooses the 'appointment' system $diabetes_list from dMeasure object.
@@ -572,7 +572,7 @@ list_qim_15plus_appointments <- function(dMeasure_obj,
 #' @return dataframe of Patient (name), demographics, measures (done or not),
 #'  Count (n), and proportion
 #' @export
-report_qim_15plus <- function(dMeasure_obj,
+report_qim_15plus <- function(dMeasureQIM_obj,
                               contact = NA,
                               date_from = NA,
                               date_to = NA,
@@ -584,10 +584,10 @@ report_qim_15plus <- function(dMeasure_obj,
                               measure = NA,
                               ignoreOld = NA,
                               lazy = FALSE) {
-  dMeasure_obj$report_qim_15plus(contact, date_from, date_to, clinicians,
-                                 min_contact, min_date, contact_type,
-                                 demographic, measure,
-                                 ignoreOld, lazy)
+  dMeasureQIM_obj$report_qim_15plus(contact, date_from, date_to, clinicians,
+                                    min_contact, min_date, contact_type,
+                                    demographic, measure,
+                                    ignoreOld, lazy)
 }
 .public(dMeasureQIM, "report_qim_15plus", function(contact = NA,
                                                    date_from = NA,

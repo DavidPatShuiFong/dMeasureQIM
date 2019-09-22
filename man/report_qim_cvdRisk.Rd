@@ -4,13 +4,13 @@
 \alias{report_qim_cvdRisk}
 \title{Cardiovascular disease risk Quality Improvement Measure report, in the contact list}
 \usage{
-report_qim_cvdRisk(dMeasure_obj, contact = NA, date_from = NA,
+report_qim_cvdRisk(dMeasureQIM_obj, contact = NA, date_from = NA,
   date_to = NA, clinicians = NA, min_contact = NA,
   contact_type = NA, min_date = NA, demographic = NA,
   ignoreOld = NA, lazy = FALSE)
 }
 \arguments{
-\item{dMeasure_obj}{dMeasure R6 object}
+\item{dMeasureQIM_obj}{dMeasureQIM R6 object}
 
 \item{contact}{patient list. default is $qim_contact.
 

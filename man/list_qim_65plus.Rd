@@ -4,12 +4,12 @@
 \alias{list_qim_65plus}
 \title{List of 65 years or older, with Quality Improvement Measures, in the contact list}
 \usage{
-list_qim_65plus(dMeasure_obj, contact = NA, date_from = NA,
+list_qim_65plus(dMeasureQIM_obj, contact = NA, date_from = NA,
   date_to = NA, clinicians = NA, min_contact = NA, min_date = NA,
   contact_type = NA, ignoreOld = NA, lazy = FALSE)
 }
 \arguments{
-\item{dMeasure_obj}{dMeasure R6 object}
+\item{dMeasureQIM_obj}{dMeasureQIM R6 object}
 
 \item{contact}{patient list. default is $qim_contact.
 TRUE chooses the 'contact' system $list_contact_diabetes ('active' patients) from dMeasure object.

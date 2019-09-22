@@ -4,16 +4,16 @@
 \alias{list_qim_copd_appointments}
 \title{List of patient with chronic lung disease, with Quality Improvement Measures, in the contact list, with appointments}
 \usage{
-list_qim_copd_appointments(contact = NA, dMeasure_obj, date_from = NA,
-  date_to = NA, clinicians = NA, min_contact = NA, min_date = NA,
-  contact_type = NA, ignoreOld = NA, lazy = FALSE)
+list_qim_copd_appointments(contact = NA, dMeasureQIM_obj,
+  date_from = NA, date_to = NA, clinicians = NA, min_contact = NA,
+  min_date = NA, contact_type = NA, ignoreOld = NA, lazy = FALSE)
 }
 \arguments{
 \item{contact}{patient list. default is $qim_contact.
 TRUE chooses the 'contact' system $list_contact_diabetes ('active' patients) from dMeasure object.
 FALSE chooses the 'appointment' system $diabetes_list from dMeasure object.}
 
-\item{dMeasure_obj}{dMeasure R6 object}
+\item{dMeasureQIM_obj}{dMeasureQIM R6 object}
 
 \item{date_from}{start date. default is $date_a}
 

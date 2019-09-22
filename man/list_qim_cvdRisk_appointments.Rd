@@ -4,12 +4,12 @@
 \alias{list_qim_cvdRisk_appointments}
 \title{List of patient with information to complete cardiovascular risk assessment and appointment details}
 \usage{
-list_qim_cvdRisk_appointments(dMeasure_obj, contact = NA,
+list_qim_cvdRisk_appointments(dMeasureQIM_obj, contact = NA,
   date_from = NA, date_to = NA, clinicians = NA, min_contact = NA,
   min_date = NA, contact_type = NA, ignoreOld = NA, lazy = FALSE)
 }
 \arguments{
-\item{dMeasure_obj}{dMeasure R6 object}
+\item{dMeasureQIM_obj}{dMeasureQIM R6 object}
 
 \item{contact}{patient list. default is $qim_contact.
 

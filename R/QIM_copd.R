@@ -34,7 +34,7 @@ NULL
 #'
 #' the reference date for 'most recent' measurement is 'date_to'
 #'
-#' @param dMeasure_obj dMeasure R6 object
+#' @param dMeasureQIM_obj dMeasureQIM R6 object
 #' @param contact patient list. default is $qim_contact.
 #'     TRUE chooses the 'contact' system $list_contact_diabetes ('active' patients) from dMeasure object.
 #'     FALSE chooses the 'appointment' system $diabetes_list from dMeasure object.
@@ -50,7 +50,7 @@ NULL
 #'
 #' @return dataframe of Patient (name), InternalID, measures
 #' @export
-list_qim_copd <- function(dMeasure_obj,
+list_qim_copd <- function(dMeasureQIM_obj,
                           contact = NA,
                           date_from = NA,
                           date_to = NA,
@@ -60,10 +60,10 @@ list_qim_copd <- function(dMeasure_obj,
                           contact_type = NA,
                           ignoreOld = NA,
                           lazy = FALSE) {
-  dMeasure_obj$list_qim_copd(contact, date_from, date_to, clinicians,
-                             min_contact, min_date, contact_type,
-                             ignoreOld,
-                             lazy)
+  dMeasureQIM_obj$list_qim_copd(contact, date_from, date_to, clinicians,
+                                min_contact, min_date, contact_type,
+                                ignoreOld,
+                                lazy)
 }
 
 .public(dMeasureQIM, "list_qim_copd", function(contact = NA,
@@ -212,7 +212,7 @@ list_qim_copd <- function(dMeasure_obj,
 #'
 #' the reference date for 'most recent' measurement is 'date_to'
 #'
-#' @param dMeasure_obj dMeasure R6 object
+#' @param dMeasureQIM_obj dMeasureQIM R6 object
 #' @param contact patient list. default is $qim_contact.
 #'     TRUE chooses the 'contact' system $list_contact_diabetes ('active' patients) from dMeasure object.
 #'     FALSE chooses the 'appointment' system $diabetes_list from dMeasure object.
@@ -229,7 +229,7 @@ list_qim_copd <- function(dMeasure_obj,
 #' @return dataframe of Patient (name), InternalID, appointment details and measures
 #' @export
 list_qim_copd_appointments <- function(contact = NA,
-                                       dMeasure_obj,
+                                       dMeasureQIM_obj,
                                        date_from = NA,
                                        date_to = NA,
                                        clinicians = NA,
@@ -238,11 +238,11 @@ list_qim_copd_appointments <- function(contact = NA,
                                        contact_type = NA,
                                        ignoreOld = NA,
                                        lazy = FALSE) {
-  dMeasure_obj$list_qim_copd_appointments(contact,
-                                          date_from, date_to, clinicians,
-                                          min_contact, min_date, contact_type,
-                                          ignoreOld,
-                                          lazy)
+  dMeasureQIM_obj$list_qim_copd_appointments(contact,
+                                             date_from, date_to, clinicians,
+                                             min_contact, min_date, contact_type,
+                                             ignoreOld,
+                                             lazy)
 }
 
 .public(dMeasureQIM, "list_qim_copd_appointments", function(contact = NA,
@@ -335,7 +335,7 @@ list_qim_copd_appointments <- function(contact = NA,
 #'
 #' the reference date for 'most recent' measurement is 'date_to'
 #'
-#' @param dMeasure_obj dMeasure R6 object
+#' @param dMeasureQIM_obj dMeasureQIM R6 object
 #' @param contact patient list. default is $qim_contact.
 #'     TRUE chooses the 'contact' system $list_contact_diabetes ('active' patients) from dMeasure object.
 #'     FALSE chooses the 'appointment' system $diabetes_list from dMeasure object.
@@ -354,7 +354,7 @@ list_qim_copd_appointments <- function(contact = NA,
 #'
 #' @return dataframe of Patient (name), demographic, measure (done or not), Count, Proportion
 #' @export
-report_qim_copd <- function(dMeasure_obj,
+report_qim_copd <- function(dMeasureQIM_obj,
                             contact = NA,
                             date_from = NA,
                             date_to = NA,
@@ -365,10 +365,10 @@ report_qim_copd <- function(dMeasure_obj,
                             demographic = NA,
                             ignoreOld = NA,
                             lazy = FALSE) {
-  dMeasure_obj$report_qim_copd(contact, date_from, date_to, clinicians,
-                               min_contact, min_date, contact_type,
-                               demographic,
-                               ignoreOld, lazy)
+  dMeasureQIM_obj$report_qim_copd(contact, date_from, date_to, clinicians,
+                                  min_contact, min_date, contact_type,
+                                  demographic,
+                                  ignoreOld, lazy)
 }
 .public(dMeasureQIM, "report_qim_copd", function(contact = NA,
                                                  date_from = NA,

@@ -4,13 +4,13 @@
 \alias{report_qim_copd}
 \title{Chronic Obstructive Pulmonary Disease Quality Improvement Measure report, in the contact list}
 \usage{
-report_qim_copd(dMeasure_obj, contact = NA, date_from = NA,
+report_qim_copd(dMeasureQIM_obj, contact = NA, date_from = NA,
   date_to = NA, clinicians = NA, min_contact = NA,
   contact_type = NA, min_date = NA, demographic = NA,
   ignoreOld = NA, lazy = FALSE)
 }
 \arguments{
-\item{dMeasure_obj}{dMeasure R6 object}
+\item{dMeasureQIM_obj}{dMeasureQIM R6 object}
 
 \item{contact}{patient list. default is $qim_contact.
 TRUE chooses the 'contact' system $list_contact_diabetes ('active' patients) from dMeasure object.

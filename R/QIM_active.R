@@ -29,7 +29,10 @@ NULL
 #'
 #' Filtered by date, and chosen clinicians
 #'
-#' @param dMeasure_obj dMeasure R6 object
+#' @param dMeasureQIM_obj dMeasureQIM R6 object
+#' @param contact patient list. default is $qim_contact.
+#'     TRUE chooses the 'contact' system $list_contact_count ('active' patients) from dMeasure object.
+#'     FALSE chooses the 'appointment' system $filter_appointments from dMeasure object.
 #' @param date_from start date. default is $date_a
 #' @param date_to end date (inclusive). default is $date_b
 #' @param clinicians list of clinicians to view. default is $clinicians
@@ -40,7 +43,8 @@ NULL
 #'
 #' @return dataframe of Patient (name), InternalID and demographics
 #' @export
-list_qim_active <- function(dMeasure_obj,
+list_qim_active <- function(dMeasureQIM_obj,
+                            contact = NA,
                             date_from = NA,
                             date_to = NA,
                             clinicians = NA,
@@ -48,11 +52,12 @@ list_qim_active <- function(dMeasure_obj,
                             min_date = NA,
                             contact_type = NA,
                             lazy = FALSE) {
-  dMeasure_obj$list_qim_active(date_from, date_to, clinicians,
-                               min_contact, min_date, contact_type,
-                               lazy)
+  dMeasureQIM_obj$list_qim_active(contact, date_from, date_to, clinicians,
+                                  min_contact, min_date, contact_type,
+                                  lazy)
 }
-.public(dMeasureQIM, "list_qim_active", function(date_from = NA,
+.public(dMeasureQIM, "list_qim_active", function(contact = NA,
+                                                 date_from = NA,
                                                  date_to = NA,
                                                  clinicians = NA,
                                                  min_contact = NA,
@@ -60,6 +65,9 @@ list_qim_active <- function(dMeasure_obj,
                                                  contact_type = NA,
                                                  lazy = FALSE) {
 
+  if (is.na(contact)) {
+    contact <- self$qim_contact
+  }
   if (is.na(date_from)) {
     date_from <- self$dM$date_a
   }
@@ -94,18 +102,44 @@ list_qim_active <- function(dMeasure_obj,
       query = "active_qim",
       data = list(date_from, date_to, clinicians))}
 
-    if (!lazy) {
-      self$dM$list_contact_count(date_from, date_to, clinicians,
-                                 min_contact, min_date, contact_type,
-                                 lazy)
+    if (contact) {
+      # choose from 'contact' lists, which are based on appointments, billings or services
+      if (!lazy) {
+        self$dM$list_contact_count(date_from, date_to, clinicians,
+                                   min_contact, min_date, contact_type,
+                                   lazy)
+
+      }
+      active_list <- self$dM$contact_count_list %>>%
+        dplyr::select(-c(Latest)) # don't need this field. keeps 'InternalID' and 'Count'
+      activeID <- active_list %>>%
+        dplyr::pull(InternalID) %>>%
+        c(-1) # add a dummy ID to prevent empty vector
+    } else {
+      # choose from appointment book alone
+      if (!lazy) {
+        self$dM$filter_appointments()
+      }
+      active_df <- self$dM$appointments_filtered %>>%
+        dplyr::select(InternalID) %>>%
+        dplyr::group_by(InternalID) %>>%
+        dplyr::summarise(Count = count()) %>>%
+        # 'collapses' the InternalIDs, counting the number of appointments
+        dplyr::ungroup()
+      activeID <- c(active_df %>>%
+                      dplyr::pull(InternalID),
+                    -1)
+      active_list <- self$dM$db$patients %>>%
+        dplyr::filter(InternalID %in% activeID) %>>%
+        dplyr::select(Firstname, Surname, InternalID) %>>%
+        dplyr::left_join(active_df, by = "InternalID") %>>% # add 'Count'
+        dplyr::collect() %>>%
+        dplyr::mutate(Patient = paste(Firstname, Surname)) %>>%
+        dplyr::select(Patient, InternalID, Count)
+      # derived from self$appointments_filtered
     }
 
-    activeID <- self$dM$contact_count_list %>>%
-      dplyr::pull(InternalID) %>>%
-      c(-1) # add a dummy ID to prevent empty vector
-
-    self$qim_active_list <- self$dM$contact_count_list %>>%
-      dplyr::select(-c(Latest)) %>>% # don't need these fields
+    self$qim_active_list <- active_list %>>%
       dplyr::left_join(self$dM$db$patients %>>%
                          dplyr::filter(InternalID %in% activeID) %>>%
                          dplyr::select(InternalID, DOB, Sex, Ethnicity),
@@ -133,11 +167,13 @@ list_qim_active <- function(dMeasure_obj,
 .reactive_event(dMeasureQIM, "qim_active_listR",
                 quote(
                   shiny::eventReactive(
-                    c(self$dM$contact_count_listR()), {
-                      # update if reactive version of dM$contact_count_list changes
-                      self$list_qim_active(lazy = TRUE)
-                      # re-calculates the counts
-                    })
+                    c(self$dM$contact_count_listR(),
+                      self$dM$appointments_filteredR(),
+                      self$qim_contactR()), {
+                        # update if reactive version of dM$contact_count_list changes
+                        self$list_qim_active(lazy = TRUE)
+                        # re-calculates the counts
+                      })
                 ))
 
 
@@ -151,8 +187,11 @@ list_qim_active <- function(dMeasure_obj,
 #' Filtered by date, and chosen clinicians
 #'
 #'
-#' @param dMeasure_obj dMeasure R6 object
-#' @param date_from start date. default is $date_a
+#' @param dMeasureQIM_obj dMeasureQIM R6 object
+#' @param contact patient list. default is $qim_contact.
+#'     TRUE chooses the 'contact' system $list_contact_count ('active' patients) from dMeasure object.
+#'     FALSE chooses the 'appointment' system $filter_appointments from dMeasure object.
+#' @param date_from start date. default is $date_a from dMeasure object
 #' @param date_to end date (inclusive). default is $date_b
 #' @param clinicians list of clinicians to view. default is $clinicians
 #' @param min_contact minimum number of contacts. default is $contact_min, initially one (1)
@@ -165,7 +204,8 @@ list_qim_active <- function(dMeasure_obj,
 #'
 #' @return dataframe of Patient (name), demographics, Count, Proportion
 #' @export
-report_qim_active <- function(dMeasure_obj,
+report_qim_active <- function(dMeasureQIM_obj,
+                              contact = NA,
                               date_from = NA,
                               date_to = NA,
                               clinicians = NA,
@@ -174,14 +214,15 @@ report_qim_active <- function(dMeasure_obj,
                               contact_type = NA,
                               demographic = NA,
                               lazy = FALSE) {
-  dMeasure_obj$report_qim_active(date_from, date_to, clinicians,
-                                 min_contact, min_date,
-                                 contact_type,
-                                 demographic,
-                                 lazy)
+  dMeasureQIM_obj$report_qim_active(contact, date_from, date_to, clinicians,
+                                    min_contact, min_date,
+                                    contact_type,
+                                    demographic,
+                                    lazy)
 }
 
-.public(dMeasureQIM, "report_qim_active", function(date_from = NA,
+.public(dMeasureQIM, "report_qim_active", function(contact = NA,
+                                                   date_from = NA,
                                                    date_to = NA,
                                                    clinicians = NA,
                                                    min_contact = NA,
@@ -190,6 +231,9 @@ report_qim_active <- function(dMeasure_obj,
                                                    demographic = NA,
                                                    lazy = FALSE) {
 
+  if (is.na(contact)) {
+    contact <- self$qim_contact
+  }
   if (is.na(date_from)) {
     date_from <- self$dM$date_a
   }
@@ -228,7 +272,7 @@ report_qim_active <- function(dMeasure_obj,
       data = list(date_from, date_to, clinicians))}
 
     if (!lazy) {
-      self$list_qim_active(date_from, date_to, clinicians,
+      self$list_qim_active(contact, date_from, date_to, clinicians,
                            min_contact, min_date, contact_type,
                            lazy)
     }
