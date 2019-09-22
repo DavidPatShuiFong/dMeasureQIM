@@ -1,0 +1,31 @@
+Package: dMeasureQIM
+Type: Package
+Title: Quality Improvement Measures for dMeasure
+Version: 0.1.1
+Author: David P.S. Fong
+Maintainer: David P.S. Fong <vkelim@bigpond.com>
+Description: R6 object (and methods) to report and list Quality Improvement Measures.
+    Used by (and requires) dMeasure to access Best Practice database.
+License: file LICENSE Mozilla Public License v2.0
+Encoding: UTF-8
+LazyData: true
+Imports:
+    dplyr,
+    dbplyr,
+    R6,
+    pipeR,
+    framinghamRiskEquation
+Suggests:
+    shiny
+RoxygenNote: 6.1.1
+Collate: 
+    'r6_helpers.R'
+    'QualityImprovementMeasures.R'
+    'QIM_15plus.R'
+    'QIM_65plus.R'
+    'QIM_active.R'
+    'QIM_copd.R'
+    'QIM_cst.R'
+    'QIM_cvdRisk.R'
+    'QIM_diabetes.R'
+    'utils_pipe.R'
