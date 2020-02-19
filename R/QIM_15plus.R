@@ -293,14 +293,14 @@ list_qim_15plus <- function(dMeasureQIM_obj,
                          dplyr::rename(AlcoholDate = Updated,
                                        AlcoholDescription = Description,
                                        AlcoholComment = Comment,
-                                       DaysPerWeek = DaysPerweek,
-                                       DrinksPerDay = DrinksPerday) %>>%
+                                       AlcoholDaysPerWeek = DaysPerweek,
+                                       AlcoholDrinksPerDay = DrinksPerday) %>>%
                          dplyr::collect() %>>%
                          dplyr::mutate(AlcoholDate = as.Date(AlcoholDate)) %>>%
                          # convert to R's standard date format
                          dplyr::mutate(AlcoholDate = dplyr::if_else(NonDrinker == "No" &
-                                                                      DaysPerWeek == 0 &
-                                                                      DrinksPerDay == 0,
+                                                                      AlcoholDaysPerWeek == 0 &
+                                                                      AlcoholDrinksPerDay == 0,
                                                                     as.Date(-Inf, origin = "1970-01-01"),
                                                                     as.Date(AlcoholDate))) %>>%
                          # if not marked as a 'non-drinker', but no drinks recorded
@@ -316,7 +316,7 @@ list_qim_15plus <- function(dMeasureQIM_obj,
       dplyr::select(Patient, InternalID, RecordNo, Sex, Ethnicity, MaritalStatus, Sexuality, Age5,
                     HeightDate, HeightValue, WeightDate, WeightValue, BMIDate, BMIValue, BMIClass,
                     WaistDate, WaistValue, SmokingDate, SmokingStatus,
-                    AlcoholDate, NonDrinker, DaysPerWeek, DrinksPerDay, AlcoholDescription,
+                    AlcoholDate, NonDrinker, AlcoholDaysPerWeek, AlcoholDrinksPerDay, AlcoholDescription,
                     PastAlcoholLevel, YearStarted, YearStopped, AlcoholComment) # drop the InternalID
 
     if (self$dM$Log) {self$dM$config_db$duration_log_db(log_id)}

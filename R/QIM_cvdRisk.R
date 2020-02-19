@@ -28,7 +28,7 @@ NULL
                    UrineAlbuminDate = as.Date(integer(0),
                                               origin = "1970-01-01"),
                    UrineAlbuminValue = double(),
-                   UrineAlbuminUnit = character(),
+                   UrineAlbuminUnits = character(),
                    PersistentProteinuria = logical(),
                    eGFRDate = as.Date(integer(0),
                                       origin = "1970-01-01"),
@@ -43,10 +43,7 @@ NULL
                    BPDate = as.Date(integer(0),
                                     origin = "1970-01-01"),
                    BP  = character(),
-                   Sex = character(), Ethnicity = character(),
-                   RecordNo = character(), MaritalStatus = character(), Sexuality = character(),
                    frisk = double(), friskHI = character(),
-                   Age5 = numeric(),
                    stringsAsFactors = FALSE))
 
 ##### QIM cardiovascular risk assessment methods ##########################################################
@@ -360,7 +357,7 @@ list_qim_cvdRisk <- function(dMeasureQIM_obj,
                    UrineAlbuminDate = as.Date(integer(0),
                                               origin = "1970-01-01"),
                    UrineAlbuminValue = double(),
-                   UrineAlbuminUnit = character(),
+                   UrineAlbuminUnits = character(),
                    PersistentProteinuria = logical(),
                    eGFRDate = as.Date(integer(0),
                                       origin = "1970-01-01"),
