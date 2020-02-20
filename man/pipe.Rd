@@ -7,6 +7,6 @@
 lhs \%>>\% rhs
 }
 \description{
-#' See \code{pipeR::\link[magrittr]{\%>>\%}} for details.
+#' See \code{pipeR::\link[pipeR]{\%>>\%}} for details.
 }
 \keyword{internal}

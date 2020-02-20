@@ -1,6 +1,6 @@
 #' Pipe operator pipeR
 #'
-#' #' See \code{pipeR::\link[magrittr]{\%>>\%}} for details.
+#' #' See \code{pipeR::\link[pipeR]{\%>>\%}} for details.
 #'
 #' @name %>>%
 #' @rdname pipe
