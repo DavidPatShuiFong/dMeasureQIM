@@ -4,9 +4,18 @@
 \alias{list_qim_cvdRisk}
 \title{List of patient with information to complete cardiovascular risk assessment}
 \usage{
-list_qim_cvdRisk(dMeasureQIM_obj, contact = NA, date_from = NA,
-  date_to = NA, clinicians = NA, min_contact = NA, min_date = NA,
-  contact_type = NA, ignoreOld = NA, lazy = FALSE)
+list_qim_cvdRisk(
+  dMeasureQIM_obj,
+  contact = NA,
+  date_from = NA,
+  date_to = NA,
+  clinicians = NA,
+  min_contact = NA,
+  min_date = NA,
+  contact_type = NA,
+  ignoreOld = NA,
+  lazy = FALSE
+)
 }
 \arguments{
 \item{dMeasureQIM_obj}{dMeasureQIM R6 object}
@@ -46,28 +55,28 @@ QIM 08.Proportion of patients with the necessary risk factors assessed
 
 required parameters
 
-Age, Ethnicity (especially ATSI status)
+ Age, Ethnicity (especially ATSI status)
 
-included - Age 45 to 74 years or older
+  included - Age 45 to 74 years or older
 
-OR Age 35 or older + ATSI
+   OR Age 35 or older + ATSI
     (ATSI 35+ optional - included by default - see $qim_cvdRisk_measure)
 
-Age 75+ excluded
+   Age 75+ excluded
     (Option to include - see $qim_cvdRisk_measure)
 
-Known cardiovascular disease
+ Known cardiovascular disease
     (optional - excluded by default - see $qim_cvdRisk_measure)
 
-Presence of diabetes. Diabetes and microalbuminuria
+ Presence of diabetes. Diabetes and microalbuminuria
 
-eGFR
+ eGFR
 
-previous diagnosis of familial hypercholesterolaemia
+ previous diagnosis of familial hypercholesterolaemia
 
-systolic blood pressure. Diastolic blood pressure
+ systolic blood pressure. Diastolic blood pressure
 
-Serum total cholesterol. Serum HDL cholesterol
+ Serum total cholesterol. Serum HDL cholesterol
 
 source : National Vascular Disease Prevention Alliance (NVDPA) guidelines
 https://www.cvdcheck.org.au/australian-absolute-cardiovascular-disease-risk-calculator

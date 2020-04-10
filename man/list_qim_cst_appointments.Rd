@@ -5,9 +5,18 @@
 \title{List of CST eligible patients with Quality Improvement Measures,
 in the contact list, with appointment details}
 \usage{
-list_qim_cst_appointments(dMeasureQIM_obj, contact = NA,
-  date_from = NA, date_to = NA, clinicians = NA, min_contact = NA,
-  min_date = NA, contact_type = NA, ignoreOld = NA, lazy = FALSE)
+list_qim_cst_appointments(
+  dMeasureQIM_obj,
+  contact = NA,
+  date_from = NA,
+  date_to = NA,
+  clinicians = NA,
+  min_contact = NA,
+  min_date = NA,
+  contact_type = NA,
+  ignoreOld = NA,
+  lazy = FALSE
+)
 }
 \arguments{
 \item{dMeasureQIM_obj}{dMeasureQIM R6 object}

@@ -4,10 +4,19 @@
 \alias{report_qim_65plus}
 \title{Age 65+ Quality Improvement Measure report, in the contact list}
 \usage{
-report_qim_65plus(dMeasureQIM_obj, contact = NA, date_from = NA,
-  date_to = NA, clinicians = NA, min_contact = NA,
-  contact_type = NA, min_date = NA, demographic = NA,
-  ignoreOld = NA, lazy = FALSE)
+report_qim_65plus(
+  dMeasureQIM_obj,
+  contact = NA,
+  date_from = NA,
+  date_to = NA,
+  clinicians = NA,
+  min_contact = NA,
+  contact_type = NA,
+  min_date = NA,
+  demographic = NA,
+  ignoreOld = NA,
+  lazy = FALSE
+)
 }
 \arguments{
 \item{dMeasureQIM_obj}{dMeasureQIM R6 object}

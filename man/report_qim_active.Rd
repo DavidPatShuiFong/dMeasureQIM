@@ -4,9 +4,18 @@
 \alias{report_qim_active}
 \title{Quality Improvement Measure report, in the contact list. Active contacts}
 \usage{
-report_qim_active(dMeasureQIM_obj, contact = NA, date_from = NA,
-  date_to = NA, clinicians = NA, min_contact = NA, min_date = NA,
-  contact_type = NA, demographic = NA, lazy = FALSE)
+report_qim_active(
+  dMeasureQIM_obj,
+  contact = NA,
+  date_from = NA,
+  date_to = NA,
+  clinicians = NA,
+  min_contact = NA,
+  min_date = NA,
+  contact_type = NA,
+  demographic = NA,
+  lazy = FALSE
+)
 }
 \arguments{
 \item{dMeasureQIM_obj}{dMeasureQIM R6 object}
