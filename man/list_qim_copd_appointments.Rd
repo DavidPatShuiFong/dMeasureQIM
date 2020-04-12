@@ -4,9 +4,18 @@
 \alias{list_qim_copd_appointments}
 \title{List of patient with chronic lung disease, with Quality Improvement Measures, in the contact list, with appointments}
 \usage{
-list_qim_copd_appointments(contact = NA, dMeasureQIM_obj,
-  date_from = NA, date_to = NA, clinicians = NA, min_contact = NA,
-  min_date = NA, contact_type = NA, ignoreOld = NA, lazy = FALSE)
+list_qim_copd_appointments(
+  contact = NA,
+  dMeasureQIM_obj,
+  date_from = NA,
+  date_to = NA,
+  clinicians = NA,
+  min_contact = NA,
+  min_date = NA,
+  contact_type = NA,
+  ignoreOld = NA,
+  lazy = FALSE
+)
 }
 \arguments{
 \item{contact}{patient list. default is $qim_contact.
