@@ -39,6 +39,7 @@ dMeasureQIM class
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-list_qim_15plus"></a>}}
+\if{latex}{\out{\hypertarget{method-list_qim_15plus}{}}}
 \subsection{Method \code{list_qim_15plus()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{dMeasureQIM$list_qim_15plus(
@@ -57,6 +58,7 @@ dMeasureQIM class
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-list_qim_15plus_appointments"></a>}}
+\if{latex}{\out{\hypertarget{method-list_qim_15plus_appointments}{}}}
 \subsection{Method \code{list_qim_15plus_appointments()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{dMeasureQIM$list_qim_15plus_appointments(
@@ -75,6 +77,7 @@ dMeasureQIM class
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-report_qim_15plus"></a>}}
+\if{latex}{\out{\hypertarget{method-report_qim_15plus}{}}}
 \subsection{Method \code{report_qim_15plus()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{dMeasureQIM$report_qim_15plus(
@@ -95,6 +98,7 @@ dMeasureQIM class
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-list_qim_65plus"></a>}}
+\if{latex}{\out{\hypertarget{method-list_qim_65plus}{}}}
 \subsection{Method \code{list_qim_65plus()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{dMeasureQIM$list_qim_65plus(
@@ -113,6 +117,7 @@ dMeasureQIM class
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-list_qim_65plus_appointments"></a>}}
+\if{latex}{\out{\hypertarget{method-list_qim_65plus_appointments}{}}}
 \subsection{Method \code{list_qim_65plus_appointments()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{dMeasureQIM$list_qim_65plus_appointments(
@@ -131,6 +136,7 @@ dMeasureQIM class
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-report_qim_65plus"></a>}}
+\if{latex}{\out{\hypertarget{method-report_qim_65plus}{}}}
 \subsection{Method \code{report_qim_65plus()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{dMeasureQIM$report_qim_65plus(
@@ -150,6 +156,7 @@ dMeasureQIM class
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-list_qim_active"></a>}}
+\if{latex}{\out{\hypertarget{method-list_qim_active}{}}}
 \subsection{Method \code{list_qim_active()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{dMeasureQIM$list_qim_active(
@@ -167,6 +174,7 @@ dMeasureQIM class
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-report_qim_active"></a>}}
+\if{latex}{\out{\hypertarget{method-report_qim_active}{}}}
 \subsection{Method \code{report_qim_active()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{dMeasureQIM$report_qim_active(
@@ -185,6 +193,7 @@ dMeasureQIM class
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-list_qim_copd"></a>}}
+\if{latex}{\out{\hypertarget{method-list_qim_copd}{}}}
 \subsection{Method \code{list_qim_copd()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{dMeasureQIM$list_qim_copd(
@@ -203,6 +212,7 @@ dMeasureQIM class
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-list_qim_copd_appointments"></a>}}
+\if{latex}{\out{\hypertarget{method-list_qim_copd_appointments}{}}}
 \subsection{Method \code{list_qim_copd_appointments()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{dMeasureQIM$list_qim_copd_appointments(
@@ -221,6 +231,7 @@ dMeasureQIM class
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-report_qim_copd"></a>}}
+\if{latex}{\out{\hypertarget{method-report_qim_copd}{}}}
 \subsection{Method \code{report_qim_copd()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{dMeasureQIM$report_qim_copd(
@@ -240,6 +251,7 @@ dMeasureQIM class
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-list_qim_cst"></a>}}
+\if{latex}{\out{\hypertarget{method-list_qim_cst}{}}}
 \subsection{Method \code{list_qim_cst()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{dMeasureQIM$list_qim_cst(
@@ -258,6 +270,7 @@ dMeasureQIM class
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-list_qim_cst_appointments"></a>}}
+\if{latex}{\out{\hypertarget{method-list_qim_cst_appointments}{}}}
 \subsection{Method \code{list_qim_cst_appointments()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{dMeasureQIM$list_qim_cst_appointments(
@@ -276,6 +289,7 @@ dMeasureQIM class
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-report_qim_cst"></a>}}
+\if{latex}{\out{\hypertarget{method-report_qim_cst}{}}}
 \subsection{Method \code{report_qim_cst()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{dMeasureQIM$report_qim_cst(
@@ -295,6 +309,7 @@ dMeasureQIM class
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-list_qim_cvdRisk"></a>}}
+\if{latex}{\out{\hypertarget{method-list_qim_cvdRisk}{}}}
 \subsection{Method \code{list_qim_cvdRisk()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{dMeasureQIM$list_qim_cvdRisk(
@@ -313,6 +328,7 @@ dMeasureQIM class
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-list_qim_cvdRisk_appointments"></a>}}
+\if{latex}{\out{\hypertarget{method-list_qim_cvdRisk_appointments}{}}}
 \subsection{Method \code{list_qim_cvdRisk_appointments()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{dMeasureQIM$list_qim_cvdRisk_appointments(
@@ -331,6 +347,7 @@ dMeasureQIM class
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-report_qim_cvdRisk"></a>}}
+\if{latex}{\out{\hypertarget{method-report_qim_cvdRisk}{}}}
 \subsection{Method \code{report_qim_cvdRisk()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{dMeasureQIM$report_qim_cvdRisk(
@@ -350,6 +367,7 @@ dMeasureQIM class
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-list_qim_diabetes"></a>}}
+\if{latex}{\out{\hypertarget{method-list_qim_diabetes}{}}}
 \subsection{Method \code{list_qim_diabetes()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{dMeasureQIM$list_qim_diabetes(
@@ -368,6 +386,7 @@ dMeasureQIM class
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-list_qim_diabetes_appointments"></a>}}
+\if{latex}{\out{\hypertarget{method-list_qim_diabetes_appointments}{}}}
 \subsection{Method \code{list_qim_diabetes_appointments()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{dMeasureQIM$list_qim_diabetes_appointments(
@@ -386,6 +405,7 @@ dMeasureQIM class
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-report_qim_diabetes"></a>}}
+\if{latex}{\out{\hypertarget{method-report_qim_diabetes}{}}}
 \subsection{Method \code{report_qim_diabetes()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{dMeasureQIM$report_qim_diabetes(
@@ -406,6 +426,7 @@ dMeasureQIM class
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-new"></a>}}
+\if{latex}{\out{\hypertarget{method-new}{}}}
 \subsection{Method \code{new()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{dMeasureQIM$new(dMeasure_obj)}\if{html}{\out{</div>}}
@@ -414,6 +435,7 @@ dMeasureQIM class
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{

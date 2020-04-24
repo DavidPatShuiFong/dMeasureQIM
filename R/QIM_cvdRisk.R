@@ -11,40 +11,49 @@
 NULL
 
 ##### QIM cardiovascular risk fields ############################################################
-.public(dMeasureQIM, "qim_cvdRisk_list",
-        data.frame(Patient = character(),
-                   InternalID = integer(),
-                   RecordNo = character(),
-                   Age5 = integer(),
-                   Sex = character(),
-                   Ethnicity = character(),
-                   MaritalStatus = character(),
-                   Sexuality = character(),
-                   CardiovascularDisease = logical(),
-                   Diabetes = logical(),
-                   SmokingDate = as.Date(integer(0),
-                                         origin = "1970-01-01"),
-                   SmokingStatus = character(),
-                   UrineAlbuminDate = as.Date(integer(0),
-                                              origin = "1970-01-01"),
-                   UrineAlbuminValue = double(),
-                   UrineAlbuminUnits = character(),
-                   PersistentProteinuria = logical(),
-                   eGFRDate = as.Date(integer(0),
-                                      origin = "1970-01-01"),
-                   eGFRValue = double(),
-                   eGFRUnits = character(),
-                   FamilialHypercholesterolaemia = logical(),
-                   LVH = logical(),
-                   CholesterolDate = as.Date(integer(0),
-                                             origin = "1970-01-01"),
-                   Cholesterol = double(), HDL = double(), LDL = double(),
-                   Triglycerides = double(), CholHDLRatio = double(),
-                   BPDate = as.Date(integer(0),
-                                    origin = "1970-01-01"),
-                   BP  = character(),
-                   frisk = double(), friskHI = character(),
-                   stringsAsFactors = FALSE))
+.public(
+  dMeasureQIM, "qim_cvdRisk_list",
+  data.frame(
+    Patient = character(),
+    InternalID = integer(),
+    RecordNo = character(),
+    Age5 = integer(),
+    Sex = character(),
+    Ethnicity = character(),
+    MaritalStatus = character(),
+    Sexuality = character(),
+    CardiovascularDisease = logical(),
+    Diabetes = logical(),
+    SmokingDate = as.Date(integer(0),
+      origin = "1970-01-01"
+    ),
+    SmokingStatus = character(),
+    UrineAlbuminDate = as.Date(integer(0),
+      origin = "1970-01-01"
+    ),
+    UrineAlbuminValue = double(),
+    UrineAlbuminUnits = character(),
+    PersistentProteinuria = logical(),
+    eGFRDate = as.Date(integer(0),
+      origin = "1970-01-01"
+    ),
+    eGFRValue = double(),
+    eGFRUnits = character(),
+    FamilialHypercholesterolaemia = logical(),
+    LVH = logical(),
+    CholesterolDate = as.Date(integer(0),
+      origin = "1970-01-01"
+    ),
+    Cholesterol = double(), HDL = double(), LDL = double(),
+    Triglycerides = double(), CholHDLRatio = double(),
+    BPDate = as.Date(integer(0),
+      origin = "1970-01-01"
+    ),
+    BP = character(),
+    frisk = double(), friskHI = character(),
+    stringsAsFactors = FALSE
+  )
+)
 
 ##### QIM cardiovascular risk assessment methods ##########################################################
 
@@ -134,10 +143,12 @@ list_qim_cvdRisk <- function(dMeasureQIM_obj,
                              contact_type = NA,
                              ignoreOld = NA,
                              lazy = FALSE) {
-  dMeasureQIM_obj$list_qim_cvdRisk(contact, date_from, date_to, clinicians,
-                                min_contact, min_date, contact_type,
-                                ignoreOld,
-                                lazy)
+  dMeasureQIM_obj$list_qim_cvdRisk(
+    contact, date_from, date_to, clinicians,
+    min_contact, min_date, contact_type,
+    ignoreOld,
+    lazy
+  )
 }
 
 .public(dMeasureQIM, "list_qim_cvdRisk", function(contact = NA,
@@ -149,7 +160,6 @@ list_qim_cvdRisk <- function(dMeasureQIM_obj,
                                                   contact_type = NA,
                                                   ignoreOld = NA,
                                                   lazy = FALSE) {
-
   if (is.na(contact)) {
     contact <- self$qim_contact
   }
@@ -189,34 +199,45 @@ list_qim_cvdRisk <- function(dMeasureQIM_obj,
 
   if (self$dM$emr_db$is_open()) {
     # only if EMR database is open
-    if (self$dM$Log) {log_id <- self$dM$config_db$write_log_db(
-      query = "cvdRisk_qim",
-      data = list(date_from, date_to, clinicians))}
+    if (self$dM$Log) {
+      log_id <- self$dM$config_db$write_log_db(
+        query = "cvdRisk_qim",
+        data = list(date_from, date_to, clinicians)
+      )
+    }
 
     if (contact) {
       if (!lazy) {
-        self$dM$list_contact_45_74(date_from, date_to, clinicians,
-                                   min_contact, min_date,
-                                   contact_type,
-                                   lazy)
+        self$dM$list_contact_45_74(
+          date_from, date_to, clinicians,
+          min_contact, min_date,
+          contact_type,
+          lazy
+        )
         if ("Include ATSI 35-44" %in% self$qim_cvdRisk_measure) {
-          self$dM$list_contact_ATSI_35_44(date_from, date_to, clinicians,
-                                          min_contact, min_date,
-                                          contact_type,
-                                          lazy)
+          self$dM$list_contact_ATSI_35_44(
+            date_from, date_to, clinicians,
+            min_contact, min_date,
+            contact_type,
+            lazy
+          )
         }
         if (!("Exclude 75+" %in% self$qim_cvdRisk_measure)) {
-          self$dM$list_contact_75plus(date_from, date_to, clinicians,
-                                      min_contact, min_date,
-                                      contact_type,
-                                      lazy)
+          self$dM$list_contact_75plus(
+            date_from, date_to, clinicians,
+            min_contact, min_date,
+            contact_type,
+            lazy
+          )
         }
       }
       cvdRisk_list <- self$dM$contact_45_74_list
       if ("Include ATSI 35-44" %in% self$qim_cvdRisk_measure) {
-        cvdRisk_list <- rbind(cvdRisk_list, self$dM$contact_ATSI_35_44_list)}
+        cvdRisk_list <- rbind(cvdRisk_list, self$dM$contact_ATSI_35_44_list)
+      }
       if (!("Exclude 75+" %in% self$qim_cvdRisk_measure)) {
-        cvdRisk_list <- rbind(cvdRisk_list, self$dM$contact_75plus_list)}
+        cvdRisk_list <- rbind(cvdRisk_list, self$dM$contact_75plus_list)
+      }
       cvdRisk_list <- dplyr::distinct(cvdRisk_list) %>>% # remove duplicates
         dplyr::select(-c(Count, Latest)) # don't need these fields
 
@@ -229,9 +250,11 @@ list_qim_cvdRisk <- function(dMeasureQIM_obj,
       }
       cvdRiskID <- c(self$dM$fortyfiveseventyfour_list(), -1)
       if ("Include ATSI 35-44" %in% self$qim_cvdRisk_measure) {
-        cvdRiskID <- c(cvdRiskID, self$dM$ATSI_35_44_list())}
+        cvdRiskID <- c(cvdRiskID, self$dM$ATSI_35_44_list())
+      }
       if (!("Exclude 75+" %in% self$qim_cvdRisk_measure)) {
-        cvdRiskID <- c(cvdRiskID, self$dM$seventyfiveplus_list())}
+        cvdRiskID <- c(cvdRiskID, self$dM$seventyfiveplus_list())
+      }
       cvdRiskID <- unique(cvdRiskID) # remove duplicates
       cvdRisk_list <- self$dM$db$patients %>>%
         dplyr::filter(InternalID %in% cvdRiskID) %>>%
@@ -263,117 +286,152 @@ list_qim_cvdRisk <- function(dMeasureQIM_obj,
       dplyr::mutate(CardiovascularDisease = InternalID %in% cvdID) %>>%
       dplyr::mutate(Diabetes = InternalID %in% diabetesID) %>>%
       dplyr::left_join(self$dM$smoking_obs(cvdRiskID,
-                                           date_from = obs_from, date_to = date_to),
-                       by = "InternalID",
-                       copy = TRUE) %>>%
+        date_from = obs_from, date_to = date_to
+      ),
+      by = "InternalID",
+      copy = TRUE
+      ) %>>%
       dplyr::left_join(self$dM$UrineAlbumin_obs(cvdRiskID,
-                                                date_from = obs_from, date_to = date_to),
-                       by = "InternalID",
-                       copy = TRUE) %>>%
+        date_from = obs_from, date_to = date_to
+      ),
+      by = "InternalID",
+      copy = TRUE
+      ) %>>%
       dplyr::left_join(self$dM$PersistentProteinuria_obs(cvdRiskID,
-                                                         date_from = obs_from, date_to = date_to),
-                       by = "InternalID",
-                       copy = TRUE) %>>%
+        date_from = obs_from, date_to = date_to
+      ),
+      by = "InternalID",
+      copy = TRUE
+      ) %>>%
       dplyr::left_join(self$dM$eGFR_obs(cvdRiskID,
-                                        date_from = obs_from,
-                                        date_to = date_to),
-                       by = "InternalID",
-                       copy = TRUE) %>>%
+        date_from = obs_from,
+        date_to = date_to
+      ),
+      by = "InternalID",
+      copy = TRUE
+      ) %>>%
       dplyr::mutate(FamilialHypercholesterolaemia = InternalID %in%
-                      fHypercholesterolaemiaID) %>>%
+        fHypercholesterolaemiaID) %>>%
       dplyr::mutate(LVH = InternalID %in%
-                      lvhID) %>>%
+        lvhID) %>>%
       dplyr::left_join(self$dM$Cholesterol_obs(cvdRiskID,
-                                               date_from = obs_from,
-                                               date_to = date_to),
-                       by = "InternalID",
-                       copy = TRUE) %>>%
+        date_from = obs_from,
+        date_to = date_to
+      ),
+      by = "InternalID",
+      copy = TRUE
+      ) %>>%
       dplyr::left_join(self$dM$BloodPressure_obs(cvdRiskID,
-                                                 date_from = obs_from,
-                                                 date_to = date_to),
-                       by = "InternalID",
-                       copy = TRUE) %>>%
+        date_from = obs_from,
+        date_to = date_to
+      ),
+      by = "InternalID",
+      copy = TRUE
+      ) %>>%
       dplyr::left_join(self$dM$db$patients %>>%
-                         dplyr::filter(InternalID %in% cvdRiskID) %>>%
-                         dplyr::select(InternalID, DOB, Sex, Ethnicity, RecordNo),
-                       by = "InternalID",
-                       copy = TRUE) %>>%
+        dplyr::filter(InternalID %in% cvdRiskID) %>>%
+        dplyr::select(InternalID, DOB, Sex, Ethnicity, RecordNo),
+      by = "InternalID",
+      copy = TRUE
+      ) %>>%
       dplyr::left_join(self$dM$db$clinical %>>%
-                         dplyr::filter(InternalID %in% cvdRiskID) %>>%
-                         dplyr::select(InternalID, MaritalStatus, Sexuality),
-                       by = "InternalID",
-                       copy = TRUE) %>>%
-      dplyr::mutate(Age = dMeasure::calc_age(as.Date(DOB), date_to)) %>>%
-      {dplyr::left_join(., framinghamRiskEquation::framingham_riskequation(.),
-                        by = "InternalID")} %>>%
+        dplyr::filter(InternalID %in% cvdRiskID) %>>%
+        dplyr::select(InternalID, MaritalStatus, Sexuality),
+      by = "InternalID",
+      copy = TRUE
+      ) %>>%
+      dplyr::mutate(Age = dMeasure::calc_age(as.Date(DOB), date_to)) %>>% {
+        dplyr::left_join(., framinghamRiskEquation::framingham_riskequation(.),
+          by = "InternalID"
+        )
+      } %>>%
       dplyr::mutate(Age5 = floor(Age / 5) * 5) %>>%
       # round age group to nearest 5 years
-      dplyr::select(Patient, InternalID, RecordNo, Sex, Ethnicity, MaritalStatus, Sexuality, Age5,
-                    CardiovascularDisease, Diabetes, SmokingDate, SmokingStatus,
-                    UrineAlbuminDate, UrineAlbuminValue, UrineAlbuminUnits,
-                    PersistentProteinuria, eGFRDate, eGFRValue, eGFRUnits,
-                    FamilialHypercholesterolaemia, LVH,
-                    CholesterolDate, Cholesterol, HDL, LDL, Triglycerides, CholHDLRatio,
-                    BPDate, BP, frisk, friskHI)
+      dplyr::select(
+        Patient, InternalID, RecordNo, Sex, Ethnicity, MaritalStatus, Sexuality, Age5,
+        CardiovascularDisease, Diabetes, SmokingDate, SmokingStatus,
+        UrineAlbuminDate, UrineAlbuminValue, UrineAlbuminUnits,
+        PersistentProteinuria, eGFRDate, eGFRValue, eGFRUnits,
+        FamilialHypercholesterolaemia, LVH,
+        CholesterolDate, Cholesterol, HDL, LDL, Triglycerides, CholHDLRatio,
+        BPDate, BP, frisk, friskHI
+      )
 
-    if (self$dM$Log) {self$dM$config_db$duration_log_db(log_id)}
+    if (self$dM$Log) {
+      self$dM$config_db$duration_log_db(log_id)
+    }
   }
 
   return(self$qim_cvdRisk_list)
 })
-.reactive_event(dMeasureQIM, "qim_cvdRisk_listR",
-                quote(
-                  shiny::eventReactive(
-                    c(self$dM$contact_45_74_listR(),
-                      self$dM$contact_75plus_listR(),
-                      self$dM$contact_ATSI_35_44_listR(),
-                      self$dM$appointments_filteredR(),
-                      self$qim_contactR(),
-                      self$qim_ignoreOldR(),
-                      self$qim_cvdRisk_measureR()), {
-                        self$list_qim_cvdRisk(lazy = TRUE)
-                      })
-                ))
+.reactive_event(
+  dMeasureQIM, "qim_cvdRisk_listR",
+  quote(
+    shiny::eventReactive(
+      c(
+        self$dM$contact_45_74_listR(),
+        self$dM$contact_75plus_listR(),
+        self$dM$contact_ATSI_35_44_listR(),
+        self$dM$appointments_filteredR(),
+        self$qim_contactR(),
+        self$qim_ignoreOldR(),
+        self$qim_cvdRisk_measureR()
+      ), {
+        self$list_qim_cvdRisk(lazy = TRUE)
+      }
+    )
+  )
+)
 
 
-.public(dMeasureQIM, "qim_cvdRisk_list_appointments",
-        data.frame(Patient = character(),
-                   AppointmentDate = as.Date(integer(0),
-                                             origin = "1970-01-01"),
-                   AppointmentTime = character(0),
-                   Provider = character(0),
-                   Status = character(0),
-                   RecordNo = character(),
-                   Age5 = integer(),
-                   Sex = character(),
-                   Ethnicity = character(),
-                   MaritalStatus = character(),
-                   Sexuality = character(),
-                   CardiovascularDisease = logical(),
-                   Diabetes = logical(),
-                   SmokingDate = as.Date(integer(0),
-                                         origin = "1970-01-01"),
-                   SmokingStatus = character(),
-                   UrineAlbuminDate = as.Date(integer(0),
-                                              origin = "1970-01-01"),
-                   UrineAlbuminValue = double(),
-                   UrineAlbuminUnits = character(),
-                   PersistentProteinuria = logical(),
-                   eGFRDate = as.Date(integer(0),
-                                      origin = "1970-01-01"),
-                   eGFRValue = double(),
-                   eGFRUnits = character(),
-                   FamilialHypercholesterolaemia = logical(),
-                   LVH = logical(),
-                   CholesterolDate = as.Date(integer(0),
-                                             origin = "1970-01-01"),
-                   Cholesterol = double(), HDL = double(), LDL = double(),
-                   Triglycerides = double(), CholHDLRatio = double(),
-                   BPDate = as.Date(integer(0),
-                                    origin = "1970-01-01"),
-                   BP  = character(),
-                   frisk = double(), friskHI = character(),
-                   stringsAsFactors = FALSE))
+.public(
+  dMeasureQIM, "qim_cvdRisk_list_appointments",
+  data.frame(
+    Patient = character(),
+    AppointmentDate = as.Date(integer(0),
+      origin = "1970-01-01"
+    ),
+    AppointmentTime = character(0),
+    Provider = character(0),
+    Status = character(0),
+    RecordNo = character(),
+    Age5 = integer(),
+    Sex = character(),
+    Ethnicity = character(),
+    MaritalStatus = character(),
+    Sexuality = character(),
+    CardiovascularDisease = logical(),
+    Diabetes = logical(),
+    SmokingDate = as.Date(integer(0),
+      origin = "1970-01-01"
+    ),
+    SmokingStatus = character(),
+    UrineAlbuminDate = as.Date(integer(0),
+      origin = "1970-01-01"
+    ),
+    UrineAlbuminValue = double(),
+    UrineAlbuminUnits = character(),
+    PersistentProteinuria = logical(),
+    eGFRDate = as.Date(integer(0),
+      origin = "1970-01-01"
+    ),
+    eGFRValue = double(),
+    eGFRUnits = character(),
+    FamilialHypercholesterolaemia = logical(),
+    LVH = logical(),
+    CholesterolDate = as.Date(integer(0),
+      origin = "1970-01-01"
+    ),
+    Cholesterol = double(), HDL = double(), LDL = double(),
+    Triglycerides = double(), CholHDLRatio = double(),
+    BPDate = as.Date(integer(0),
+      origin = "1970-01-01"
+    ),
+    BP = character(),
+    frisk = double(), friskHI = character(),
+    stringsAsFactors = FALSE
+  )
+)
 
 #' List of patient with information to complete cardiovascular risk assessment and appointment details
 #'
@@ -440,10 +498,12 @@ list_qim_cvdRisk_appointments <- function(dMeasureQIM_obj,
                                           contact_type = NA,
                                           ignoreOld = NA,
                                           lazy = FALSE) {
-  dMeasureQIM_obj$list_qim_cvdRisk_appointments(contact, date_from, date_to, clinicians,
-                                             min_contact, min_date, contact_type,
-                                             ignoreOld,
-                                             lazy)
+  dMeasureQIM_obj$list_qim_cvdRisk_appointments(
+    contact, date_from, date_to, clinicians,
+    min_contact, min_date, contact_type,
+    ignoreOld,
+    lazy
+  )
 }
 
 .public(dMeasureQIM, "list_qim_cvdRisk_appointments", function(contact = NA,
@@ -455,7 +515,6 @@ list_qim_cvdRisk_appointments <- function(dMeasureQIM_obj,
                                                                contact_type = NA,
                                                                ignoreOld = NA,
                                                                lazy = FALSE) {
-
   if (is.na(contact)) {
     contact <- self$qim_contact
   }
@@ -495,44 +554,63 @@ list_qim_cvdRisk_appointments <- function(dMeasureQIM_obj,
 
   if (self$dM$emr_db$is_open()) {
     # only if EMR database is open
-    if (self$dM$Log) {log_id <- self$dM$config_db$write_log_db(
-      query = "cvdRisk_qim_appointments",
-      data = list(date_from, date_to, clinicians))}
+    if (self$dM$Log) {
+      log_id <- self$dM$config_db$write_log_db(
+        query = "cvdRisk_qim_appointments",
+        data = list(date_from, date_to, clinicians)
+      )
+    }
 
     if (!lazy) {
-      self$list_qim_cvdRisk(contact, date_from, date_to, clinicians,
-                            min_contact, min_date,
-                            contact_type, ignoreOld,
-                            lazy)
+      self$list_qim_cvdRisk(
+        contact, date_from, date_to, clinicians,
+        min_contact, min_date,
+        contact_type, ignoreOld,
+        lazy
+      )
       self$dM$filter_appointments_time(date_from, date_to, clinicians,
-                                       lazy = lazy)
+        lazy = lazy
+      )
     }
 
     self$qim_cvdRisk_list_appointments <- self$qim_cvdRisk_list %>>%
       dplyr::left_join(self$dM$appointments_filtered_time,
-                       by = c("InternalID", "Patient"),
-                       copy = TRUE) %>>%
-      dplyr::select(Patient, RecordNo, AppointmentDate, AppointmentTime,
-                    Provider, Status, tidyselect::everything())
+        by = c("InternalID", "Patient"),
+        copy = TRUE
+      ) %>>%
+      dplyr::select(
+        Patient, RecordNo, AppointmentDate, AppointmentTime,
+        Provider, Status, tidyselect::everything()
+      )
 
-    if (self$dM$Log) {self$dM$config_db$duration_log_db(log_id)}
+    if (self$dM$Log) {
+      self$dM$config_db$duration_log_db(log_id)
+    }
   }
 
   return(self$qim_cvdRisk_list_appointments)
 })
-.reactive_event(dMeasureQIM, "qim_cvdRisk_list_appointmentsR",
-                quote(
-                  shiny::eventReactive(
-                    c(self$qim_cvdRisk_listR(),
-                      self$dM$appointments_filtered_timeR()), {
-                        self$list_qim_cvdRisk_appointments(lazy = TRUE)
-                      })
-                ))
+.reactive_event(
+  dMeasureQIM, "qim_cvdRisk_list_appointmentsR",
+  quote(
+    shiny::eventReactive(
+      c(
+        self$qim_cvdRisk_listR(),
+        self$dM$appointments_filtered_timeR()
+      ), {
+        self$list_qim_cvdRisk_appointments(lazy = TRUE)
+      }
+    )
+  )
+)
 
 
-.public(dMeasureQIM, "qim_cvdRisk_report",
-        data.frame(NULL,
-                   stringsAsFactors = FALSE))
+.public(
+  dMeasureQIM, "qim_cvdRisk_report",
+  data.frame(NULL,
+    stringsAsFactors = FALSE
+  )
+)
 #' Cardiovascular disease risk Quality Improvement Measure report, in the contact list
 #'
 #' Filtered by date, and chosen clinicians
@@ -573,10 +651,12 @@ report_qim_cvdRisk <- function(dMeasureQIM_obj,
                                demographic = NA,
                                ignoreOld = NA,
                                lazy = FALSE) {
-  dMeasureQIM_obj$report_qim_cvdRisk(contact, date_from, date_to, clinicians,
-                                  min_contact, min_date, contact_type,
-                                  demographic,
-                                  ignoreOld, lazy)
+  dMeasureQIM_obj$report_qim_cvdRisk(
+    contact, date_from, date_to, clinicians,
+    min_contact, min_date, contact_type,
+    demographic,
+    ignoreOld, lazy
+  )
 }
 .public(dMeasureQIM, "report_qim_cvdRisk", function(contact = NA,
                                                     date_from = NA,
@@ -588,7 +668,6 @@ report_qim_cvdRisk <- function(dMeasureQIM_obj,
                                                     demographic = NA,
                                                     ignoreOld = NA,
                                                     lazy = FALSE) {
-
   if (is.na(contact)) {
     contact <- self$qim_contact
   }
@@ -628,14 +707,19 @@ report_qim_cvdRisk <- function(dMeasureQIM_obj,
 
   if (self$dM$emr_db$is_open()) {
     # only if EMR database is open
-    if (self$dM$Log) {log_id <- self$dM$config_db$write_log_db(
-      query = "qim_cvdRisk_report",
-      data = list(date_from, date_to, clinicians))}
+    if (self$dM$Log) {
+      log_id <- self$dM$config_db$write_log_db(
+        query = "qim_cvdRisk_report",
+        data = list(date_from, date_to, clinicians)
+      )
+    }
 
     if (!lazy) {
-      self$list_qim_cvdRisk(contact, date_from, date_to, clinicians,
-                            min_contact, min_date, contact_type,
-                            ignoreOld, lazy)
+      self$list_qim_cvdRisk(
+        contact, date_from, date_to, clinicians,
+        min_contact, min_date, contact_type,
+        ignoreOld, lazy
+      )
     }
 
     report_groups <- c(demographic, "CVDriskDone")
@@ -650,25 +734,33 @@ report_qim_cvdRisk <- function(dMeasureQIM_obj,
       dplyr::group_by_at(report_groups) %>>%
       # group_by_at takes a vector of strings
       dplyr::summarise(n = n()) %>>%
-      dplyr::ungroup() %>>%
-      {dplyr::select(., intersect(names(.), c(report_groups, "n")))} %>>%
+      dplyr::ungroup() %>>% {
+        dplyr::select(., intersect(names(.), c(report_groups, "n")))
+      } %>>%
       # if no rows, then grouping will not remove unnecessary columns
       dplyr::mutate(Proportion = prop.table(n))
     # proportion (an alternative would be proportion = n / sum(n))
 
-    if (self$dM$Log) {self$dM$config_db$duration_log_db(log_id)}
+    if (self$dM$Log) {
+      self$dM$config_db$duration_log_db(log_id)
+    }
   }
 
   return(self$qim_cvdRisk_report)
 })
-.reactive_event(dMeasureQIM, "qim_cvdRisk_reportR",
-                quote(
-                  shiny::eventReactive(
-                    c(self$qim_cvdRisk_listR(),
-                      self$qim_demographicGroupR()), {
-                        # update if change in demographic grouping
-                        # or change in list
-                        self$report_qim_cvdRisk(lazy = TRUE)
-                        # re-calculates the counts
-                      })
-                ))
+.reactive_event(
+  dMeasureQIM, "qim_cvdRisk_reportR",
+  quote(
+    shiny::eventReactive(
+      c(
+        self$qim_cvdRisk_listR(),
+        self$qim_demographicGroupR()
+      ), {
+        # update if change in demographic grouping
+        # or change in list
+        self$report_qim_cvdRisk(lazy = TRUE)
+        # re-calculates the counts
+      }
+    )
+  )
+)

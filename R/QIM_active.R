@@ -12,16 +12,20 @@ NULL
 
 
 ##### QIM active fields #############################################################
-.public(dMeasureQIM, "qim_active_list",
-        data.frame(Patient = character(),
-                   RecordNo = character(),
-                   Age5 = integer(),
-                   Sex = character(),
-                   Ethnicity = character(),
-                   MaritalStatus = character(),
-                   Sexuality = character(),
-                   Count = integer(),
-                   stringsAsFactors = FALSE))
+.public(
+  dMeasureQIM, "qim_active_list",
+  data.frame(
+    Patient = character(),
+    RecordNo = character(),
+    Age5 = integer(),
+    Sex = character(),
+    Ethnicity = character(),
+    MaritalStatus = character(),
+    Sexuality = character(),
+    Count = integer(),
+    stringsAsFactors = FALSE
+  )
+)
 # filtered by chosen dates and clinicians and number of contacts
 
 ##### QIM active methods ##########################################################
@@ -52,9 +56,11 @@ list_qim_active <- function(dMeasureQIM_obj,
                             min_date = NA,
                             contact_type = NA,
                             lazy = FALSE) {
-  dMeasureQIM_obj$list_qim_active(contact, date_from, date_to, clinicians,
-                                  min_contact, min_date, contact_type,
-                                  lazy)
+  dMeasureQIM_obj$list_qim_active(
+    contact, date_from, date_to, clinicians,
+    min_contact, min_date, contact_type,
+    lazy
+  )
 }
 .public(dMeasureQIM, "list_qim_active", function(contact = NA,
                                                  date_from = NA,
@@ -64,7 +70,6 @@ list_qim_active <- function(dMeasureQIM_obj,
                                                  min_date = NA,
                                                  contact_type = NA,
                                                  lazy = FALSE) {
-
   if (is.na(contact)) {
     contact <- self$qim_contact
   }
@@ -98,17 +103,21 @@ list_qim_active <- function(dMeasureQIM_obj,
 
   if (self$dM$emr_db$is_open()) {
     # only if EMR database is open
-    if (self$dM$Log) {log_id <- self$dM$config_db$write_log_db(
-      query = "active_qim",
-      data = list(date_from, date_to, clinicians))}
+    if (self$dM$Log) {
+      log_id <- self$dM$config_db$write_log_db(
+        query = "active_qim",
+        data = list(date_from, date_to, clinicians)
+      )
+    }
 
     if (contact) {
       # choose from 'contact' lists, which are based on appointments, billings or services
       if (!lazy) {
-        self$dM$list_contact_count(date_from, date_to, clinicians,
-                                   min_contact, min_date, contact_type,
-                                   lazy)
-
+        self$dM$list_contact_count(
+          date_from, date_to, clinicians,
+          min_contact, min_date, contact_type,
+          lazy
+        )
       }
       active_list <- self$dM$contact_count_list %>>%
         dplyr::select(-c(Latest)) # don't need this field. keeps 'InternalID' and 'Count'
@@ -126,9 +135,11 @@ list_qim_active <- function(dMeasureQIM_obj,
         dplyr::summarise(Count = count()) %>>%
         # 'collapses' the InternalIDs, counting the number of appointments
         dplyr::ungroup()
-      activeID <- c(active_df %>>%
-                      dplyr::pull(InternalID),
-                    -1)
+      activeID <- c(
+        active_df %>>%
+          dplyr::pull(InternalID),
+        -1
+      )
       active_list <- self$dM$db$patients %>>%
         dplyr::filter(InternalID %in% activeID) %>>%
         dplyr::select(Firstname, Surname, InternalID) %>>%
@@ -141,45 +152,58 @@ list_qim_active <- function(dMeasureQIM_obj,
 
     self$qim_active_list <- active_list %>>%
       dplyr::left_join(self$dM$db$patients %>>%
-                         dplyr::filter(InternalID %in% activeID) %>>%
-                         dplyr::select(InternalID, DOB, Sex, Ethnicity),
-                       by = "InternalID",
-                       copy = TRUE) %>>%
+        dplyr::filter(InternalID %in% activeID) %>>%
+        dplyr::select(InternalID, DOB, Sex, Ethnicity),
+      by = "InternalID",
+      copy = TRUE
+      ) %>>%
       dplyr::left_join(self$dM$db$clinical %>>%
-                         dplyr::filter(InternalID %in% activeID) %>>%
-                         dplyr::select(InternalID, MaritalStatus, Sexuality),
-                       by = "InternalID",
-                       copy = TRUE) %>>%
+        dplyr::filter(InternalID %in% activeID) %>>%
+        dplyr::select(InternalID, MaritalStatus, Sexuality),
+      by = "InternalID",
+      copy = TRUE
+      ) %>>%
       dplyr::mutate(Age5 = floor(dMeasure::calc_age(as.Date(DOB), date_to) / 5) * 5) %>>%
       # round age group to nearest 5 years
       dplyr::select(-DOB) %>>%
       dplyr::left_join(self$dM$db$patients %>>%
-                         dplyr::filter(InternalID %in% activeID) %>>%
-                         dplyr::select(InternalID, RecordNo),
-                       by = "InternalID", # add RecordNo
-                       copy = TRUE)
+        dplyr::filter(InternalID %in% activeID) %>>%
+        dplyr::select(InternalID, RecordNo),
+      by = "InternalID", # add RecordNo
+      copy = TRUE
+      )
 
-    if (self$dM$Log) {self$dM$config_db$duration_log_db(log_id)}
+    if (self$dM$Log) {
+      self$dM$config_db$duration_log_db(log_id)
+    }
   }
 
   return(self$qim_active_list)
 })
-.reactive_event(dMeasureQIM, "qim_active_listR",
-                quote(
-                  shiny::eventReactive(
-                    c(self$dM$contact_count_listR(),
-                      self$dM$appointments_filteredR(),
-                      self$qim_contactR()), {
-                        # update if reactive version of dM$contact_count_list changes
-                        self$list_qim_active(lazy = TRUE)
-                        # re-calculates the counts
-                      })
-                ))
+.reactive_event(
+  dMeasureQIM, "qim_active_listR",
+  quote(
+    shiny::eventReactive(
+      c(
+        self$dM$contact_count_listR(),
+        self$dM$appointments_filteredR(),
+        self$qim_contactR()
+      ), {
+        # update if reactive version of dM$contact_count_list changes
+        self$list_qim_active(lazy = TRUE)
+        # re-calculates the counts
+      }
+    )
+  )
+)
 
 
-.public(dMeasureQIM, "qim_active_report",
-        data.frame(NULL,
-                   stringsAsFactors = FALSE))
+.public(
+  dMeasureQIM, "qim_active_report",
+  data.frame(NULL,
+    stringsAsFactors = FALSE
+  )
+)
 # empty data frame, number of columns dynamically change
 
 #' Quality Improvement Measure report, in the contact list. Active contacts
@@ -214,11 +238,13 @@ report_qim_active <- function(dMeasureQIM_obj,
                               contact_type = NA,
                               demographic = NA,
                               lazy = FALSE) {
-  dMeasureQIM_obj$report_qim_active(contact, date_from, date_to, clinicians,
-                                    min_contact, min_date,
-                                    contact_type,
-                                    demographic,
-                                    lazy)
+  dMeasureQIM_obj$report_qim_active(
+    contact, date_from, date_to, clinicians,
+    min_contact, min_date,
+    contact_type,
+    demographic,
+    lazy
+  )
 }
 
 .public(dMeasureQIM, "report_qim_active", function(contact = NA,
@@ -230,7 +256,6 @@ report_qim_active <- function(dMeasureQIM_obj,
                                                    contact_type = NA,
                                                    demographic = NA,
                                                    lazy = FALSE) {
-
   if (is.na(contact)) {
     contact <- self$qim_contact
   }
@@ -267,14 +292,19 @@ report_qim_active <- function(dMeasureQIM_obj,
 
   if (self$dM$emr_db$is_open()) {
     # only if EMR database is open
-    if (self$dM$Log) {log_id <- self$dM$config_db$write_log_db(
-      query = "qim_active_report",
-      data = list(date_from, date_to, clinicians))}
+    if (self$dM$Log) {
+      log_id <- self$dM$config_db$write_log_db(
+        query = "qim_active_report",
+        data = list(date_from, date_to, clinicians)
+      )
+    }
 
     if (!lazy) {
-      self$list_qim_active(contact, date_from, date_to, clinicians,
-                           min_contact, min_date, contact_type,
-                           lazy)
+      self$list_qim_active(
+        contact, date_from, date_to, clinicians,
+        min_contact, min_date, contact_type,
+        lazy
+      )
     }
 
     report_groups <- c(demographic, "")
@@ -285,25 +315,33 @@ report_qim_active <- function(dMeasureQIM_obj,
       dplyr::group_by_at(report_groups) %>>%
       # group_by_at takes a vector of strings
       dplyr::summarise(n = n()) %>>%
-      dplyr::ungroup() %>>%
-      {dplyr::select(., intersect(names(.), c(report_groups, "n")))} %>>%
+      dplyr::ungroup() %>>% {
+        dplyr::select(., intersect(names(.), c(report_groups, "n")))
+      } %>>%
       # if no rows, then grouping will not remove unnecessary columns
       dplyr::mutate(Proportion = prop.table(n))
     # proportion (an alternative would be proportion = n / sum(n))
 
-    if (self$dM$Log) {self$dM$config_db$duration_log_db(log_id)}
+    if (self$dM$Log) {
+      self$dM$config_db$duration_log_db(log_id)
+    }
   }
 
   return(self$qim_active_report)
 })
-.reactive_event(dMeasureQIM, "qim_active_reportR",
-                quote(
-                  shiny::eventReactive(
-                    c(self$qim_active_listR(),
-                      self$qim_demographicGroupR()), {
-                        # uupdate if change in active list,
-                        # or change in demographic grouping
-                        self$report_qim_active(lazy = TRUE)
-                        # re-calculates the counts
-                      })
-                ))
+.reactive_event(
+  dMeasureQIM, "qim_active_reportR",
+  quote(
+    shiny::eventReactive(
+      c(
+        self$qim_active_listR(),
+        self$qim_demographicGroupR()
+      ), {
+        # uupdate if change in active list,
+        # or change in demographic grouping
+        self$report_qim_active(lazy = TRUE)
+        # re-calculates the counts
+      }
+    )
+  )
+)
