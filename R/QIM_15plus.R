@@ -229,12 +229,14 @@ list_qim_15plus <- function(dMeasureQIM_obj,
       ) %>>%
       # round age group to lower 5 year group
       dplyr::left_join(self$dM$db$observations %>>%
-        dplyr::filter(InternalID %in% fifteen_plusID &&
-          (ObservationCode %in% c(9, 7, 8, 17)) &&
+        dplyr::filter(
+          InternalID %in% fifteen_plusID,
+          ObservationCode %in% c(9, 7, 8, 17),
           # 9 is 'BMI', 7 is 'Height',
           # 8 is 'Weight' and  17 is'Waist'
           # the string is in 'ObservationName'
-          ObservationDate <= date_to) %>>%
+          ObservationDate <= date_to
+        ) %>>%
         dplyr::group_by(InternalID, ObservationCode) %>>%
         dplyr::filter(ObservationDate == max(ObservationDate, na.rm = TRUE)) %>>%
         # the most recent observation by InternalID and ObservationCode
@@ -338,8 +340,10 @@ list_qim_15plus <- function(dMeasureQIM_obj,
         copy = TRUE
       ) %>>%
       dplyr::left_join(self$dM$db$alcohol %>>%
-        dplyr::filter(InternalID %in% fifteen_plusID &&
-          Updated <= date_to) %>>%
+        dplyr::filter(
+          InternalID %in% fifteen_plusID,
+          Updated <= date_to
+          ) %>>%
         dplyr::rename(
           AlcoholDate = Updated,
           AlcoholDescription = Description,

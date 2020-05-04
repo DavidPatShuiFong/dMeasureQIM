@@ -169,9 +169,11 @@ list_qim_cst <- function(dMeasureQIM_obj,
             dplyr::collect(),
           self$dM$db$investigations %>>%
             # some reports might be in investigations e.g. scanned in
-            dplyr::filter(InternalID %in% screen_cst_id &&
-              (TestName %like% "%CERVICAL SCREENING%" ||
-                TestName %like% "%PAP SMEAR%")) %>>%
+            dplyr::filter(
+              InternalID %in% screen_cst_id,
+              (TestName %like% "%CERVICAL SCREENING%" |
+                  TestName %like% "%PAP SMEAR%")
+            ) %>>%
             dplyr::rename(
               TestDate = Reported,
               TestName = TestName

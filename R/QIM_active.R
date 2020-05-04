@@ -42,6 +42,7 @@ NULL
 #' @param clinicians list of clinicians to view. default is $clinicians
 #' @param min_contact minimum number of contacts. default is $contact_min, initially one (1)
 #' @param min_date most recent contact must be at least min_date. default is $contact_minDate, initially -Inf
+#' @param max_date most recent contact at most max_date. default is $contact_maxDate
 #' @param contact_type contact types which are accepted. default is $contact_type
 #' @param lazy recalculate the diabetes contact list?
 #'
@@ -54,11 +55,12 @@ list_qim_active <- function(dMeasureQIM_obj,
                             clinicians = NA,
                             min_contact = NA,
                             min_date = NA,
+                            max_date = NA,
                             contact_type = NA,
                             lazy = FALSE) {
   dMeasureQIM_obj$list_qim_active(
     contact, date_from, date_to, clinicians,
-    min_contact, min_date, contact_type,
+    min_contact, min_date, max_date, contact_type,
     lazy
   )
 }
@@ -68,6 +70,7 @@ list_qim_active <- function(dMeasureQIM_obj,
                                                  clinicians = NA,
                                                  min_contact = NA,
                                                  min_date = NA,
+                                                 max_date = NA,
                                                  contact_type = NA,
                                                  lazy = FALSE) {
   if (is.na(contact)) {
@@ -90,6 +93,9 @@ list_qim_active <- function(dMeasureQIM_obj,
   }
   if (is.na(min_date)) {
     min_date <- self$dM$contact_minDate
+  }
+  if (is.na(max_date)) {
+    max_date <- self$dM$contact_maxDate
   }
   if (is.na(contact_type[[1]])) {
     contact_type <- self$dM$contact_type
@@ -114,9 +120,14 @@ list_qim_active <- function(dMeasureQIM_obj,
       # choose from 'contact' lists, which are based on appointments, billings or services
       if (!lazy) {
         self$dM$list_contact_count(
-          date_from, date_to, clinicians,
-          min_contact, min_date, contact_type,
-          lazy
+          date_from = date_from,
+          date_to = date_to,
+          clinicians = clinicians,
+          min_contact = min_contact,
+          min_date = min_date,
+          max_date = max_date,
+          contact_type = contact_type,
+          lazy = lazy
         )
       }
       active_list <- self$dM$contact_count_list %>>%
