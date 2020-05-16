@@ -1,5 +1,12 @@
 Changelog
 
+version 0.1.5, 16th May 2020
+============================
+
+* add max_date to
+  report_qim_active,
+  list_qim_*, list_qim_*_appointments, report_qim_*
+
 version 0.1.4, 3rd May 2020
 ===========================
 

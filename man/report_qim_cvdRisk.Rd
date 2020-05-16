@@ -13,6 +13,7 @@ report_qim_cvdRisk(
   min_contact = NA,
   contact_type = NA,
   min_date = NA,
+  max_date = NA,
   demographic = NA,
   ignoreOld = NA,
   lazy = FALSE
@@ -38,6 +39,8 @@ report_qim_cvdRisk(
 \item{contact_type}{contact types which are accepted. default is $contact_type}
 
 \item{min_date}{most recent contact must be at least min_date. default is $contact_minDate, initially -Inf}
+
+\item{max_date}{most recent contact at most max_date. default is $contact_maxDate}
 
 \item{demographic}{demographic groupings for reporting.
 if not supplied, reads $qim_demographicGroup

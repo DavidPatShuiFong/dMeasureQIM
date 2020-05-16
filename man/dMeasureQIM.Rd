@@ -49,6 +49,7 @@ dMeasureQIM class
   clinicians = NA,
   min_contact = NA,
   min_date = NA,
+  max_date = NA,
   contact_type = NA,
   ignoreOld = NA,
   lazy = FALSE
@@ -68,6 +69,7 @@ dMeasureQIM class
   clinicians = NA,
   min_contact = NA,
   min_date = NA,
+  max_date = NA,
   contact_type = NA,
   ignoreOld = NA,
   lazy = FALSE
@@ -87,6 +89,7 @@ dMeasureQIM class
   clinicians = NA,
   min_contact = NA,
   min_date = NA,
+  max_date = NA,
   contact_type = NA,
   demographic = NA,
   measure = NA,
@@ -108,6 +111,7 @@ dMeasureQIM class
   clinicians = NA,
   min_contact = NA,
   min_date = NA,
+  max_date = NA,
   contact_type = NA,
   ignoreOld = NA,
   lazy = FALSE
@@ -127,6 +131,7 @@ dMeasureQIM class
   clinicians = NA,
   min_contact = NA,
   min_date = NA,
+  max_date = NA,
   contact_type = NA,
   ignoreOld = NA,
   lazy = FALSE
@@ -146,6 +151,7 @@ dMeasureQIM class
   clinicians = NA,
   min_contact = NA,
   min_date = NA,
+  max_date = NA,
   contact_type = NA,
   demographic = NA,
   ignoreOld = NA,
@@ -185,6 +191,7 @@ dMeasureQIM class
   clinicians = NA,
   min_contact = NA,
   min_date = NA,
+  max_date = NA,
   contact_type = NA,
   demographic = NA,
   lazy = FALSE
@@ -204,6 +211,7 @@ dMeasureQIM class
   clinicians = NA,
   min_contact = NA,
   min_date = NA,
+  max_date = NA,
   contact_type = NA,
   ignoreOld = NA,
   lazy = FALSE
@@ -223,6 +231,7 @@ dMeasureQIM class
   clinicians = NA,
   min_contact = NA,
   min_date = NA,
+  max_date = NA,
   contact_type = NA,
   ignoreOld = NA,
   lazy = FALSE
@@ -242,6 +251,7 @@ dMeasureQIM class
   clinicians = NA,
   min_contact = NA,
   min_date = NA,
+  max_date = NA,
   contact_type = NA,
   demographic = NA,
   ignoreOld = NA,
@@ -262,6 +272,7 @@ dMeasureQIM class
   clinicians = NA,
   min_contact = NA,
   min_date = NA,
+  max_date = NA,
   contact_type = NA,
   ignoreOld = NA,
   lazy = FALSE
@@ -281,6 +292,7 @@ dMeasureQIM class
   clinicians = NA,
   min_contact = NA,
   min_date = NA,
+  max_date = NA,
   contact_type = NA,
   ignoreOld = NA,
   lazy = FALSE
@@ -300,6 +312,7 @@ dMeasureQIM class
   clinicians = NA,
   min_contact = NA,
   min_date = NA,
+  max_date = NA,
   contact_type = NA,
   demographic = NA,
   ignoreOld = NA,
@@ -320,6 +333,7 @@ dMeasureQIM class
   clinicians = NA,
   min_contact = NA,
   min_date = NA,
+  max_date = NA,
   contact_type = NA,
   ignoreOld = NA,
   lazy = FALSE
@@ -339,6 +353,7 @@ dMeasureQIM class
   clinicians = NA,
   min_contact = NA,
   min_date = NA,
+  max_date = NA,
   contact_type = NA,
   ignoreOld = NA,
   lazy = FALSE
@@ -358,6 +373,7 @@ dMeasureQIM class
   clinicians = NA,
   min_contact = NA,
   min_date = NA,
+  max_date = NA,
   contact_type = NA,
   demographic = NA,
   ignoreOld = NA,
@@ -378,6 +394,7 @@ dMeasureQIM class
   clinicians = NA,
   min_contact = NA,
   min_date = NA,
+  max_date = NA,
   contact_type = NA,
   ignoreOld = NA,
   lazy = FALSE
@@ -397,6 +414,7 @@ dMeasureQIM class
   clinicians = NA,
   min_contact = NA,
   min_date = NA,
+  max_date = NA,
   contact_type = NA,
   ignoreOld = NA,
   lazy = FALSE
@@ -416,6 +434,7 @@ dMeasureQIM class
   clinicians = NA,
   min_contact = NA,
   min_date = NA,
+  max_date = NA,
   contact_type = NA,
   demographic = NA,
   measure = NA,
