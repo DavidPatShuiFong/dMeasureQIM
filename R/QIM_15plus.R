@@ -81,6 +81,7 @@ NULL
 #' @param clinicians list of clinicians to view. default is $clinicians
 #' @param min_contact minimum number of contacts. default is $contact_min, initially one (1)
 #' @param min_date most recent contact must be at least min_date. default is $contact_minDate, initially -Inf
+#' @param max_date most recent contact at most max_date. default is $contact_maxDate
 #' @param contact_type contact types which are accepted. default is $contact_type
 #' @param ignoreOld ignore results/observatioins that don't qualify for quality improvement measures
 #'  if not supplied, reads $qim_ignoreOld
@@ -95,12 +96,13 @@ list_qim_15plus <- function(dMeasureQIM_obj,
                             clinicians = NA,
                             min_contact = NA,
                             min_date = NA,
+                            max_date = NA,
                             contact_type = NA,
                             ignoreOld = NA,
                             lazy = FALSE) {
   dMeasureQIM_obj$list_qim_15plus(
     contact, date_from, date_to, clinicians,
-    min_contact, min_date, contact_type,
+    min_contact, min_date, max_date, contact_type,
     ignoreOld,
     lazy
   )
@@ -112,6 +114,7 @@ list_qim_15plus <- function(dMeasureQIM_obj,
                                                  clinicians = NA,
                                                  min_contact = NA,
                                                  min_date = NA,
+                                                 max_date = NA,
                                                  contact_type = NA,
                                                  ignoreOld = NA,
                                                  lazy = FALSE) {
@@ -135,6 +138,9 @@ list_qim_15plus <- function(dMeasureQIM_obj,
   }
   if (is.na(min_date)) {
     min_date <- self$dM$contact_minDate
+  }
+  if (is.na(max_date)) {
+    max_date <- self$dM$contact_maxDate
   }
   if (is.na(ignoreOld)) {
     ignoreOld <- self$qim_ignoreOld
@@ -160,7 +166,7 @@ list_qim_15plus <- function(dMeasureQIM_obj,
       if (!lazy) {
         self$dM$list_contact_15plus(
           date_from, date_to, clinicians,
-          min_contact, min_date,
+          min_contact, min_date, max_date,
           contact_type,
           lazy
         )
@@ -343,7 +349,7 @@ list_qim_15plus <- function(dMeasureQIM_obj,
         dplyr::filter(
           InternalID %in% fifteen_plusID,
           Updated <= date_to
-          ) %>>%
+        ) %>>%
         dplyr::rename(
           AlcoholDate = Updated,
           AlcoholDescription = Description,
@@ -512,6 +518,7 @@ list_qim_15plus <- function(dMeasureQIM_obj,
 #' @param clinicians list of clinicians to view. default is $clinicians
 #' @param min_contact minimum number of contacts. default is $contact_min, initially one (1)
 #' @param min_date most recent contact must be at least min_date. default is $contact_minDate, initially -Inf
+#' @param max_date most recent contact at most max_date. default is $contact_maxDate
 #' @param contact_type contact types which are accepted. default is $contact_type
 #' @param ignoreOld ignore results/observatioins that don't qualify for quality improvement measures
 #'  if not supplied, reads $qim_ignoreOld
@@ -526,12 +533,13 @@ list_qim_15plus_appointments <- function(dMeasureQIM_obj,
                                          clinicians = NA,
                                          min_contact = NA,
                                          min_date = NA,
+                                         max_date = NA,
                                          contact_type = NA,
                                          ignoreOld = NA,
                                          lazy = FALSE) {
   dMeasureQIM_obj$list_qim_15plus_appointments(
     contact, date_from, date_to, clinicians,
-    min_contact, min_date, contact_type,
+    min_contact, min_date, max_date, contact_type,
     ignoreOld,
     lazy
   )
@@ -543,6 +551,7 @@ list_qim_15plus_appointments <- function(dMeasureQIM_obj,
                                                               clinicians = NA,
                                                               min_contact = NA,
                                                               min_date = NA,
+                                                              max_date = NA,
                                                               contact_type = NA,
                                                               ignoreOld = NA,
                                                               lazy = FALSE) {
@@ -567,6 +576,9 @@ list_qim_15plus_appointments <- function(dMeasureQIM_obj,
   if (is.na(min_date)) {
     min_date <- self$dM$contact_minDate
   }
+  if (is.na(max_date)) {
+    max_date <- self$dM$contact_maxDate
+  }
   if (is.na(ignoreOld)) {
     ignoreOld <- self$qim_ignoreOld
   }
@@ -589,7 +601,7 @@ list_qim_15plus_appointments <- function(dMeasureQIM_obj,
     if (!lazy) {
       self$list_qim_15plus(
         contact, date_from, date_to, clinicians,
-        min_contact, min_date,
+        min_contact, min_date, max_date,
         contact_type, ignoreOld,
         lazy
       )
@@ -661,6 +673,7 @@ list_qim_15plus_appointments <- function(dMeasureQIM_obj,
 #' @param clinicians list of clinicians to view. default is $clinicians
 #' @param min_contact minimum number of contacts. default is $contact_min, initially one (1)
 #' @param min_date most recent contact must be at least min_date. default is $contact_minDate, initially -Inf
+#' @param max_date most recent contact at most max_date. default is $contact_maxDate
 #' @param contact_type contact types which are accepted. default is $contact_type
 #' @param demographic demographic groupings for reporting.
 #'  if not supplied, reads $qim_demographicGroup
@@ -684,13 +697,14 @@ report_qim_15plus <- function(dMeasureQIM_obj,
                               min_contact = NA,
                               contact_type = NA,
                               min_date = NA,
+                              max_date = NA,
                               demographic = NA,
                               measure = NA,
                               ignoreOld = NA,
                               lazy = FALSE) {
   dMeasureQIM_obj$report_qim_15plus(
     contact, date_from, date_to, clinicians,
-    min_contact, min_date, contact_type,
+    min_contact, min_date, max_date, contact_type,
     demographic, measure,
     ignoreOld, lazy
   )
@@ -701,6 +715,7 @@ report_qim_15plus <- function(dMeasureQIM_obj,
                                                    clinicians = NA,
                                                    min_contact = NA,
                                                    min_date = NA,
+                                                   max_date = NA,
                                                    contact_type = NA,
                                                    demographic = NA,
                                                    measure = NA,
@@ -726,6 +741,9 @@ report_qim_15plus <- function(dMeasureQIM_obj,
   }
   if (is.na(min_date)) {
     min_date <- self$dM$contact_minDate
+  }
+  if (is.na(max_date)) {
+    max_date <- self$dM$contact_maxDate
   }
   if (is.na(contact_type[[1]])) {
     contact_type <- self$dM$contact_type
@@ -758,7 +776,7 @@ report_qim_15plus <- function(dMeasureQIM_obj,
     if (!lazy) {
       self$list_qim_15plus(
         contact, date_from, date_to, clinicians,
-        min_contact, min_date, contact_type,
+        min_contact, min_date, max_date, contact_type,
         ignoreOld, lazy
       )
     }
@@ -769,7 +787,7 @@ report_qim_15plus <- function(dMeasureQIM_obj,
       "Alcohol" = "AlcoholDone"
     )
 
-    report_groups <- c(demographic, measure, "")
+    report_groups <- c(demographic, measure)
     # group by both demographic groupings and measures of interest
     # add a dummy string in case there are no demographic or measure groups chosen!
 
@@ -784,7 +802,7 @@ report_qim_15plus <- function(dMeasureQIM_obj,
       #  the required timeframe
       dplyr::group_by_at(report_groups) %>>%
       # group_by_at takes a vector of strings
-      dplyr::summarise(n = n()) %>>%
+      dplyr::summarise(n = dplyr::n()) %>>%
       dplyr::ungroup() %>>% {
         dplyr::select(., intersect(names(.), c(report_groups, "n")))
       } %>>%

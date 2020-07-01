@@ -231,6 +231,7 @@ list_qim_active <- function(dMeasureQIM_obj,
 #' @param clinicians list of clinicians to view. default is $clinicians
 #' @param min_contact minimum number of contacts. default is $contact_min, initially one (1)
 #' @param min_date most recent contact must be at least min_date. default is $contact_minDate, initially -Inf
+#' @param max_date most recent contact at most max_date. default is $contact_maxDate
 #' @param contact_type contact types which are accepted. default is $contact_type
 #' @param demographic demographic groupings for reporting.
 #'  if not supplied, reads $qim_demographicGroup
@@ -246,12 +247,13 @@ report_qim_active <- function(dMeasureQIM_obj,
                               clinicians = NA,
                               min_contact = NA,
                               min_date = NA,
+                              max_date = NA,
                               contact_type = NA,
                               demographic = NA,
                               lazy = FALSE) {
   dMeasureQIM_obj$report_qim_active(
     contact, date_from, date_to, clinicians,
-    min_contact, min_date,
+    min_contact, min_date, max_date,
     contact_type,
     demographic,
     lazy
@@ -264,6 +266,7 @@ report_qim_active <- function(dMeasureQIM_obj,
                                                    clinicians = NA,
                                                    min_contact = NA,
                                                    min_date = NA,
+                                                   max_date = NA,
                                                    contact_type = NA,
                                                    demographic = NA,
                                                    lazy = FALSE) {
@@ -287,6 +290,9 @@ report_qim_active <- function(dMeasureQIM_obj,
   }
   if (is.na(min_date)) {
     min_date <- self$dM$contact_minDate
+  }
+  if (is.na(max_date)) {
+    max_date <- self$dM$contact_maxDate
   }
   if (is.na(contact_type[[1]])) {
     contact_type <- self$dM$contact_type
@@ -313,19 +319,23 @@ report_qim_active <- function(dMeasureQIM_obj,
     if (!lazy) {
       self$list_qim_active(
         contact, date_from, date_to, clinicians,
-        min_contact, min_date, contact_type,
+        min_contact, min_date, max_date,
+        contact_type,
         lazy
       )
     }
 
-    report_groups <- c(demographic, "")
+    report_groups <- demographic
+    # report_groups <- c(demographic, "")
     # group by demographic groupings
-    # add a dummy string in case there are no demographic chosen!
+    # ?add a dummy string in case there are no demographic chosen!
 
     self$qim_active_report <- self$qim_active_list %>>%
       dplyr::group_by_at(report_groups) %>>%
       # group_by_at takes a vector of strings
-      dplyr::summarise(n = n()) %>>%
+      # note that group_by_at will be deprecated in dplyr 1.0.0
+      # to be replaced by group_by and across combinationi
+      dplyr::summarise(n = dplyr::n()) %>>%
       dplyr::ungroup() %>>% {
         dplyr::select(., intersect(names(.), c(report_groups, "n")))
       } %>>%
