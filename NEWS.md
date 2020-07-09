@@ -1,5 +1,10 @@
 Changelog
 
+# version 0.1.6
+10th July 2020
+
+* `WeightDone` in `report_qim_15plus` depends on `BMIDate` instead of `WeightDate`
+
 # version 0.1.5
 16th May 2020
 
