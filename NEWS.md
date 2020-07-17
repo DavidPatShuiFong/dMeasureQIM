@@ -1,5 +1,12 @@
 Changelog
 
+# version 0.2.0
+17th July 2020
+
+* move DailyMeasure/GPstat webUI from `DailyMeasure` to `dMeasureQIM`
+  + adds `shinydashboardmenuItem`, `dMeasureShinytabItems`,
+    `datatableUI`, `datatableServer` in `userInterface.R`
+
 # version 0.1.6
 10th July 2020
 
