@@ -4,6 +4,7 @@
 
 #' dMeasureQIM - Practice Incentive Program Quality Improvement Measures fields and methods
 #'
+#' @md
 #'
 #' @name qim
 #' @title dMeasure Quality Improvement Measures
@@ -11,6 +12,34 @@
 #' @include r6_helpers.R
 #' functions to help create R6 classes
 NULL
+
+#' dMeasureIntegration
+#'
+#' @name dMeasureIntegration
+#'
+#' @description integration with dMeasure
+#'   (especially DailyMeasure)
+#'
+#' @param information the information required
+#'   `Provides` - modules provided (in this case, `dMeasureQIMRept` and `dMeasureQIMAppt`)
+#'   `Requires` - the modules required (including `dMeasure`)
+#'   `moduleID` - IDs of modules to create
+#'
+#' @return vector of required information
+#'
+#' @export
+dMeasureIntegration <- function(information) {
+  if (information == "Provides") {return(c("dMeasureQIMRept", "dMeasureQIMAppt"))}
+  if (information == "Requires") {return(c("dMeasure"))}
+  if (information == "moduleID") {
+    return(
+      list(
+        list(ID = "qimRept", extraArgs = "contact = TRUE"),
+        list(ID = "qimAppt", extraArgs = "contact = FALSE")
+      )
+    )
+  }
+}
 
 #' dMeasureQIM class
 #' @title dMeasureQIM class

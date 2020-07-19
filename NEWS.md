@@ -1,5 +1,10 @@
 Changelog
 
+# version 0.3.0
+19th July 2020
+
+* * `dMeasureIntegration` for auto-loading module
+
 # version 0.2.0
 17th July 2020
 

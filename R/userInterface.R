@@ -19,16 +19,23 @@ NULL
 #'
 #' @export
 shinydashboardmenuItem <- function() {
-  return(
-    shinydashboard::sidebarMenu(.list = list(
-      shinydashboard::menuItem("PIP Quality Improvement",
-        tabName = "qimRept", icon = shiny::icon("chart-line")
-      ),
-      shinydashboard::menuItem("QIM Appointment",
-        tabName = "qimAppt", icon = shiny::icon("chart-line")
+  x <- list(
+    shinydashboard::sidebarMenu(
+      .list = list(
+        shinydashboard::menuItem(
+          "PIP Quality Improvement",
+          tabName = "qimRept",
+          icon = shiny::icon("chart-line")
+        ),
+        shinydashboard::menuItem(
+          "QIM Appointment",
+          tabName = "qimAppt",
+          icon = shiny::icon("chart-line")
+        )
       )
-    ))
+    )
   )
+  return(x)
 }
 
 #' center panel description
@@ -315,9 +322,7 @@ qim_cvdRisk_UI <- function(id) {
 #'
 #' @name datatableServer
 #'
-#' @param input as required by Shiny modules
-#' @param output as required by Shiny modules
-#' @param session as required by Shiny modules
+#' @param id id
 #' @param dMQIM dMeasure QIM R6 object
 #' @param contact (logical) TRUE if using 'contact' list
 #'     'contact' list uses active contact methods
@@ -326,93 +331,102 @@ qim_cvdRisk_UI <- function(id) {
 #' @return none
 #'
 #' @export
-datatableServer <- function(input, output, session, dMQIM, contact) {
-  ns <- session$ns
-
-  # result management
-  callModule(dMeasureQIM::qim_active, "qim_active", dMQIM, contact)
-  callModule(dMeasureQIM::qim_diabetes, "qim_diabetes", dMQIM, contact)
-  callModule(dMeasureQIM::qim_cst, "qim_cst", dMQIM, contact)
-  callModule(dMeasureQIM::qim_15plus, "qim_15plus", dMQIM, contact)
-  callModule(dMeasureQIM::qim_65plus, "qim_65plus", dMQIM, contact)
-  callModule(dMeasureQIM::qim_copd, "qim_copd", dMQIM, contact)
-  callModule(dMeasureQIM::qim_cvdRisk, "qim_cvdRisk", dMQIM, contact)
-
-  if (!contact) {
-    # only show the 'Active' panel if contact list
-    #
-    #  'Active' is whether the patient qualifies as 'active' depending
-    #  on criteria such as appointments, visits (recordings in the file)
-    #  or billings over a defined time period, and a certain number of
-    #  times
-    #
-    # e.g. one definition of 'active' is 3 'visits' over 2 years
-    # though an alternative definition could be three 'billings' over
-    # three years
-
-    # if an 'appointment' list is being used
-    # then don't show the 'Active' panel
-    shiny::removeTab(inputId = "tab_qim", target = "Active", session = session)
-    # for some reason the above line doesn't remove the tab...
-    shiny::updateTabsetPanel(session = session, inputId = "tab_qim", selected = "Diabetes")
+datatableServer <- function(id, dMQIM, contact) {
+  if (contact == FALSE) {
+    dMQIM$qim_contact <- FALSE
+    # uses appointment list, not contact list
+    dMQIM$qim_demographicGroup <- c("")
+    # by default, the 'appointment' module does not show QIM aggregate groups
   }
-  initial_demographic <- dMQIM$qim_demographicGroup
-  # this is an unusual kludge, for some reason specifying dMQIM$qim_demographicGroup
-  # in the 'choices' of checkboxGroupButtons does not work
 
-  demographic_chosen <- shiny::reactiveVal(
-    initial_demographic
-  )
-  output$settings_group <- shiny::renderUI({
-    shinyWidgets::dropMenu(
-      shiny::actionButton(
-        inputId = ns("qim_dropdown"),
-        icon = shiny::icon("gear"),
-        label = "Settings"
-      ),
-      shiny::tags$div(
-        shinyWidgets::checkboxGroupButtons(
-          inputId = ns("ignore_old"),
-          label = "Measurements",
-          checkIcon = list(
-            yes = shiny::icon("calendar-times"),
-            no = shiny::icon("calendar-alt")
-          ),
-          choices = c("Ignore old measurements"),
-          selected = c("Ignore old measurements"),
-          status = "primary"
+  shiny::moduleServer(id, function(input, output, session) {
+    ns <- session$ns
+
+    # result management
+    callModule(dMeasureQIM::qim_active, "qim_active", dMQIM, contact)
+    callModule(dMeasureQIM::qim_diabetes, "qim_diabetes", dMQIM, contact)
+    callModule(dMeasureQIM::qim_cst, "qim_cst", dMQIM, contact)
+    callModule(dMeasureQIM::qim_15plus, "qim_15plus", dMQIM, contact)
+    callModule(dMeasureQIM::qim_65plus, "qim_65plus", dMQIM, contact)
+    callModule(dMeasureQIM::qim_copd, "qim_copd", dMQIM, contact)
+    callModule(dMeasureQIM::qim_cvdRisk, "qim_cvdRisk", dMQIM, contact)
+
+    if (!contact) {
+      # only show the 'Active' panel if contact list
+      #
+      #  'Active' is whether the patient qualifies as 'active' depending
+      #  on criteria such as appointments, visits (recordings in the file)
+      #  or billings over a defined time period, and a certain number of
+      #  times
+      #
+      # e.g. one definition of 'active' is 3 'visits' over 2 years
+      # though an alternative definition could be three 'billings' over
+      # three years
+
+      # if an 'appointment' list is being used
+      # then don't show the 'Active' panel
+      shiny::removeTab(inputId = "tab_qim", target = "Active", session = session)
+      # for some reason the above line doesn't remove the tab...
+      shiny::updateTabsetPanel(session = session, inputId = "tab_qim", selected = "Diabetes")
+    }
+    initial_demographic <- dMQIM$qim_demographicGroup
+    # this is an unusual kludge, for some reason specifying dMQIM$qim_demographicGroup
+    # in the 'choices' of checkboxGroupButtons does not work
+
+    demographic_chosen <- shiny::reactiveVal(
+      initial_demographic
+    )
+    output$settings_group <- shiny::renderUI({
+      shinyWidgets::dropMenu(
+        shiny::actionButton(
+          inputId = ns("qim_dropdown"),
+          icon = shiny::icon("gear"),
+          label = "Settings"
         ),
-        shinyWidgets::checkboxGroupButtons(
-          inputId = ns("demographic_chosen"),
-          label = "Demographic grouping",
-          choices = dMQIM$qim_demographicGroupings,
-          selected = demographic_chosen(),
-          status = "primary",
-          checkIcon = list(yes = shiny::icon("ok", lib = "glyphicon"))
+        shiny::tags$div(
+          shinyWidgets::checkboxGroupButtons(
+            inputId = ns("ignore_old"),
+            label = "Measurements",
+            checkIcon = list(
+              yes = shiny::icon("calendar-times"),
+              no = shiny::icon("calendar-alt")
+            ),
+            choices = c("Ignore old measurements"),
+            selected = c("Ignore old measurements"),
+            status = "primary"
+          ),
+          shinyWidgets::checkboxGroupButtons(
+            inputId = ns("demographic_chosen"),
+            label = "Demographic grouping",
+            choices = dMQIM$qim_demographicGroupings,
+            selected = demographic_chosen(),
+            status = "primary",
+            checkIcon = list(yes = shiny::icon("ok", lib = "glyphicon"))
+          )
         )
       )
-    )
-  })
-  shiny::observeEvent(
-    input$qim_dropdown_dropmenu,
-    ignoreInit = TRUE, {
-      # this is triggered when shinyWidgets::dropMenu is opened/closed
-      # tag is derived from the first tag in dropMenu, adding '_dropmenu'
-      if (!input$qim_dropdown_dropmenu) {
-        # only if closing the 'dropmenu' modal
-        # unfortunately, is also triggered during Init (despite the ignoreInit)
-        demographic_chosen(input$demographic_chosen)
+    })
+    shiny::observeEvent(
+      input$qim_dropdown_dropmenu,
+      ignoreInit = TRUE, {
+        # this is triggered when shinyWidgets::dropMenu is opened/closed
+        # tag is derived from the first tag in dropMenu, adding '_dropmenu'
+        if (!input$qim_dropdown_dropmenu) {
+          # only if closing the 'dropmenu' modal
+          # unfortunately, is also triggered during Init (despite the ignoreInit)
+          demographic_chosen(input$demographic_chosen)
+        }
       }
-    }
-  )
+    )
 
-  shiny::observeEvent(demographic_chosen(), ignoreNULL = FALSE, {
-    # change the filter depending on the dropdown
-    dMQIM$qim_demographicGroup <- demographic_chosen()
-  })
-  shiny::observeEvent(input$ignore_old, ignoreNULL = FALSE, {
-    # if selected, will filter out appointments older than current date
-    dMQIM$qim_ignoreOld <- ("Ignore old measurements" %in% input$ignore_old)
+    shiny::observeEvent(demographic_chosen(), ignoreNULL = FALSE, {
+      # change the filter depending on the dropdown
+      dMQIM$qim_demographicGroup <- demographic_chosen()
+    })
+    shiny::observeEvent(input$ignore_old, ignoreNULL = FALSE, {
+      # if selected, will filter out appointments older than current date
+      dMQIM$qim_ignoreOld <- ("Ignore old measurements" %in% input$ignore_old)
+    })
   })
 }
 
@@ -481,7 +495,7 @@ qim_active <- function(input, output, session, dMQIM, contact) {
   output$active_qim_table <- DT::renderDT({
     qim_active_datatable()
   },
-    server = TRUE
+  server = TRUE
   )
 }
 
@@ -678,7 +692,8 @@ qim_diabetes <- function(input, output, session, dMQIM, contact) {
           extensions = c("Buttons", "Scroller")
         ) %>>% {
           if ("HbA1C" %in% input$measure_chosen) {
-            DT::formatStyle(., "HbA1CDate",
+            DT::formatStyle(
+              ., "HbA1CDate",
               backgroundcolor = DT::styleInterval(
                 as.Date(Sys.Date() - 365), c("ffeeee", "eeffee")
               )
@@ -694,7 +709,7 @@ qim_diabetes <- function(input, output, session, dMQIM, contact) {
   output$diabetes_qim_table <- DT::renderDT({
     qim_diabetes_datatable()
   },
-    server = TRUE
+  server = TRUE
   )
 }
 
@@ -821,7 +836,7 @@ qim_cst <- function(input, output, session, dMQIM, contact) {
   output$cst_qim_table <- DT::renderDT({
     qim_cst_datatable()
   },
-    server = TRUE
+  server = TRUE
   )
 }
 
@@ -954,12 +969,12 @@ qim_15plus <- function(input, output, session, dMQIM, contact) {
           columnDefs = list(list(
             targets =
               which(names(df) %in%
-                  c(
-                    "Patient", "RecordNo", "HeightDate", "HeightValue",
-                    "WeightDate", "WeightValue", "AlcoholDescription",
-                    "PastAlcoholLevel", "YearStarted", "YearStopped",
-                    "AlcoholComment"
-                  )),
+                      c(
+                        "Patient", "RecordNo", "HeightDate", "HeightValue",
+                        "WeightDate", "WeightValue", "AlcoholDescription",
+                        "PastAlcoholLevel", "YearStarted", "YearStopped",
+                        "AlcoholComment"
+                      )),
             # needs name by index as columns might be removed
             # by demographic filters above
             visible = FALSE
@@ -1057,7 +1072,7 @@ qim_15plus <- function(input, output, session, dMQIM, contact) {
   output$fifteenplus_qim_table <- DT::renderDT({
     qim_15plus_datatable()
   },
-    server = TRUE
+  server = TRUE
   )
 }
 
@@ -1129,7 +1144,7 @@ qim_65plus <- function(input, output, session, dMQIM, contact) {
           columnDefs = list(list(
             targets =
               which(names(df) %in%
-                  c("Patient", "RecordNo")),
+                      c("Patient", "RecordNo")),
             # needs name by index as columns might be removed
             # by demographic filters above
             visible = FALSE
@@ -1176,7 +1191,7 @@ qim_65plus <- function(input, output, session, dMQIM, contact) {
   output$sixtyfiveplus_qim_table <- DT::renderDT({
     qim_65plus_datatable()
   },
-    server = TRUE
+  server = TRUE
   )
 }
 
@@ -1248,7 +1263,7 @@ qim_copd <- function(input, output, session, dMQIM, contact) {
           columnDefs = list(list(
             targets =
               which(names(df) %in%
-                  c("Patient", "RecordNo")),
+                      c("Patient", "RecordNo")),
             # needs name by index as columns might be removed
             # by demographic filters above
             visible = FALSE
@@ -1295,7 +1310,7 @@ qim_copd <- function(input, output, session, dMQIM, contact) {
   output$copd_qim_table <- DT::renderDT({
     qim_copd_datatable()
   },
-    server = TRUE
+  server = TRUE
   )
 }
 
@@ -1406,7 +1421,7 @@ qim_cvdRisk <- function(input, output, session, dMQIM, contact) {
           columnDefs = list(list(
             targets =
               which(names(df) %in%
-                  c("Patient", "RecordNo")),
+                      c("Patient", "RecordNo")),
             # needs name by index as columns might be removed
             # by demographic filters above
             visible = FALSE
@@ -1466,7 +1481,7 @@ qim_cvdRisk <- function(input, output, session, dMQIM, contact) {
   output$cvdRisk_qim_table <- DT::renderDT({
     qim_cvdRisk_datatable()
   },
-    server = TRUE
+  server = TRUE
   )
 }
 

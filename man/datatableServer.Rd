@@ -4,14 +4,10 @@
 \alias{datatableServer}
 \title{QIM module - server for DailyMeasure/GPstat! web UI}
 \usage{
-datatableServer(input, output, session, dMQIM, contact)
+datatableServer(id, dMQIM, contact)
 }
 \arguments{
-\item{input}{as required by Shiny modules}
-
-\item{output}{as required by Shiny modules}
-
-\item{session}{as required by Shiny modules}
+\item{id}{id}
 
 \item{dMQIM}{dMeasure QIM R6 object}
 
