@@ -17,7 +17,7 @@ NULL
     Patient = character(),
     InternalID = integer(),
     RecordNo = character(),
-    Age5 = integer(),
+    Age10 = integer(),
     Sex = character(),
     Ethnicity = character(),
     MaritalStatus = character(),
@@ -183,10 +183,10 @@ list_qim_copd <- function(dMeasureQIM_obj,
       by = "InternalID",
       copy = TRUE
       ) %>>%
-      dplyr::mutate(Age5 = floor(dMeasure::calc_age(as.Date(DOB), date_to) / 5) * 5) %>>%
-      # round age group to nearest 5 years
+      dplyr::mutate(Age10 = floor((dMeasure::calc_age(as.Date(DOB), date_to) - 5) / 10) * 10 + 5) %>>%
+      # round age group to nearest 10 years
       dplyr::select(
-        Patient, InternalID, RecordNo, Sex, Ethnicity, MaritalStatus, Sexuality, Age5,
+        Patient, InternalID, RecordNo, Sex, Ethnicity, MaritalStatus, Sexuality, Age10,
         FluvaxDate, FluvaxName
       )
 
@@ -228,7 +228,7 @@ list_qim_copd <- function(dMeasureQIM_obj,
     Provider = character(0),
     Status = character(0),
     RecordNo = character(),
-    Age5 = integer(),
+    Age10 = integer(),
     Sex = character(),
     Ethnicity = character(),
     MaritalStatus = character(),

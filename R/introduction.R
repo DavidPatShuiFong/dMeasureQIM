@@ -81,7 +81,7 @@ steps_introduction_df <- function(element_name, qim_tab, appointment_view = FALS
           shiny::br(),
           "By default does", shiny::tags$em("not"),
           "show demographic groupings (e.g.",
-          shiny::strong("Age5"), ",",
+          shiny::strong("Age10"), ",",
           shiny::strong("Sex"), "and", shiny::strong("Ethnicity"), ")"
         )),
         position = "auto"
@@ -98,7 +98,7 @@ steps_introduction_df <- function(element_name, qim_tab, appointment_view = FALS
           "and contact definitions.",
           shiny::br(), shiny::br(),
           "By default shows demographic groupings (e.g.",
-          shiny::strong("Age5"), ",",
+          shiny::strong("Age10"), ",",
           shiny::strong("Sex"), "and", shiny::strong("Ethnicity"), ")",
           "and the number of patients in each grouping."
         )),
@@ -113,7 +113,7 @@ steps_introduction_df <- function(element_name, qim_tab, appointment_view = FALS
         shiny::tags$h4("Demographic groupings and Old Measurements"),
         shiny::br(),
         "Display (and grouping) by demographic groups (e.g.",
-        shiny::strong("Age5"), ",",
+        shiny::strong("Age10"), ",",
         shiny::strong("Sex"), "and", shiny::strong("Ethnicity"),
         ") can be changed using the",
         shiny::icon("gears"), shiny::strong("Settings"), "dropdown",

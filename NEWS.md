@@ -1,9 +1,14 @@
 Changelog
 
+# version 0.4.0
+
+* compliance with versioin 1.1 of [PIP QI Improvement Measures - Technical Specifications v1.1 04052020](https://www1.health.gov.au/internet/main/publishing.nsf/Content/46506AF50A4824B6CA25848600113FFF/$File/PIP-QI-Technical-Specifications.pdf)
+  + change `Age5` to `Age10`
+
 # version 0.3.0
 19th July 2020
 
-* * `dMeasureIntegration` for auto-loading module
+* `dMeasureIntegration` for auto-loading module
 
 # version 0.2.0
 17th July 2020

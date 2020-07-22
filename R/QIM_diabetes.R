@@ -18,7 +18,7 @@ NULL
     Patient = character(),
     RecordNo = character(),
     InternalID = integer(),
-    Age5 = integer(),
+    Age10 = integer(),
     Sex = character(),
     Ethnicity = character(),
     MaritalStatus = character(),
@@ -231,8 +231,8 @@ list_qim_diabetes <- function(dMeasureQIM_obj,
       by = "InternalID",
       copy = TRUE
       ) %>>%
-      dplyr::mutate(Age5 = floor(dMeasure::calc_age(as.Date(DOB), date_to) / 5) * 5) %>>%
-      # round age group to nearest 5 years
+      dplyr::mutate(Age10 = floor((dMeasure::calc_age(as.Date(DOB), date_to) - 5) / 10) * 10 + 5) %>>%
+      # round age group to nearest 10 years, starting age 5
       dplyr::select(-c(DOB))
 
     if (self$dM$Log) {
@@ -296,7 +296,7 @@ list_qim_diabetes <- function(dMeasureQIM_obj,
     AppointmentTime = character(0),
     Provider = character(0),
     Status = character(0),
-    Age5 = integer(0),
+    Age10 = integer(0),
     Sex = character(0),
     Ethnicity = character(0),
     MaritalStatus = character(0),

@@ -18,7 +18,7 @@ NULL
     Patient = character(),
     InternalID = integer(),
     RecordNo = character(),
-    Age5 = integer(),
+    Age10 = integer(),
     Sex = character(),
     Ethnicity = character(),
     MaritalStatus = character(),
@@ -259,8 +259,8 @@ list_qim_cst <- function(dMeasureQIM_obj,
       by = "InternalID",
       copy = TRUE
       ) %>>%
-      dplyr::mutate(Age5 = floor(dMeasure::calc_age(as.Date(DOB), date_to) / 5) * 5) %>>%
-      # round age group to nearest 5 years
+      dplyr::mutate(Age10 = floor((dMeasure::calc_age(as.Date(DOB), date_to) - 5) / 10) * 10 + 5) %>>%
+      # round age group to nearest 10 years
       dplyr::select(-DOB) %>>%
       dplyr::left_join(self$dM$db$patients %>>%
         dplyr::filter(InternalID %in% screen_cst_id) %>>%
@@ -308,7 +308,7 @@ list_qim_cst <- function(dMeasureQIM_obj,
     AppointmentTime = character(0),
     Provider = character(0),
     Status = character(0),
-    Age5 = integer(),
+    Age10 = integer(),
     Sex = character(),
     Ethnicity = character(),
     MaritalStatus = character(),

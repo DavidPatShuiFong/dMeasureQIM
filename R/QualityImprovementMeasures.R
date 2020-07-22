@@ -160,9 +160,9 @@ dMeasureQIM <- R6::R6Class("dMeasureQIM",
   if (!missing(value)) {
     warning("$qim_demographicGroupings is read-only.")
   } else {
-    return(c("Age5", "Sex", "Ethnicity", "MaritalStatus", "Sexuality"))
+    return(c("Age10", "Sex", "Ethnicity", "MaritalStatus", "Sexuality"))
     # vector of valid demographic groups (for QIM reporting)
-    # Age in 5 year categories
+    # Age in 10 year categories
     # Ethnicity
     # MaritalStatus
     # Sexuality

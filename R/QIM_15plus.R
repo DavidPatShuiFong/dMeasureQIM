@@ -19,7 +19,7 @@ NULL
     Patient = character(),
     InternalID = integer(),
     RecordNo = character(),
-    Age5 = integer(),
+    Age10 = integer(),
     Sex = character(),
     Ethnicity = character(),
     MaritalStatus = character(),
@@ -239,11 +239,11 @@ list_qim_15plus <- function(dMeasureQIM_obj,
         copy = TRUE
       ) %>>%
       dplyr::mutate(
-        Age5 = floor(dMeasure::calc_age(as.Date(DOB), date_to) / 5) * 5,
+        Age10 = floor((dMeasure::calc_age(as.Date(DOB), date_to) - 5) / 10) * 10 + 5,
         MaritalStatus = dplyr::na_if(MaritalStatus, ""),
         Sexuality = dplyr::na_if(Sexuality, "")
       ) %>>%
-      # round age group to lower 5 year group
+      # round age group to lower 10 year group, starting age 5
       dplyr::left_join(
         self$dM$db$observations %>>%
           dplyr::filter(
@@ -400,7 +400,7 @@ list_qim_15plus <- function(dMeasureQIM_obj,
       ) %>>%
 
       dplyr::select(
-        Patient, InternalID, RecordNo, Sex, Ethnicity, MaritalStatus, Sexuality, Age5,
+        Patient, InternalID, RecordNo, Sex, Ethnicity, MaritalStatus, Sexuality, Age10,
         HeightDate, HeightValue, WeightDate, WeightValue, BMIDate, BMIValue, BMIClass,
         WaistDate, WaistValue, SmokingDate, SmokingStatus,
         AlcoholDate, NonDrinker, AlcoholDaysPerWeek, AlcoholDrinksPerDay, AlcoholDescription,
@@ -472,7 +472,7 @@ list_qim_15plus <- function(dMeasureQIM_obj,
     AppointmentTime = character(0),
     Provider = character(0),
     Status = character(0),
-    Age5 = integer(),
+    Age10 = integer(),
     Sex = character(),
     Ethnicity = character(),
     MaritalStatus = character(),

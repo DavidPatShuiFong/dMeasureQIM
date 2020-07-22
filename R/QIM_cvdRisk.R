@@ -17,7 +17,7 @@ NULL
     Patient = character(),
     InternalID = integer(),
     RecordNo = character(),
-    Age5 = integer(),
+    Age10 = integer(),
     Sex = character(),
     Ethnicity = character(),
     MaritalStatus = character(),
@@ -349,10 +349,10 @@ list_qim_cvdRisk <- function(dMeasureQIM_obj,
           by = "InternalID"
         )
       } %>>%
-      dplyr::mutate(Age5 = floor(Age / 5) * 5) %>>%
-      # round age group to nearest 5 years
+      dplyr::mutate(Age10 = floor((Age - 5) / 10) * 10 + 5) %>>%
+      # round age group to nearest 10 years (starting age 5)
       dplyr::select(
-        Patient, InternalID, RecordNo, Sex, Ethnicity, MaritalStatus, Sexuality, Age5,
+        Patient, InternalID, RecordNo, Sex, Ethnicity, MaritalStatus, Sexuality, Age10,
         CardiovascularDisease, Diabetes, SmokingDate, SmokingStatus,
         UrineAlbuminDate, UrineAlbuminValue, UrineAlbuminUnits,
         PersistentProteinuria, eGFRDate, eGFRValue, eGFRUnits,
@@ -399,7 +399,7 @@ list_qim_cvdRisk <- function(dMeasureQIM_obj,
     Provider = character(0),
     Status = character(0),
     RecordNo = character(),
-    Age5 = integer(),
+    Age10 = integer(),
     Sex = character(),
     Ethnicity = character(),
     MaritalStatus = character(),
