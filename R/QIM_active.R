@@ -238,7 +238,7 @@ list_qim_active <- function(dMeasureQIM_obj,
 #'  list of available demographic groups in $qim_demographicGroupings
 #' @param lazy recalculate the diabetes contact list?
 #'
-#' @return dataframe of Patient (name), demographics, Count, Proportion
+#' @return dataframe of Patient (name), demographics, Count, Proportion, Proportion_Demographic
 #' @export
 report_qim_active <- function(dMeasureQIM_obj,
                               contact = NA,
@@ -340,7 +340,11 @@ report_qim_active <- function(dMeasureQIM_obj,
         dplyr::select(., intersect(names(.), c(report_groups, "n")))
       } %>>%
       # if no rows, then grouping will not remove unnecessary columns
-      dplyr::mutate(Proportion = prop.table(n))
+      dplyr::mutate(Proportion = prop.table(n)) %>>%
+      dplyr::group_by_at(demographic) %>>%
+      dplyr::mutate(Proportion_Demographic = prop.table(n)) %>>%
+      dplyr::ungroup()
+
     # proportion (an alternative would be proportion = n / sum(n))
 
     if (self$dM$Log) {

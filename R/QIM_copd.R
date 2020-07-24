@@ -35,7 +35,7 @@ NULL
 #'
 #' Filtered by date, and chosen clinicians
 #'
-#' QIM 06 -Proportion of patients with COPD who were immunised against influenza
+#' QIM 06 - Proportion of patients with COPD who were immunised against influenza
 #'
 #' the reference date for 'most recent' measurement is 'date_to'
 #'
@@ -245,7 +245,7 @@ list_qim_copd <- function(dMeasureQIM_obj,
 #'
 #' Filtered by date, and chosen clinicians
 #'
-#' QIM 06 -Proportion of patients with COPD who were immunised against influenza
+#' QIM 06 - Proportion of patients with COPD who were immunised against influenza
 #'
 #' the reference date for 'most recent' measurement is 'date_to'
 #'
@@ -394,7 +394,7 @@ list_qim_copd_appointments <- function(contact = NA,
 #'
 #' Shows chosen QIM measures, and by demographic grouping
 #'
-#' QIM 06 -Proportion of patients with COPD who were immunised against influenza
+#' QIM 06 - Proportion of patients with COPD who were immunised against influenza
 #'
 #' the reference date for 'most recent' measurement is 'date_to'
 #'
@@ -416,7 +416,8 @@ list_qim_copd_appointments <- function(contact = NA,
 #'  if not supplied, reads $qim_ignoreOld
 #' @param lazy recalculate the copd contact list?
 #'
-#' @return dataframe of Patient (name), demographic, measure (done or not), Count, Proportion
+#' @return dataframe of Patient (name), demographic, measure (done or not), Count, Proportion,
+#'   Proportion_Demographic
 #' @export
 report_qim_copd <- function(dMeasureQIM_obj,
                             contact = NA,
@@ -521,7 +522,10 @@ report_qim_copd <- function(dMeasureQIM_obj,
         dplyr::select(., intersect(names(.), c(report_groups, "n")))
       } %>>%
       # if no rows, then grouping will not remove unnecessary columns
-      dplyr::mutate(Proportion = prop.table(n))
+      dplyr::mutate(Proportion = prop.table(n)) %>>%
+      dplyr::group_by_at(demographic) %>>%
+      dplyr::mutate(Proportion_Demographic = prop.table(n)) %>>%
+      dplyr::ungroup()
     # proportion (an alternative would be proportion = n / sum(n))
 
 

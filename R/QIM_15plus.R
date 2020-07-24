@@ -443,7 +443,7 @@ list_qim_15plus <- function(dMeasureQIM_obj,
     # vector of valid QIM measures for 15 plus (for QIM reporting)
     # QIM 02 - Proportion of patients with a smoking status result
     # QIM 03 - Proportion of patients with a weight classification (12 months)
-    # QIM 07 - Proportionof patients with an alcohol consumption status
+    # QIM 07 - Proportion of patients with an alcohol consumption status
   }
 })
 
@@ -710,7 +710,7 @@ list_qim_15plus_appointments <- function(dMeasureQIM_obj,
 #' @param lazy recalculate the diabetes contact list?
 #'
 #' @return dataframe of Patient (name), demographics, measures (done or not),
-#'  Count (n), and proportion
+#'  Count (n), Proportion, Proportion_Demographic
 #' @export
 report_qim_15plus <- function(dMeasureQIM_obj,
                               contact = NA,
@@ -831,7 +831,11 @@ report_qim_15plus <- function(dMeasureQIM_obj,
         dplyr::select(., intersect(names(.), c(report_groups, "n")))
       } %>>%
       # if no rows, then grouping will not remove unnecessary columns
-      dplyr::mutate(Proportion = prop.table(n))
+      dplyr::mutate(Proportion = prop.table(n)) %>>%
+      dplyr::group_by_at(demographic) %>>%
+      dplyr::mutate(Proportion_Demographic = prop.table(n)) %>>%
+      dplyr::ungroup()
+
     # proportion (an alternative would be proportion = n / sum(n))
 
     if (self$dM$Log) {

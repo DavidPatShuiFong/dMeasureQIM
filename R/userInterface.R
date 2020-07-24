@@ -481,11 +481,15 @@ qim_active <- function(input, output, session, dMQIM, contact) {
         )
       } else if (input$list_view == "Report") {
         df <- dMQIM$qim_active_reportR()
+        df[, which(colnames(df) == "Proportion_Demographic")] <-
+          df[, which(colnames(df) == "Proportion_Demographic")] * 100
+        colnames(df)[which(colnames(df) == "Proportion_Demographic")] <- "% of demographic"
         dt <- datatable_styled(df)
         if (dim(df)[[2]] > 0 && !is.na(df[1, 2])) {
           # not an empty dataframe, or a 'NA' in the first proportion row
           dt <- dt %>>%
-            DT::formatRound(which(names(df) %in% c("Proportion")), digits = 3)
+            DT::formatRound(which(names(df) %in% c("Proportion")), digits = 3) %>>%
+            DT::formatRound(which(names(df) %in% c("% of demographic")), digits = 1)
         }
         return(dt)
       }
@@ -639,11 +643,16 @@ qim_diabetes <- function(input, output, session, dMQIM, contact) {
         ) # this is a wide table
       } else if (input$list_view == "Report") {
         df <- dMQIM$qim_diabetes_reportR()
+        df[, which(colnames(df) == "Proportion_Demographic")] <-
+          df[, which(colnames(df) == "Proportion_Demographic")] * 100
+        colnames(df)[which(colnames(df) == "Proportion_Demographic")] <-
+          "% of demographic"
         dt <- datatable_styled(df)
         if (dim(df)[[2]] > 0) {
           # not an empty dataframe
           dt <- dt %>>%
-            DT::formatRound(which(names(df) %in% c("Proportion")), digits = 3)
+            DT::formatRound(which(names(df) %in% c("Proportion")), digits = 3) %>>%
+            DT::formatRound(which(names(df) %in% c("% of demographic")), digits = 1)
         }
         return(dt)
       } else if (input$list_view == "Appointments") {
@@ -796,6 +805,10 @@ qim_cst <- function(input, output, session, dMQIM, contact) {
         )
       } else if (input$list_view == "Report") {
         df <- dMQIM$qim_cst_reportR()
+        df[, which(colnames(df) == "Proportion_Demographic")] <-
+          df[, which(colnames(df) == "Proportion_Demographic")] * 100
+        colnames(df)[which(colnames(df) == "Proportion_Demographic")] <-
+          "% of demographic"
         dt <- datatable_styled(df)
         if (dim(df)[[2]] > 0) {
           # not an empty dataframe
@@ -803,6 +816,10 @@ qim_cst <- function(input, output, session, dMQIM, contact) {
             DT::formatRound(
               which(names(df) %in% c("Proportion")),
               digits = 3
+            ) %>>%
+            DT::formatRound(
+              which(names(df) %in% c("% of demographic")),
+              digits = 1
             )
         }
         return(dt)
@@ -994,11 +1011,16 @@ qim_15plus <- function(input, output, session, dMQIM, contact) {
         return(dt)
       } else if (input$list_view == "Report") {
         df <- dMQIM$qim_15plus_reportR()
+        df[, which(colnames(df) == "Proportion_Demographic")] <-
+          df[, which(colnames(df) == "Proportion_Demographic")] * 100
+        colnames(df)[which(colnames(df) == "Proportion_Demographic")] <-
+          "% of demographic"
         dt <- datatable_styled(df)
         if (dim(df)[[2]] > 0) {
           # not an empty dataframe
           dt <- dt %>>%
-            DT::formatRound(which(names(df) %in% c("Proportion")), digits = 3)
+            DT::formatRound(which(names(df) %in% c("Proportion")), digits = 3) %>>%
+            DT::formatRound(which(names(df) %in% c("% of demographic")), digits = 1)
         }
         return(dt)
       } else if (input$list_view == "Appointments") {
@@ -1154,11 +1176,16 @@ qim_65plus <- function(input, output, session, dMQIM, contact) {
         ))
       } else if (input$list_view == "Report") {
         df <- dMQIM$qim_65plus_reportR()
+        df[, which(colnames(df) == "Proportion_Demographic")] <-
+          df[, which(colnames(df) == "Proportion_Demographic")] * 100
+        colnames(df)[which(colnames(df) == "Proportion_Demographic")] <-
+          "% of demographic"
         dt <- datatable_styled(df)
         if (dim(df)[[2]] > 0) {
           # not an empty dataframe
           dt <- dt %>>%
-            DT::formatRound(which(names(df) %in% c("Proportion")), digits = 3)
+            DT::formatRound(which(names(df) %in% c("Proportion")), digits = 3) %>>%
+            DT::formatRound(which(names(df) %in% c("% of demographic")), digits = 1)
         }
         return(dt)
       } else if (input$list_view == "Appointments") {
@@ -1273,11 +1300,16 @@ qim_copd <- function(input, output, session, dMQIM, contact) {
         ))
       } else if (input$list_view == "Report") {
         df <- dMQIM$qim_copd_reportR()
+        df[, which(colnames(df) == "Proportion_Demographic")] <-
+          df[, which(colnames(df) == "Proportion_Demographic")] * 100
+        colnames(df)[which(colnames(df) == "Proportion_Demographic")] <-
+          "% of demographic"
         dt <- datatable_styled(df)
         if (dim(df)[[2]] > 0) {
           # not an empty dataframe
           dt <- dt %>>%
-            DT::formatRound(which(names(df) %in% c("Proportion")), digits = 3)
+            DT::formatRound(which(names(df) %in% c("Proportion")), digits = 3) %>>%
+            DT::formatRound(which(names(df) %in% c("% of demographic")), digits = 1)
         }
         return(dt)
       } else if (input$list_view == "Appointments") {
@@ -1431,11 +1463,16 @@ qim_cvdRisk <- function(input, output, session, dMQIM, contact) {
         ))
       } else if (input$list_view == "Report") {
         df <- dMQIM$qim_cvdRisk_reportR()
+        df[, which(colnames(df) == "Proportion_Demographic")] <-
+          df[, which(colnames(df) == "Proportion_Demographic")] * 100
+        colnames(df)[which(colnames(df) == "Proportion_Demographic")] <-
+          "% of demographic"
         dt <- datatable_styled(df)
         if (dim(df)[[2]] > 0) {
           # not an empty dataframe
           dt <- dt %>>%
-            DT::formatRound(which(names(df) %in% c("Proportion")), digits = 3)
+            DT::formatRound(which(names(df) %in% c("Proportion")), digits = 3) %>>%
+            DT::formatRound(which(names(df) %in% c("% of demographic")), digits = 1)
         }
         return(dt)
       } else if (input$list_view == "Appointments") {

@@ -420,7 +420,7 @@ list_qim_65plus_appointments <- function(dMeasureQIM_obj,
 #'  if not supplied, reads $qim_ignoreOld
 #' @param lazy recalculate the 65+ contact list?
 #'
-#' @return dataframe of Patient (name), demographic, Count, proportion
+#' @return dataframe of Patient (name), demographic, Count, Proportion, Proportion_Demographic
 #' @export
 report_qim_65plus <- function(dMeasureQIM_obj,
                               contact = NA,
@@ -525,7 +525,10 @@ report_qim_65plus <- function(dMeasureQIM_obj,
         dplyr::select(., intersect(names(.), c(report_groups, "n")))
       } %>>%
       # if no rows, then grouping will not remove unnecessary columns
-      dplyr::mutate(Proportion = prop.table(n))
+      dplyr::mutate(Proportion = prop.table(n)) %>>%
+      dplyr::group_by_at(demographic) %>>%
+      dplyr::mutate(Proportion_Demographic = prop.table(n)) %>>%
+      dplyr::ungroup()
     # proportion (an alternative would be proportion = n / sum(n))
 
     if (self$dM$Log) {
