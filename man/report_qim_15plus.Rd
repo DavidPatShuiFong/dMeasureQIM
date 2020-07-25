@@ -57,7 +57,7 @@ if not supplied, reads $qim_ignoreOld}
 }
 \value{
 dataframe of Patient (name), demographics, measures (done or not),
- Count (n), and proportion
+ Count (n), Proportion, Proportion_Demographic
 }
 \description{
 Filtered by date, and chosen clinicians

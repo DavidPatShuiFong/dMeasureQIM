@@ -160,7 +160,7 @@ dMeasureQIM <- R6::R6Class("dMeasureQIM",
   if (!missing(value)) {
     warning("$qim_demographicGroupings is read-only.")
   } else {
-    return(c("Age10", "Sex", "Ethnicity", "MaritalStatus", "Sexuality"))
+    return(c("Age10", "Sex", "Ethnicity", "Indigenous", "MaritalStatus", "Sexuality"))
     # vector of valid demographic groups (for QIM reporting)
     # Age in 10 year categories
     # Ethnicity
@@ -169,7 +169,7 @@ dMeasureQIM <- R6::R6Class("dMeasureQIM",
   }
 })
 
-.private_init(dMeasureQIM, ".qim_demographicGroup", quote(self$qim_demographicGroupings))
+.private_init(dMeasureQIM, ".qim_demographicGroup", quote(c("Age10", "Sex", "Indigenous")))
 .active(dMeasureQIM, "qim_demographicGroup", function(value) {
   # minimum number of contacts listed in $list_contact_count
   if (missing(value)) {

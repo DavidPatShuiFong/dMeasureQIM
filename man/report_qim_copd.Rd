@@ -50,7 +50,8 @@ if not supplied, reads $qim_ignoreOld}
 \item{lazy}{recalculate the copd contact list?}
 }
 \value{
-dataframe of Patient (name), demographic, measure (done or not), Count, Proportion
+dataframe of Patient (name), demographic, measure (done or not), Count, Proportion,
+  Proportion_Demographic
 }
 \description{
 Filtered by date, and chosen clinicians
@@ -58,7 +59,7 @@ Filtered by date, and chosen clinicians
 \details{
 Shows chosen QIM measures, and by demographic grouping
 
-QIM 06 -Proportion of patients with COPD who were immunised against influenza
+QIM 06 - Proportion of patients with COPD who were immunised against influenza
 
 the reference date for 'most recent' measurement is 'date_to'
 }

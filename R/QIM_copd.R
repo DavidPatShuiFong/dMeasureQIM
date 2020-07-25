@@ -19,6 +19,7 @@ NULL
     RecordNo = character(),
     Age10 = integer(),
     Sex = character(),
+    Indigenos = character(),
     Ethnicity = character(),
     MaritalStatus = character(),
     Sexuality = character(),
@@ -166,7 +167,7 @@ list_qim_copd <- function(dMeasureQIM_obj,
     )
     # returns InternalID, FluVaxName, FluvaxDate
 
-    self$qim_copd_list <- copd_list %>>%
+    copd_list <- copd_list %>>%
       dplyr::left_join(fluvaxList,
         by = "InternalID",
         copy = TRUE
@@ -189,6 +190,15 @@ list_qim_copd <- function(dMeasureQIM_obj,
         Patient, InternalID, RecordNo, Sex, Ethnicity, MaritalStatus, Sexuality, Age10,
         FluvaxDate, FluvaxName
       )
+
+    intID <- copd_list %>>% dplyr::pull(InternalID) %>>% c(-1)
+    indigenous_intID <- self$dM$atsi_list(
+      data.frame(InternalID = intID, Date = Sys.Date())
+    ) %>>% c(-1)
+    copd_list <- copd_list %>>%
+      dplyr::mutate(Indigenous = InternalID %in% indigenous_intID)
+
+    self$qim_copd_list <- copd_list
 
     if (self$dM$Log) {
       self$dM$config_db$duration_log_db(log_id)

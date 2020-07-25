@@ -161,7 +161,7 @@ list_qim_active <- function(dMeasureQIM_obj,
       # derived from self$appointments_filtered
     }
 
-    self$qim_active_list <- active_list %>>%
+    active_list <- active_list %>>%
       dplyr::left_join(self$dM$db$patients %>>%
         dplyr::filter(InternalID %in% activeID) %>>%
         dplyr::select(InternalID, DOB, Sex, Ethnicity),
@@ -183,6 +183,15 @@ list_qim_active <- function(dMeasureQIM_obj,
       by = "InternalID", # add RecordNo
       copy = TRUE
       )
+
+    intID <- active_list %>>% dplyr::pull(InternalID) %>>% c(-1)
+    indigenous_intID <- self$dM$atsi_list(
+      data.frame(InternalID = intID, Date = Sys.Date())
+    ) %>>% c(-1)
+    active_list <- active_list %>>%
+      dplyr::mutate(Indigenous = InternalID %in% indigenous_intID)
+
+    self$qim_active_list <- active_list
 
     if (self$dM$Log) {
       self$dM$config_db$duration_log_db(log_id)

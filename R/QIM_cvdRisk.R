@@ -19,6 +19,7 @@ NULL
     RecordNo = character(),
     Age10 = integer(),
     Sex = character(),
+    Indigenous = character(),
     Ethnicity = character(),
     MaritalStatus = character(),
     Sexuality = character(),
@@ -286,7 +287,7 @@ list_qim_cvdRisk <- function(dMeasureQIM_obj,
     lvhID <-
       self$dM$LVH_list(data.frame(InternalID = cvdRiskID, Date = date_to))
 
-    self$qim_cvdRisk_list <- cvdRisk_list %>>%
+    cvdRisk_list <- cvdRisk_list %>>%
       dplyr::mutate(CardiovascularDisease = InternalID %in% cvdID) %>>%
       dplyr::mutate(Diabetes = InternalID %in% diabetesID) %>>%
       dplyr::left_join(self$dM$smoking_obs(cvdRiskID,
@@ -361,6 +362,15 @@ list_qim_cvdRisk <- function(dMeasureQIM_obj,
         BPDate, BP, frisk, friskHI
       )
 
+    intID <- cvdRisk_list %>>% dplyr::pull(InternalID) %>>% c(-1)
+    indigenous_intID <- self$dM$atsi_list(
+      data.frame(InternalID = intID, Date = Sys.Date())
+    ) %>>% c(-1)
+    cvdRisk_list <- cvdRisk_list %>>%
+      dplyr::mutate(Indigenous = InternalID %in% indigenous_intID)
+
+    self$qim_cvdRisk_list <- cvdRisk_list
+
     if (self$dM$Log) {
       self$dM$config_db$duration_log_db(log_id)
     }
@@ -401,6 +411,7 @@ list_qim_cvdRisk <- function(dMeasureQIM_obj,
     RecordNo = character(),
     Age10 = integer(),
     Sex = character(),
+    Indigenous = character(),
     Ethnicity = character(),
     MaritalStatus = character(),
     Sexuality = character(),

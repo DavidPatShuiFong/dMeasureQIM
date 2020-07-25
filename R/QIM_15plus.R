@@ -21,6 +21,7 @@ NULL
     RecordNo = character(),
     Age10 = integer(),
     Sex = character(),
+    Indigenous = character(),
     Ethnicity = character(),
     MaritalStatus = character(),
     Sexuality = character(),
@@ -221,7 +222,7 @@ list_qim_15plus <- function(dMeasureQIM_obj,
     # a list of columns which might (or might not) be auto-generated
     # from the observations table
 
-    self$qim_15plus_list <- fifteen_plus_list %>>%
+    fifteen_plus_list <- fifteen_plus_list %>>%
       dplyr::left_join(
         self$dM$db$patients %>>%
           dplyr::filter(InternalID %in% fifteen_plusID) %>>%
@@ -407,6 +408,15 @@ list_qim_15plus <- function(dMeasureQIM_obj,
         PastAlcoholLevel, YearStarted, YearStopped, AlcoholComment
       ) # drop the InternalID
 
+    intID <- fifteen_plus_list %>>% dplyr::pull(InternalID) %>>% c(-1)
+    indigenous_intID <- self$dM$atsi_list(
+      data.frame(InternalID = intID, Date = Sys.Date())
+    ) %>>% c(-1)
+    fifteen_plus_list <- fifteen_plus_list %>>%
+      dplyr::mutate(Indigenous = InternalID %in% indigenous_intID)
+
+    self$qim_15plus_list <- fifteen_plus_list
+
     if (self$dM$Log) {
       self$dM$config_db$duration_log_db(log_id)
     }
@@ -474,6 +484,7 @@ list_qim_15plus <- function(dMeasureQIM_obj,
     Status = character(0),
     Age10 = integer(),
     Sex = character(),
+    Indigenous = character(),
     Ethnicity = character(),
     MaritalStatus = character(),
     Sexuality = character(),

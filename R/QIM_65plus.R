@@ -19,6 +19,7 @@ NULL
     RecordNo = character(),
     Age10 = integer(),
     Sex = character(),
+    Indigenous = character(),
     Ethnicity = character(),
     MaritalStatus = character(),
     Sexuality = character(),
@@ -167,7 +168,7 @@ list_qim_65plus <- function(dMeasureQIM_obj,
     )
     # returns InternalID, FluVaxName, FluvaxDate
 
-    self$qim_65plus_list <- sixtyfiveplus_list %>>%
+    sixtyfiveplus_list <- sixtyfiveplus_list %>>%
       dplyr::left_join(fluvaxList,
         by = "InternalID",
         copy = TRUE
@@ -191,6 +192,15 @@ list_qim_65plus <- function(dMeasureQIM_obj,
         Age10,
         FluvaxDate, FluvaxName
       )
+
+    intID <- sixtyfiveplus_list %>>% dplyr::pull(InternalID) %>>% c(-1)
+    indigenous_intID <- self$dM$atsi_list(
+      data.frame(InternalID = intID, Date = Sys.Date())
+    ) %>>% c(-1)
+    sixtyfiveplus_list <- sixtyfiveplus_list %>>%
+      dplyr::mutate(Indigenous = InternalID %in% indigenous_intID)
+
+    self$qim_65plus_list <- sixtyfiveplus_list
 
     if (self$dM$Log) {
       self$dM$config_db$duration_log_db(log_id)
@@ -232,6 +242,7 @@ list_qim_65plus <- function(dMeasureQIM_obj,
     Status = character(0),
     Age10 = integer(),
     Sex = character(),
+    Indigenous = character(),
     Ethnicity = character(),
     MaritalStatus = character(),
     Sexuality = character(),

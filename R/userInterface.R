@@ -463,7 +463,7 @@ qim_active <- function(input, output, session, dMQIM, contact) {
           dMQIM$qim_active_listR() %>>%
             dplyr::select(
               Patient, RecordNo,
-              Age10, Sex, Ethnicity,
+              Age10, Sex, Indigenous, Ethnicity,
               MaritalStatus, Sexuality, Count
             ) %>>%
             # re-orders the fields
@@ -590,7 +590,7 @@ qim_diabetes <- function(input, output, session, dMQIM, contact) {
         df <- dMQIM$qim_diabetes_listR() %>>%
           dplyr::select(
             Patient, RecordNo,
-            Age10, Sex, Ethnicity,
+            Age10, Sex, Indigenous, Ethnicity,
             MaritalStatus, Sexuality,
             HbA1CDate, HbA1CValue, HbA1CUnits,
             FluvaxDate, FluvaxName,
@@ -660,7 +660,7 @@ qim_diabetes <- function(input, output, session, dMQIM, contact) {
           dplyr::select(
             Patient, RecordNo,
             AppointmentDate, AppointmentTime, Provider, Status,
-            Age10, Sex, Ethnicity,
+            Age10, Sex, Indigenous, Ethnicity,
             MaritalStatus, Sexuality,
             HbA1CDate, HbA1CValue, HbA1CUnits,
             FluvaxDate, FluvaxName,
@@ -779,7 +779,7 @@ qim_cst <- function(input, output, session, dMQIM, contact) {
         df <- dMQIM$qim_cst_listR() %>>%
           dplyr::select(
             Patient, RecordNo,
-            Age10, Sex, Ethnicity,
+            Age10, Sex, Indigenous, Ethnicity,
             MaritalStatus, Sexuality,
             CSTDate, CSTName
           ) %>>%
@@ -828,7 +828,7 @@ qim_cst <- function(input, output, session, dMQIM, contact) {
           dplyr::select(
             Patient, RecordNo,
             AppointmentDate, AppointmentTime, Provider, Status,
-            Age10, Sex, Ethnicity,
+            Age10, Sex, Indigenous, Ethnicity,
             MaritalStatus, Sexuality,
             CSTDate, CSTName
           ) %>>%
@@ -1028,7 +1028,7 @@ qim_15plus <- function(input, output, session, dMQIM, contact) {
           dplyr::select(
             Patient, RecordNo,
             AppointmentDate, AppointmentTime, Provider, Status,
-            Age10, Sex, Ethnicity,
+            Age10, Sex, Indigenous, Ethnicity,
             MaritalStatus, Sexuality,
             SmokingDate, SmokingStatus,
             HeightDate, HeightValue, WeightDate, WeightValue,
@@ -1193,7 +1193,7 @@ qim_65plus <- function(input, output, session, dMQIM, contact) {
           dplyr::select(
             Patient, RecordNo,
             AppointmentDate, AppointmentTime, Provider, Status,
-            Age10, Sex, Ethnicity,
+            Age10, Sex, Indigenous, Ethnicity,
             MaritalStatus, Sexuality,
             FluvaxDate, FluvaxName
           ) %>>%
@@ -1317,7 +1317,7 @@ qim_copd <- function(input, output, session, dMQIM, contact) {
           dplyr::select(
             Patient, RecordNo,
             AppointmentDate, AppointmentTime, Provider, Status,
-            Age10, Sex, Ethnicity,
+            Age10, Sex, Indigenous, Ethnicity,
             MaritalStatus, Sexuality,
             FluvaxDate, FluvaxName
           ) %>>%
@@ -1480,7 +1480,7 @@ qim_cvdRisk <- function(input, output, session, dMQIM, contact) {
           dplyr::select(
             Patient, RecordNo,
             AppointmentDate, AppointmentTime, Provider, Status,
-            Age10, Sex, Ethnicity,
+            Age10, Sex, Indigenous, Ethnicity,
             MaritalStatus, Sexuality,
             CardiovascularDisease, Diabetes,
             SmokingDate, SmokingStatus,

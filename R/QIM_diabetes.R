@@ -20,6 +20,7 @@ NULL
     InternalID = integer(),
     Age10 = integer(),
     Sex = character(),
+    Indigenous = character(),
     Ethnicity = character(),
     MaritalStatus = character(),
     Sexuality = character(),
@@ -204,7 +205,7 @@ list_qim_diabetes <- function(dMeasureQIM_obj,
     )
     # returns dataframe of InternalID, BPDate, BPValue
 
-    self$qim_diabetes_list <- diabetes_list %>>%
+    diabetes_list <- diabetes_list %>>%
       dplyr::left_join(HbA1CList,
         by = "InternalID",
         copy = TRUE
@@ -234,6 +235,15 @@ list_qim_diabetes <- function(dMeasureQIM_obj,
       dplyr::mutate(Age10 = floor((dMeasure::calc_age(as.Date(DOB), date_to) - 5) / 10) * 10 + 5) %>>%
       # round age group to nearest 10 years, starting age 5
       dplyr::select(-c(DOB))
+
+    intID <- diabetes_list %>>% dplyr::pull(InternalID) %>>% c(-1)
+    indigenous_intID <- self$dM$atsi_list(
+      data.frame(InternalID = intID, Date = Sys.Date())
+    ) %>>% c(-1)
+    diabetes_list <- diabetes_list %>>%
+      dplyr::mutate(Indigenous = InternalID %in% indigenous_intID)
+
+    self$qim_diabetes_list <- diabetes_list
 
     if (self$dM$Log) {
       self$dM$config_db$duration_log_db(log_id)
@@ -298,6 +308,7 @@ list_qim_diabetes <- function(dMeasureQIM_obj,
     Status = character(0),
     Age10 = integer(0),
     Sex = character(0),
+    Indigenous = character(0),
     Ethnicity = character(0),
     MaritalStatus = character(0),
     Sexuality = character(0),

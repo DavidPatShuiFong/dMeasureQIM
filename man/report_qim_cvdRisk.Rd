@@ -52,7 +52,8 @@ if not supplied, reads $qim_ignoreOld}
 \item{lazy}{recalculate the cvdRisk contact list?}
 }
 \value{
-dataframe of Patient (name), Demographic, Measure (done or not), Count, Proportion
+dataframe of Patient (name), Demographic, Measure (done or not), Count, Proportion,
+  Proportion_Demographic
 }
 \description{
 Filtered by date, and chosen clinicians

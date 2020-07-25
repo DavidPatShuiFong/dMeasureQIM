@@ -50,7 +50,7 @@ if not supplied, reads $qim_ignoreOld}
 \item{lazy}{recalculate the 65+ contact list?}
 }
 \value{
-dataframe of Patient (name), demographic, Count, proportion
+dataframe of Patient (name), demographic, Count, Proportion, Proportion_Demographic
 }
 \description{
 Filtered by date, and chosen clinicians

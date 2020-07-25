@@ -20,6 +20,7 @@ NULL
     RecordNo = character(),
     Age10 = integer(),
     Sex = character(),
+    Indigenous = character(),
     Ethnicity = character(),
     MaritalStatus = character(),
     Sexuality = character(),
@@ -159,7 +160,7 @@ list_qim_cst <- function(dMeasureQIM_obj,
       # derived from self$appointments_filtered
     }
 
-    self$qim_cst_list <- screen_cst %>>%
+    screen_cst <- screen_cst %>>%
       dplyr::left_join(
         dplyr::bind_rows(
           self$dM$db$papsmears %>>%
@@ -273,6 +274,15 @@ list_qim_cst <- function(dMeasureQIM_obj,
         CSTName = TestName
       )
 
+    intID <- screen_cst %>>% dplyr::pull(InternalID) %>>% c(-1)
+    indigenous_intID <- self$dM$atsi_list(
+      data.frame(InternalID = intID, Date = Sys.Date())
+    ) %>>% c(-1)
+    screen_cst <- screen_cst %>>%
+      dplyr::mutate(Indigenous = InternalID %in% indigenous_intID)
+
+    self$qim_cst_list <- screen_cst
+
     if (self$dM$Log) {
       self$dM$config_db$duration_log_db(log_id)
     }
@@ -310,6 +320,7 @@ list_qim_cst <- function(dMeasureQIM_obj,
     Status = character(0),
     Age10 = integer(),
     Sex = character(),
+    Indigenous = character(),
     Ethnicity = character(),
     MaritalStatus = character(),
     Sexuality = character(),

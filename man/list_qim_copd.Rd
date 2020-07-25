@@ -51,7 +51,7 @@ dataframe of Patient (name), InternalID, measures
 Filtered by date, and chosen clinicians
 }
 \details{
-QIM 06 -Proportion of patients with COPD who were immunised against influenza
+QIM 06 - Proportion of patients with COPD who were immunised against influenza
 
 the reference date for 'most recent' measurement is 'date_to'
 }
