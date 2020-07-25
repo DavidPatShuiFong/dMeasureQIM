@@ -8,6 +8,10 @@ Changelog
   + default demographic groups are `Age10`, `Sex`, `Indigenous`
 * `Proportion_Demographic` : proportion of measurement in each demographic sub-group
 
+## Changes
+
+* removal of `shinycssloaders`
+
 # version 0.3.0
 19th July 2020
 

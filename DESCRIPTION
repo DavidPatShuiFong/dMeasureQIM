@@ -18,7 +18,6 @@ Imports:
 Suggests:
     shiny,
     shinydashboard,
-    shinycssloaders,
     DT (>= 0.5.3),
     shinyWidgets (>= 0.5.2)
 RoxygenNote: 7.1.0.9000

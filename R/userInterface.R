@@ -172,12 +172,7 @@ qim_active_UI <- function(id) {
         )
       )
     ),
-    shinycssloaders::withSpinner(
-      DT::DTOutput(ns("active_qim_table")),
-      type = 8,
-      hide.element.when.recalculating = FALSE,
-      proxy.height = NULL
-    )
+    DT::DTOutput(ns("active_qim_table"))
   )
 }
 
@@ -197,12 +192,7 @@ qim_diabetes_UI <- function(id) {
         shiny::uiOutput(ns("measure_group"))
       )
     ),
-    shinycssloaders::withSpinner(
-      DT::DTOutput(ns("diabetes_qim_table")),
-      type = 8,
-      hide.element.when.recalculating = FALSE,
-      proxy.height = NULL
-    )
+    DT::DTOutput(ns("diabetes_qim_table"))
   )
 }
 
@@ -217,12 +207,7 @@ qim_cst_UI <- function(id) {
         shiny::uiOutput(ns("list_group"))
       )
     ),
-    shinycssloaders::withSpinner(
-      DT::DTOutput(ns("cst_qim_table")),
-      type = 8,
-      hide.element.when.recalculating = FALSE,
-      proxy.height = NULL
-    )
+    DT::DTOutput(ns("cst_qim_table"))
   )
 }
 
@@ -242,12 +227,7 @@ qim_15plus_UI <- function(id) {
         shiny::uiOutput(ns("measure_group"))
       )
     ),
-    shinycssloaders::withSpinner(
-      DT::DTOutput(ns("fifteenplus_qim_table")),
-      type = 8,
-      hide.element.when.recalculating = FALSE,
-      proxy.height = NULL
-    )
+    DT::DTOutput(ns("fifteenplus_qim_table"))
   )
 }
 
@@ -262,12 +242,7 @@ qim_65plus_UI <- function(id) {
         shiny::uiOutput(ns("list_group"))
       )
     ),
-    shinycssloaders::withSpinner(
-      DT::DTOutput(ns("sixtyfiveplus_qim_table")),
-      type = 8,
-      hide.element.when.recalculating = FALSE,
-      proxy.height = NULL
-    )
+    DT::DTOutput(ns("sixtyfiveplus_qim_table"))
   )
 }
 
@@ -282,12 +257,7 @@ qim_copd_UI <- function(id) {
         shiny::uiOutput(ns("list_group"))
       )
     ),
-    shinycssloaders::withSpinner(
-      DT::DTOutput(ns("copd_qim_table")),
-      type = 8,
-      hide.element.when.recalculating = FALSE,
-      proxy.height = NULL
-    )
+    DT::DTOutput(ns("copd_qim_table"))
   )
 }
 
@@ -308,12 +278,7 @@ qim_cvdRisk_UI <- function(id) {
         shiny::uiOutput(ns("groups"))
       )
     ),
-    shinycssloaders::withSpinner(
-      DT::DTOutput(ns("cvdRisk_qim_table")),
-      type = 8,
-      hide.element.when.recalculating = FALSE,
-      proxy.height = NULL
-    )
+    DT::DTOutput(ns("cvdRisk_qim_table"))
   )
 }
 
