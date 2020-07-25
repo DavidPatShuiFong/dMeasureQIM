@@ -333,27 +333,16 @@ list_qim_cvdRisk <- function(dMeasureQIM_obj,
       by = "InternalID",
       copy = TRUE
       ) %>>%
-      dplyr::left_join(self$dM$db$patients %>>%
-        dplyr::filter(InternalID %in% cvdRiskID) %>>%
-        dplyr::select(InternalID, DOB, Sex, Ethnicity, RecordNo),
-      by = "InternalID",
-      copy = TRUE
-      ) %>>%
-      dplyr::left_join(self$dM$db$clinical %>>%
-        dplyr::filter(InternalID %in% cvdRiskID) %>>%
-        dplyr::select(InternalID, MaritalStatus, Sexuality),
-      by = "InternalID",
-      copy = TRUE
-      ) %>>%
+      dMeasureQIM::add_demographics(self$dM, date_to) %>>%
       dplyr::mutate(Age = dMeasure::calc_age(as.Date(DOB), date_to)) %>>% {
         dplyr::left_join(., framinghamRiskEquation::framingham_riskequation(.),
           by = "InternalID"
         )
       } %>>%
-      dplyr::mutate(Age10 = floor((Age - 5) / 10) * 10 + 5) %>>%
       # round age group to nearest 10 years (starting age 5)
       dplyr::select(
-        Patient, InternalID, RecordNo, Sex, Ethnicity, MaritalStatus, Sexuality, Age10,
+        Patient, InternalID, RecordNo, Sex, Ethnicity, Indigenous,
+        MaritalStatus, Sexuality, Age10,
         CardiovascularDisease, Diabetes, SmokingDate, SmokingStatus,
         UrineAlbuminDate, UrineAlbuminValue, UrineAlbuminUnits,
         PersistentProteinuria, eGFRDate, eGFRValue, eGFRUnits,
@@ -361,13 +350,6 @@ list_qim_cvdRisk <- function(dMeasureQIM_obj,
         CholesterolDate, Cholesterol, HDL, LDL, Triglycerides, CholHDLRatio,
         BPDate, BP, frisk, friskHI
       )
-
-    intID <- cvdRisk_list %>>% dplyr::pull(InternalID) %>>% c(-1)
-    indigenous_intID <- self$dM$atsi_list(
-      data.frame(InternalID = intID, Date = Sys.Date())
-    ) %>>% c(-1)
-    cvdRisk_list <- cvdRisk_list %>>%
-      dplyr::mutate(Indigenous = InternalID %in% indigenous_intID)
 
     self$qim_cvdRisk_list <- cvdRisk_list
 
@@ -729,6 +711,8 @@ report_qim_cvdRisk <- function(dMeasureQIM_obj,
     clinicians <- c("") # dplyr::filter does not work on zero-length list()
   }
 
+  report <- self$qim_cvdRisk_report # default
+
   if (self$dM$emr_db$is_open()) {
     # only if EMR database is open
     if (self$dM$Log) {
@@ -750,7 +734,7 @@ report_qim_cvdRisk <- function(dMeasureQIM_obj,
     # group by both demographic groupings and measures of interest
     # add a dummy string in case there are no demographic or measure groups chosen!
 
-    self$qim_cvdRisk_report <- self$qim_cvdRisk_list %>>%
+    report <- self$qim_cvdRisk_list %>>%
       dplyr::mutate(CVDriskDone = !is.na(frisk) | !is.na(friskHI)) %>>%
       # a measure is 'done' if it exists (not NA)
       # if ignoreOld = TRUE, the the observation must fall within
@@ -768,12 +752,14 @@ report_qim_cvdRisk <- function(dMeasureQIM_obj,
       dplyr::ungroup()
     # proportion (an alternative would be proportion = n / sum(n))
 
+    self$qim_cvdRisk_report <- report
+
     if (self$dM$Log) {
       self$dM$config_db$duration_log_db(log_id)
     }
   }
 
-  return(self$qim_cvdRisk_report)
+  return(report)
 })
 .reactive_event(
   dMeasureQIM, "qim_cvdRisk_reportR",

@@ -181,3 +181,51 @@ dMeasureQIM <- R6::R6Class("dMeasureQIM",
   private$set_reactive(self$qim_demographicGroupR, value)
 })
 .reactive(dMeasureQIM, "qim_demographicGroupR", quote(self$qim_demographicGroupings))
+
+#' add demographics
+#'
+#' @param df dataframe with InternalID
+#' @param dM dMeasure object
+#' @param reference_date date to calculate age from
+#'
+#' @return df with DOB, Age10, Sex, Ethnicity, RecordNo,
+#'   MaritalStatus, Sexuality, Indigenous
+#' @export
+add_demographics <- function(df, dM, reference_date) {
+
+  intID <- df %>>% dplyr::pull(InternalID) %>>% c(-1)
+  indigenous_intID <- dM$atsi_list(
+    data.frame(InternalID = intID, Date = Sys.Date())
+  ) %>>% c(-1)
+
+  df <- df  %>>%
+    dplyr::left_join(
+      dM$db$patients %>>%
+        dplyr::filter(InternalID %in% intID) %>>%
+        dplyr::select(InternalID, DOB, Sex, Ethnicity, RecordNo),
+      by = "InternalID",
+      copy = TRUE
+    ) %>>%
+    dplyr::left_join(
+      dM$db$clinical %>>%
+        dplyr::filter(InternalID %in% intID) %>>%
+        dplyr::select(InternalID, MaritalStatus, Sexuality),
+      by = "InternalID",
+      copy = TRUE
+    ) %>>%
+    dplyr::mutate(
+      DOB = as.Date(DOB, origin = "1970-01-01"),
+      Age10 =
+        pmax(
+          0,
+          floor((dMeasure::calc_age(DOB, reference_date) - 5) / 10) * 10 + 5
+        ),
+      # round age group to nearest 10 years, starting age 5, minimum 0
+      Indigenous = InternalID %in% indigenous_intID,
+      Ethnicity = dplyr::na_if(Ethnicity, ""),
+      MaritalStatus = dplyr::na_if(MaritalStatus, ""),
+      Sexuality = dplyr::na_if(Sexuality, "")
+    )
+
+  return(df)
+}

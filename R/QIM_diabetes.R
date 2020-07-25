@@ -220,28 +220,8 @@ list_qim_diabetes <- function(dMeasureQIM_obj,
         by = "InternalID",
         copy = TRUE
       ) %>>%
-      dplyr::left_join(self$dM$db$patients %>>%
-        dplyr::filter(InternalID %in% diabetesID) %>>%
-        dplyr::select(InternalID, DOB, Sex, Ethnicity, RecordNo),
-      by = "InternalID",
-      copy = TRUE
-      ) %>>%
-      dplyr::left_join(self$dM$db$clinical %>>%
-        dplyr::filter(InternalID %in% diabetesID) %>>%
-        dplyr::select(InternalID, MaritalStatus, Sexuality),
-      by = "InternalID",
-      copy = TRUE
-      ) %>>%
-      dplyr::mutate(Age10 = floor((dMeasure::calc_age(as.Date(DOB), date_to) - 5) / 10) * 10 + 5) %>>%
-      # round age group to nearest 10 years, starting age 5
+      dMeasureQIM::add_demographics(self$dM, date_to) %>>%
       dplyr::select(-c(DOB))
-
-    intID <- diabetes_list %>>% dplyr::pull(InternalID) %>>% c(-1)
-    indigenous_intID <- self$dM$atsi_list(
-      data.frame(InternalID = intID, Date = Sys.Date())
-    ) %>>% c(-1)
-    diabetes_list <- diabetes_list %>>%
-      dplyr::mutate(Indigenous = InternalID %in% indigenous_intID)
 
     self$qim_diabetes_list <- diabetes_list
 
@@ -596,6 +576,8 @@ report_qim_diabetes <- function(dMeasureQIM_obj,
     clinicians <- c("") # dplyr::filter does not work on zero-length list()
   }
 
+  report <- self$qim_diabetes_report # default
+
   if (self$dM$emr_db$is_open()) {
     # only if EMR database is open
     if (self$dM$Log) {
@@ -624,7 +606,7 @@ report_qim_diabetes <- function(dMeasureQIM_obj,
     # add a dummy string in case there are no demographic or measure groups chosen!
     # (dummy string not required?, both group_by_at accepts NULL)
 
-    self$qim_diabetes_report <- self$qim_diabetes_list %>>%
+    report <- self$qim_diabetes_list %>>%
       dplyr::mutate(
         HbA1CDone = !is.na(HbA1CDate),
         InfluenzaDone = !is.na(FluvaxDate),
@@ -646,12 +628,14 @@ report_qim_diabetes <- function(dMeasureQIM_obj,
       dplyr::ungroup()
     # proportion (an alternative would be proportion = n / sum(n))
 
+    self$qim_diabetes_report <- report
+
     if (self$dM$Log) {
       self$dM$config_db$duration_log_db(log_id)
     }
   }
 
-  return(self$qim_diabetes_report)
+  return(report)
 })
 .reactive_event(
   dMeasureQIM, "qim_diabetes_reportR",

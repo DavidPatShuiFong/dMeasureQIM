@@ -248,38 +248,12 @@ list_qim_cst <- function(dMeasureQIM_obj,
       }) %>>%
       dplyr::select(-c(TestAge, OutOfDateTest)) %>>%
       # dplyr::select(-c(TestAge, OutOfDateTest)) %>>% # don't need these columns any more
-      dplyr::left_join(self$dM$db$patients %>>%
-        dplyr::filter(InternalID %in% screen_cst_id) %>>%
-        dplyr::select(InternalID, DOB, Sex, Ethnicity),
-      by = "InternalID",
-      copy = TRUE
-      ) %>>%
-      dplyr::left_join(self$dM$db$clinical %>>%
-        dplyr::filter(InternalID %in% screen_cst_id) %>>%
-        dplyr::select(InternalID, MaritalStatus, Sexuality),
-      by = "InternalID",
-      copy = TRUE
-      ) %>>%
-      dplyr::mutate(Age10 = floor((dMeasure::calc_age(as.Date(DOB), date_to) - 5) / 10) * 10 + 5) %>>%
-      # round age group to nearest 10 years
+      dMeasureQIM::add_demographics(self$dM, date_to) %>>%
       dplyr::select(-DOB) %>>%
-      dplyr::left_join(self$dM$db$patients %>>%
-        dplyr::filter(InternalID %in% screen_cst_id) %>>%
-        dplyr::select(InternalID, RecordNo),
-      by = "InternalID", # add RecordNo
-      copy = TRUE
-      ) %>>%
       dplyr::rename(
         CSTDate = TestDate,
         CSTName = TestName
       )
-
-    intID <- screen_cst %>>% dplyr::pull(InternalID) %>>% c(-1)
-    indigenous_intID <- self$dM$atsi_list(
-      data.frame(InternalID = intID, Date = Sys.Date())
-    ) %>>% c(-1)
-    screen_cst <- screen_cst %>>%
-      dplyr::mutate(Indigenous = InternalID %in% indigenous_intID)
 
     self$qim_cst_list <- screen_cst
 
@@ -584,6 +558,8 @@ report_qim_cst <- function(dMeasureQIM_obj,
     clinicians <- c("") # dplyr::filter does not work on zero-length list()
   }
 
+  report <- self$qim_cst_report
+
   if (self$dM$emr_db$is_open()) {
     # only if EMR database is open
     if (self$dM$Log) {
@@ -605,7 +581,7 @@ report_qim_cst <- function(dMeasureQIM_obj,
     # group by both demographic groupings and measure ('only CSTDate') of interest
     # add a dummy string in case there are no demographic groups chosen!
 
-    self$qim_cst_report <- self$qim_cst_list %>>%
+    report <- self$qim_cst_list %>>%
       dplyr::mutate(CSTDone = (CSTDate != -Inf)) %>>%
       # a measure is 'done' if it exists (not equal to Infinity)
       # if ignoreOld = TRUE, the the observation must fall within
@@ -621,6 +597,8 @@ report_qim_cst <- function(dMeasureQIM_obj,
       dplyr::group_by_at(demographic) %>>%
       dplyr::mutate(Proportion_Demographic = prop.table(n)) %>>%
       dplyr::ungroup()
+
+    self$qim_cst_report <- report
 
     # proportion (an alternative would be proportion = n / sum(n))
 

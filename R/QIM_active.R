@@ -162,34 +162,8 @@ list_qim_active <- function(dMeasureQIM_obj,
     }
 
     active_list <- active_list %>>%
-      dplyr::left_join(self$dM$db$patients %>>%
-        dplyr::filter(InternalID %in% activeID) %>>%
-        dplyr::select(InternalID, DOB, Sex, Ethnicity),
-      by = "InternalID",
-      copy = TRUE
-      ) %>>%
-      dplyr::left_join(self$dM$db$clinical %>>%
-        dplyr::filter(InternalID %in% activeID) %>>%
-        dplyr::select(InternalID, MaritalStatus, Sexuality),
-      by = "InternalID",
-      copy = TRUE
-      ) %>>%
-      dplyr::mutate(Age10 = floor((dMeasure::calc_age(as.Date(DOB), date_to) - 5) / 10) * 10 + 5) %>>%
-      # round age group to nearest 10 years
-      dplyr::select(-DOB) %>>%
-      dplyr::left_join(self$dM$db$patients %>>%
-        dplyr::filter(InternalID %in% activeID) %>>%
-        dplyr::select(InternalID, RecordNo),
-      by = "InternalID", # add RecordNo
-      copy = TRUE
-      )
-
-    intID <- active_list %>>% dplyr::pull(InternalID) %>>% c(-1)
-    indigenous_intID <- self$dM$atsi_list(
-      data.frame(InternalID = intID, Date = Sys.Date())
-    ) %>>% c(-1)
-    active_list <- active_list %>>%
-      dplyr::mutate(Indigenous = InternalID %in% indigenous_intID)
+      dMeasureQIM::add_demographics(self$dM, date_to) %>>%
+      dplyr::select(-DOB)
 
     self$qim_active_list <- active_list
 
@@ -316,6 +290,8 @@ report_qim_active <- function(dMeasureQIM_obj,
     clinicians <- c("") # dplyr::filter does not work on zero-length list()
   }
 
+  report <- self$qim_active_report # default
+
   if (self$dM$emr_db$is_open()) {
     # only if EMR database is open
     if (self$dM$Log) {
@@ -339,7 +315,7 @@ report_qim_active <- function(dMeasureQIM_obj,
     # group by demographic groupings
     # ?add a dummy string in case there are no demographic chosen!
 
-    self$qim_active_report <- self$qim_active_list %>>%
+    report <- self$qim_active_list %>>%
       dplyr::group_by_at(report_groups) %>>%
       # group_by_at takes a vector of strings
       # note that group_by_at will be deprecated in dplyr 1.0.0
@@ -353,15 +329,16 @@ report_qim_active <- function(dMeasureQIM_obj,
       dplyr::group_by_at(demographic) %>>%
       dplyr::mutate(Proportion_Demographic = prop.table(n)) %>>%
       dplyr::ungroup()
-
     # proportion (an alternative would be proportion = n / sum(n))
+
+    self$qim_active_report <- report
 
     if (self$dM$Log) {
       self$dM$config_db$duration_log_db(log_id)
     }
   }
 
-  return(self$qim_active_report)
+  return(report)
 })
 .reactive_event(
   dMeasureQIM, "qim_active_reportR",

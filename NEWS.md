@@ -10,6 +10,11 @@ Changelog
   + for weight classification measure (QIM 03), `BMIclass` is used
     - now `BMIClass` is computed with age- and sex- specific ranges
 * `Proportion_Demographic` : proportion of measurement in each demographic sub-group
+* `add_demographics` : function to add demographics to dataframe
+
+## Bugfix
+
+* QIM 02 15+ smoking `list_qim15_plus` : `ignoreOld` now ignores results more than one year old
 
 ## Changes
 

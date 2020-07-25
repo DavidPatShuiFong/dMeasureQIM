@@ -173,32 +173,12 @@ list_qim_65plus <- function(dMeasureQIM_obj,
         by = "InternalID",
         copy = TRUE
       ) %>>%
-      dplyr::left_join(self$dM$db$patients %>>%
-        dplyr::filter(InternalID %in% sixtyfiveplusID) %>>%
-        dplyr::select(InternalID, DOB, Sex, Ethnicity, RecordNo),
-      by = "InternalID",
-      copy = TRUE
-      ) %>>%
-      dplyr::left_join(self$dM$db$clinical %>>%
-        dplyr::filter(InternalID %in% sixtyfiveplusID) %>>%
-        dplyr::select(InternalID, MaritalStatus, Sexuality),
-      by = "InternalID",
-      copy = TRUE
-      ) %>>%
-      dplyr::mutate(Age10 = floor((dMeasure::calc_age(as.Date(DOB), date_to) - 5) / 10) * 10 + 5) %>>%
-      # round age group to nearest 10 years
+      dMeasureQIM::add_demographics(self$dM, date_to) %>>%
       dplyr::select(
-        Patient, InternalID, RecordNo, Sex, Ethnicity, MaritalStatus, Sexuality,
-        Age10,
+        Patient, InternalID, RecordNo, Sex, Ethnicity, Indigenous,
+        MaritalStatus, Sexuality, Age10,
         FluvaxDate, FluvaxName
       )
-
-    intID <- sixtyfiveplus_list %>>% dplyr::pull(InternalID) %>>% c(-1)
-    indigenous_intID <- self$dM$atsi_list(
-      data.frame(InternalID = intID, Date = Sys.Date())
-    ) %>>% c(-1)
-    sixtyfiveplus_list <- sixtyfiveplus_list %>>%
-      dplyr::mutate(Indigenous = InternalID %in% indigenous_intID)
 
     self$qim_65plus_list <- sixtyfiveplus_list
 
@@ -503,6 +483,8 @@ report_qim_65plus <- function(dMeasureQIM_obj,
     clinicians <- c("") # dplyr::filter does not work on zero-length list()
   }
 
+  report <- self$qim_65plus_report
+
   if (self$dM$emr_db$is_open()) {
     # only if EMR database is open
     if (self$dM$Log) {
@@ -524,7 +506,7 @@ report_qim_65plus <- function(dMeasureQIM_obj,
     # group by both demographic groupings and measures of interest
     # add a dummy string in case there are no demographic or measure groups chosen!
 
-    self$qim_65plus_report <- self$qim_65plus_list %>>%
+    report <- self$qim_65plus_list %>>%
       dplyr::mutate(InfluenzaDone = !is.na(FluvaxDate)) %>>%
       # a measure is 'done' if it exists (not NA)
       # if ignoreOld = TRUE, the the observation must fall within
@@ -542,12 +524,14 @@ report_qim_65plus <- function(dMeasureQIM_obj,
       dplyr::ungroup()
     # proportion (an alternative would be proportion = n / sum(n))
 
+    self$qim_65plus_report <- report
+
     if (self$dM$Log) {
       self$dM$config_db$duration_log_db(log_id)
     }
   }
 
-  return(self$qim_65plus_report)
+  return(report)
 })
 .reactive_event(
   dMeasureQIM, "qim_65plus_reportR",

@@ -53,7 +53,11 @@ Filtered by date, and chosen clinicians
 \details{
 QIM 02 - Proportion of patients with a smoking status result
 QIM 03 - Proportion of patients with a weight classification (12 months)
-QIM 07 - Proportionof patients with an alcohol consumption status
+  * height must be taken with a client minimum age of 15 years
+  * height must be done within the previous 12 months if 15-24 years (inclusive)
+  * weight must be done within the previous 12 months
+  * (to do) exclude client if 18 or more years, and <0.914 or >2.108 metres height
+QIM 07 - Proportion of patients with an alcohol consumption status
 
 the reference date for 'most recent' measurement is 'date_to'
 }
