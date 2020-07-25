@@ -6,6 +6,9 @@ Changelog
   + change `Age5` to `Age10`
   + add `Indigenous`
   + default demographic groups are `Age10`, `Sex`, `Indigenous`
+  + for Smoking measure (QIM 02), `SmokingStatus` is used
+  + for weight classification measure (QIM 03), `BMIclass` is used
+    - now `BMIClass` is computed with age- and sex- specific ranges
 * `Proportion_Demographic` : proportion of measurement in each demographic sub-group
 
 ## Changes

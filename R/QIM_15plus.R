@@ -68,14 +68,18 @@ NULL
 )
 # filtered by chosen dates and clinicians and number of contacts
 
-##### QIM diabetes methods ##########################################################
+##### QIM 15+ methods ##########################################################
 #' List of diabetics, with Quality Improvement Measures, in the contact list
 #'
 #' Filtered by date, and chosen clinicians
 #'
 #' QIM 02 - Proportion of patients with a smoking status result
 #' QIM 03 - Proportion of patients with a weight classification (12 months)
-#' QIM 07 - Proportionof patients with an alcohol consumption status
+#'   * height must be taken with a client minimum age of 15 years
+#'   * height must be done within the previous 12 months if 15-24 years (inclusive)
+#'   * weight must be done within the previous 12 months
+#'   * (to do) exclude client if 18 or more years, and <0.914 or >2.108 metres height
+#' QIM 07 - Proportion of patients with an alcohol consumption status
 #'
 #' the reference date for 'most recent' measurement is 'date_to'
 #'
@@ -243,7 +247,9 @@ list_qim_15plus <- function(dMeasureQIM_obj,
         Age10 = floor((dMeasure::calc_age(as.Date(DOB), date_to) - 5) / 10) * 10 + 5,
         MaritalStatus = dplyr::na_if(MaritalStatus, ""),
         Sexuality = dplyr::na_if(Sexuality, "")
-      ) %>>%
+      )
+
+    fifteen_plus_list <- fifteen_plus_list %>>%
       # round age group to lower 10 year group, starting age 5
       dplyr::left_join(
         self$dM$db$observations %>>%
@@ -271,7 +277,11 @@ list_qim_15plus <- function(dMeasureQIM_obj,
                               (ObservationName == "Height"))
             }
             # throw out results which are more than twelve months old
-            # except for height, which is valid if taken after age 17 years
+            # except for height, which is valid if taken after age 15 years
+            # (however, height measurements must be less than one year old if
+            # person is less than 25 years old, and be taken at age of
+            # twenty-five years if person is more than 25 years old. this is
+            # dealt with later in this code)
             else {
               .
             }
@@ -315,23 +325,60 @@ list_qim_15plus <- function(dMeasureQIM_obj,
       ) %>>% {
         dplyr::mutate(
           .,
-          Age17 = dplyr::if_else(
+          Age15 = dplyr::if_else(
             !is.na(DOB) > 0,
-            dMeasure::add_age(DOB, 17),
+            dMeasure::add_age(DOB, 15),
             as.Date(NA)
-          ))
+          ),
+          Age25 = dplyr::if_else(
+            !is.na(DOB) > 0,
+            dMeasure::add_age(DOB, 25),
+            as.Date(NA)
+          ),
+          AgeYears = dMeasure::calc_age(DOB, date_to))
       } %>>%
       dplyr::mutate(
+        # deal with 'old' or invalid height measurements
+        # ('old' weight observations have been dealt with
+        #   previously)
+        # only height values if done after age of 15
         HeightValue = dplyr::if_else(
-          HeightDate < Age17,
+          HeightDate < Age15,
           as.numeric(NA),
           as.numeric(HeightValue)
         ),
         HeightDate = dplyr::if_else(
-          HeightDate < Age17,
+          HeightDate < Age15,
+          as.Date(NA),
+          as.Date(HeightDate)
+        )
+      ) %>>%
+      dplyr::mutate(
+        # if age of height less than age 25, then height needs to
+        # be taken with the previous year and the patient
+        # age must be less than 25 at end of 'survey' period
+        HeightValue = dplyr::if_else(
+          HeightDate < Age25 &
+            (
+              dMeasure::add_age(HeightDate, 1, by = "year") < date_to |
+                Age25 < date_to
+              # patient older than 25 at end of survey period
+            ),
+          as.numeric(NA),
+          as.numeric(HeightValue)
+        ),
+        HeightDate = dplyr::if_else(
+          HeightDate < Age25 &
+            (
+              dMeasure::add_age(HeightDate, 1, by = "year") < date_to |
+                Age25 < date_to
+              # patient is aged more than 25 at end of survey period
+            ),
           as.Date(NA),
           as.Date(HeightDate)
         ),
+      ) %>>%
+      dplyr::mutate(
         BMIValue = dplyr::if_else(
           is.na(BMIValue) & !is.na(HeightValue) & !is.na(WeightValue),
           WeightValue / (HeightValue / 100)^2,
@@ -348,15 +395,65 @@ list_qim_15plus <- function(dMeasureQIM_obj,
         # of the relevant measurements
         BMIClass = dplyr::case_when(
           is.na(BMIValue) ~ as.character(NA),
-          BMIValue < 18.5 ~ "Underweight",
-          BMIValue < 25 ~ "Healthy",
-          BMIValue <= 30 ~ "Overweight",
-          TRUE ~ "Obese"
+          Sex == "Male" ~ dplyr::case_when(
+            AgeYears == 15 ~ dplyr::case_when(
+              BMIValue >= 28.60 ~ "Obese",
+              BMIValue >= 23.60 ~ "Overweight",
+              BMIValue >= 17.26 ~ "Healthy",
+              TRUE ~ "Underweight"
+            ),
+            AgeYears == 16 ~ dplyr::case_when(
+              BMIValue >= 29.14 ~ "Obese",
+              BMIValue >= 24.19 ~ "Overweight",
+              BMIValue >= 17.80 ~ "Healthy",
+              TRUE ~ "Underweight"
+            ),
+            AgeYears == 17 ~ dplyr::case_when(
+              BMIValue >= 29.41 ~ "Obese",
+              BMIValue >= 24.73 ~ "Overweight",
+              BMIValue >= 18.05 ~ "Healthy",
+              TRUE ~ "Underweight"
+            ),
+            TRUE ~ dplyr::case_when(
+              # age 18 and over
+              BMIValue >= 30 ~ "Obese",
+              BMIValue >= 25 ~ "Overweight",
+              BMIValue >= 18.5 ~ "Healthy",
+              TRUE ~ "Underweight"
+            )
+          ),
+          Sex == "Female" ~ dplyr::case_when(
+            AgeYears == 15 ~ dplyr::case_when(
+              BMIValue >= 29.29 ~ "Obese",
+              BMIValue >= 24.17 ~ "Overweight",
+              BMIValue >= 17.69 ~ "Healthy",
+              TRUE ~ "Underweight"
+            ),
+            AgeYears == 16 ~ dplyr::case_when(
+              BMIValue >= 29.56 ~ "Obese",
+              BMIValue >= 24.54 ~ "Overweight",
+              BMIValue >= 17.91 ~ "Healthy",
+              TRUE ~ "Underweight"
+            ),
+            AgeYears == 17 ~ dplyr::case_when(
+              BMIValue >= 29.84 ~ "Obese",
+              BMIValue >= 24.85 ~ "Overweight",
+              BMIValue >= 18.38 ~ "Healthy",
+              TRUE ~ "Underweight"
+            ),
+            TRUE ~ dplyr::case_when(
+              # age 18 years and over
+              # same as 'Male'
+              BMIValue >= 30 ~ "Obese",
+              BMIValue >= 25 ~ "Overweight",
+              BMIValue >= 18.5 ~ "Healthy",
+              TRUE ~ "Underweight"
+            )
+          )
         )
-      ) %>>%
+      )
 
-      # if ObservationDate (Height) is less than 17 years of age, then remove
-      # this is not clearly specified in PIP QIM documents I have seen so far
+    fifteen_plus_list <- fifteen_plus_list %>>%
       dplyr::left_join(smokingList,
                        by = "InternalID",
                        copy = TRUE
@@ -406,7 +503,7 @@ list_qim_15plus <- function(dMeasureQIM_obj,
         WaistDate, WaistValue, SmokingDate, SmokingStatus,
         AlcoholDate, NonDrinker, AlcoholDaysPerWeek, AlcoholDrinksPerDay, AlcoholDescription,
         PastAlcoholLevel, YearStarted, YearStopped, AlcoholComment
-      ) # drop the InternalID
+      )
 
     intID <- fifteen_plus_list %>>% dplyr::pull(InternalID) %>>% c(-1)
     indigenous_intID <- self$dM$atsi_list(
@@ -817,8 +914,8 @@ report_qim_15plus <- function(dMeasureQIM_obj,
 
     measure <- dplyr::recode(
       measure,
-      "Smoking" = "SmokingDone",
-      "Weight" = "WeightDone",
+      "Smoking" = "SmokingStatus",
+      "Weight" = "BMIClass",
       "Alcohol" = "AlcoholDone"
     )
 
@@ -828,8 +925,6 @@ report_qim_15plus <- function(dMeasureQIM_obj,
 
     self$qim_15plus_report <- self$qim_15plus_list %>>%
       dplyr::mutate(
-        SmokingDone = !(is.na(SmokingDate) | SmokingDate == -Inf),
-        WeightDone = !(is.na(BMIDate) | BMIDate == -Inf),
         AlcoholDone = !(is.na(AlcoholDate) | AlcoholDate == -Inf)
       ) %>>%
       # a measure is 'done' if it exists (not NA)
