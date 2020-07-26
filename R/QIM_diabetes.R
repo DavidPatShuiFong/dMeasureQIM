@@ -64,11 +64,14 @@ NULL
 #' @param min_date most recent contact must be at least min_date. default is dM$contact_minDate, initially -Inf
 #' @param max_date most recent contact at most max_date. default is $contact_maxDate
 #' @param contact_type contact types which are accepted. default is dM$$contact_type
+#' @param type_diabetes add type of diabetes?
 #' @param ignoreOld ignore results/observatioins that don't qualify for quality improvement measures
 #'  if not supplied, reads $qim_ignoreOld
 #' @param lazy recalculate the diabetes contact list?
+#' @param store keep result in self$qim_diabetes_report?
 #'
 #' @return dataframe of Patient (name), InternalID and measures
+#'   if type_diabetes is TRUE, also add DiabetesType
 #' @export
 list_qim_diabetes <- function(dMeasureQIM_obj,
                               contact = NA,
@@ -79,13 +82,15 @@ list_qim_diabetes <- function(dMeasureQIM_obj,
                               min_date = NA,
                               max_date = NA,
                               contact_type = NA,
+                              type_diabetes = NA,
                               ignoreOld = NA,
-                              lazy = FALSE) {
+                              lazy = FALSE,
+                              store = TRUE) {
   dMeasureQIM_obj$list_qim_diabetes(
     contact, date_from, date_to, clinicians,
     min_contact, min_date, max_date, contact_type,
-    ignoreOld,
-    lazy
+    type_diabetes, ignoreOld,
+    lazy, store
   )
 }
 
@@ -97,8 +102,10 @@ list_qim_diabetes <- function(dMeasureQIM_obj,
                                                    min_date = NA,
                                                    max_date = NA,
                                                    contact_type = NA,
+                                                   type_diabetes = NA,
                                                    ignoreOld = NA,
-                                                   lazy = FALSE) {
+                                                   lazy = FALSE,
+                                                   store = TRUE) {
   if (is.na(contact)) {
     contact <- self$qim_contact
   }
@@ -122,6 +129,9 @@ list_qim_diabetes <- function(dMeasureQIM_obj,
   }
   if (is.na(max_date)) {
     max_date <- self$dM$contact_maxDate
+  }
+  if (is.na(type_diabetes)) {
+    type_diabetes <- self$qim_diabetes_showType
   }
   if (is.na(ignoreOld)) {
     ignoreOld <- self$qim_ignoreOld
@@ -170,6 +180,34 @@ list_qim_diabetes <- function(dMeasureQIM_obj,
         dplyr::mutate(Patient = paste(Firstname, Surname)) %>>%
         dplyr::select(Patient, InternalID)
       # derived from self$appointments_filtered
+    }
+
+    if (type_diabetes) {
+      intID_type1 <- c(
+        self$dM$diabetes_type1_list(
+          data.frame(InternalID = diabetesID, Date = date_to)
+          ),
+        -1
+      )
+      intID_type2 <- c(
+        self$dM$diabetes_type2_list(
+          data.frame(InternalID = diabetesID, Date = date_to)
+          ),
+        -1
+      )
+
+      diabetes_list <- diabetes_list %>>%
+        dplyr::mutate(
+          DiabetesType = dplyr::case_when(
+            InternalID %in% intID_type1 &
+              !(InternalID %in% intID_type2) ~ "Type 1",
+            InternalID %in% intID_type2 &
+              !(InternalID %in% intID_type1) ~ "Type 2",
+            TRUE ~ as.character(NA)
+            # note that if marked as 'type 1' AND 'type 2' then
+            # is marked as 'not available'
+          )
+        )
     }
 
     fluvaxList <- self$dM$influenzaVax_obs(diabetesID,
@@ -223,7 +261,9 @@ list_qim_diabetes <- function(dMeasureQIM_obj,
       dMeasureQIM::add_demographics(self$dM, date_to) %>>%
       dplyr::select(-c(DOB))
 
-    self$qim_diabetes_list <- diabetes_list
+    if (store) {
+      self$qim_diabetes_list <- diabetes_list
+    }
 
     if (self$dM$Log) {
       self$dM$config_db$duration_log_db(log_id)
@@ -240,7 +280,8 @@ list_qim_diabetes <- function(dMeasureQIM_obj,
         self$dM$contact_diabetes_listR(),
         self$dM$appointments_filteredR(),
         self$qim_contactR(),
-        self$qim_ignoreOldR()
+        self$qim_ignoreOldR(),
+        self$qim_diabetes_showTypeR()
       ), {
         self$list_qim_diabetes(lazy = TRUE)
       }
@@ -259,6 +300,21 @@ list_qim_diabetes <- function(dMeasureQIM_obj,
     # QIM 10 - Blood pressure
   }
 })
+
+.private(dMeasureQIM, ".qim_diabetes_showType", TRUE)
+.active(dMeasureQIM, "qim_diabetes_showType", function(value) {
+  # add diabetes type ("Type 1", "Type 2", or NA) to list diabetes list?
+  if (missing(value)) {
+    return(private$.qim_diabetes_showType)
+  }
+  if (is.logical(value)) {
+    private$.qim_diabetes_showType <- value
+    private$set_reactive(self$qim_diabetes_showTypeR, value)
+  } else {
+    warning("$qim_diabetes_showType only accepts logical values (TRUE/FALSE).")
+  }
+})
+.reactive(dMeasureQIM, "qim_diabetes_showTypeR", TRUE)
 
 .private_init(dMeasureQIM, ".qim_diabetes_measure", quote(self$qim_diabetes_measureTypes))
 .active(dMeasureQIM, "qim_diabetes_measure", function(value) {
@@ -335,6 +391,7 @@ list_qim_diabetes <- function(dMeasureQIM_obj,
 #' @param min_date most recent contact must be at least min_date. default is $contact_minDate, initially -Inf
 #' @param max_date most recent contact at most max_date. default is $contact_maxDate
 #' @param contact_type contact types which are accepted. default is $contact_type
+#' @param type_diabetes add type of diabetes?
 #' @param ignoreOld ignore results/observatioins that don't qualify for quality improvement measures
 #'  if not supplied, reads $qim_ignoreOld
 #' @param lazy recalculate the diabetes contact list?
@@ -349,13 +406,14 @@ list_qim_diabetes_appointments <- function(dMeasureQIM_obj,
                                            min_contact = NA,
                                            min_date = NA,
                                            max_date = NA,
+                                           type_diabetes = NA,
                                            contact_type = NA,
                                            ignoreOld = NA,
                                            lazy = FALSE) {
   dMeasureQIM_obj$list_qim_diabetes_appointments(
     contact, date_from, date_to, clinicians,
     min_contact, min_date, max_date, contact_type,
-    ignoreOld,
+    type_diabetes, ignoreOld,
     lazy
   )
 }
@@ -367,6 +425,7 @@ list_qim_diabetes_appointments <- function(dMeasureQIM_obj,
                                                                 min_date = NA,
                                                                 max_date = NA,
                                                                 contact_type = NA,
+                                                                type_diabetes = NA,
                                                                 ignoreOld = NA,
                                                                 lazy = FALSE) {
   if (is.na(contact)) {
@@ -393,6 +452,9 @@ list_qim_diabetes_appointments <- function(dMeasureQIM_obj,
   if (is.na(max_date)) {
     max_date <- self$dM$contact_maxDate
   }
+  if (is.na(type_diabetes)) {
+    type_diabetes <- self$qim_diabetes_showType
+  }
   if (is.na(ignoreOld)) {
     ignoreOld <- self$qim_ignoreOld
   }
@@ -416,7 +478,7 @@ list_qim_diabetes_appointments <- function(dMeasureQIM_obj,
       self$list_qim_diabetes(
         contact, date_from, date_to, clinicians,
         min_contact, min_date, max_date,
-        contact_type, ignoreOld,
+        contact_type, type_diabetes, ignoreOld,
         lazy
       )
       self$dM$filter_appointments_time(date_from, date_to, clinicians,
@@ -494,13 +556,16 @@ list_qim_diabetes_appointments <- function(dMeasureQIM_obj,
 #'  if not supplied, reads $qim_diabetes_measure
 #'  list of available measures in $qim_diabetes_measureTypes
 #'  currently 'HbA1C', 'Influenza' and 'BP'
-#' @param ignoreOld ignore results/observatioins that don't qualify for quality improvement measures
+#' @param type_diabetes separate diabetes by type?
+#' @param ignoreOld ignore results/observatioins that don't qualify
+#'  for quality improvement measures.
 #'  if not supplied, reads $qim_ignoreOld
 #' @param lazy recalculate the diabetes contact list?
 #' @param store keep result in self$qim_diabetes_report?
 #'
-#' @return dataframe of Patient (name), demographics, measure (done or not), InternalID, Count, Proportion,
-#'  Proportion_demographic
+#' @return dataframe of Patient (name), demographics, measure (done or not),
+#'  InternalID, Count, Proportion, Proportion_demographic.
+#'  if type_diabetes set to 'TRUE' then add type_diabetes
 #' @export
 report_qim_diabetes <- function(dMeasureQIM_obj,
                                 contact = NA,
@@ -513,13 +578,14 @@ report_qim_diabetes <- function(dMeasureQIM_obj,
                                 max_date = NA,
                                 demographic = NA,
                                 measure = NA,
+                                type_diabetes = NA,
                                 ignoreOld = NA,
                                 lazy = FALSE,
                                 store = TRUE) {
   dMeasureQIM_obj$report_qim_diabetes(
     contact, date_from, date_to, clinicians,
     min_contact, min_date, max_date, contact_type,
-    demographic, measure,
+    demographic, measure, type_diabetes,
     ignoreOld, lazy, store = TRUE
   )
 }
@@ -533,6 +599,7 @@ report_qim_diabetes <- function(dMeasureQIM_obj,
                                                      contact_type = NA,
                                                      demographic = NA,
                                                      measure = NA,
+                                                     type_diabetes = NA,
                                                      ignoreOld = NA,
                                                      lazy = FALSE,
                                                      store = TRUE) {
@@ -569,6 +636,9 @@ report_qim_diabetes <- function(dMeasureQIM_obj,
   if (is.na(measure)) {
     measure <- self$qim_diabetes_measure
   }
+  if (is.na(type_diabetes)) {
+    type_diabetes <- self$qim_diabetes_showType
+  }
   if (is.na(ignoreOld)) {
     ignoreOld <- self$qim_ignoreOld
   }
@@ -598,6 +668,13 @@ report_qim_diabetes <- function(dMeasureQIM_obj,
       )
     }
 
+    report <- self$qim_diabetes_list
+
+    if (type_diabetes) {
+      demographic <- c(demographic, "DiabetesType")
+      # diabetes type becomes a 'grouping' demographic
+    }
+
     measure <- dplyr::recode(measure,
       "HbA1C" = "HbA1CDone",
       "Influenza" = "InfluenzaDone",
@@ -609,7 +686,7 @@ report_qim_diabetes <- function(dMeasureQIM_obj,
     # add a dummy string in case there are no demographic or measure groups chosen!
     # (dummy string not required?, both group_by_at accepts NULL)
 
-    report <- self$qim_diabetes_list %>>%
+    report <- report %>>%
       dplyr::mutate(
         HbA1CDone = !is.na(HbA1CDate),
         InfluenzaDone = !is.na(FluvaxDate),

@@ -507,6 +507,7 @@ qim_diabetes <- function(input, output, session, dMQIM, contact) {
       width = "15em"
     )
   })
+
   output$measure_group <- shiny::renderUI({
     shinyWidgets::dropMenu(
       shiny::actionButton(
@@ -523,6 +524,22 @@ qim_diabetes <- function(input, output, session, dMQIM, contact) {
           # initially all chosen
           status = "primary"
         ),
+        shiny::hr(),
+        shinyWidgets::checkboxGroupButtons(
+          inputId = ns("showType"),
+          label = "Show Diabetes Types",
+          checkIcon = list(
+            yes = shiny::icon("check"),
+            no = shiny::icon("times")
+          ),
+          choices = c("Show Types"),
+          selected = ifelse(
+            dMQIM$qim_diabetes_showType,
+            "Show Types", # this should be the default
+            NULL
+          ),
+          status = "primary"
+        ),
         shiny::br(),
         shiny::em("Close to confirm")
       ),
@@ -536,6 +553,7 @@ qim_diabetes <- function(input, output, session, dMQIM, contact) {
       # tag is derived from the first tag in dropMenu, adding '_dropmenu'
       if (!input$measure_group_dropdown_dropmenu) {
         dMQIM$qim_diabetes_measure <- input$measure_chosen
+        dMQIM$qim_diabetes_showType <- !is.null(input$showType)
       }
     })
 
@@ -553,14 +571,20 @@ qim_diabetes <- function(input, output, session, dMQIM, contact) {
       )
       if (input$list_view == "List") {
         df <- dMQIM$qim_diabetes_listR() %>>%
-          dplyr::select(
-            Patient, RecordNo,
-            Age10, Sex, Indigenous, Ethnicity,
-            MaritalStatus, Sexuality,
-            HbA1CDate, HbA1CValue, HbA1CUnits,
-            FluvaxDate, FluvaxName,
-            BPDate, BP
-          ) %>>%
+          {
+            dplyr::select(
+              .,
+              !!(intersect(
+                c("Patient", "RecordNo",
+                  "Age10", "Sex", "Indigenous", "Ethnicity",
+                  "MaritalStatus", "Sexuality", "DiabetesType",
+                  "HbA1CDate", "HbA1CValue", "HbA1CUnits",
+                  "FluvaxDate", "FluvaxName",
+                  "BPDate", "BP"),
+                names(.)
+              ))
+            )
+          } %>>%
           # re-orders the fields
           {
             remove_demographic <- setdiff(
@@ -622,15 +646,22 @@ qim_diabetes <- function(input, output, session, dMQIM, contact) {
         return(dt)
       } else if (input$list_view == "Appointments") {
         df <- dMQIM$qim_diabetes_list_appointmentsR() %>>%
-          dplyr::select(
-            Patient, RecordNo,
-            AppointmentDate, AppointmentTime, Provider, Status,
-            Age10, Sex, Indigenous, Ethnicity,
-            MaritalStatus, Sexuality,
-            HbA1CDate, HbA1CValue, HbA1CUnits,
-            FluvaxDate, FluvaxName,
-            BPDate, BP
-          ) %>>%
+          {
+            dplyr::select(
+              .,
+              !!(intersect(
+                c("Patient", "RecordNo",
+                  "AppointmentDate", "AppointmentTime",
+                  "Provider", "Status",
+                  "Age10", "Sex", "Indigenous", "Ethnicity",
+                  "MaritalStatus", "Sexuality", "DiabetesType",
+                  "HbA1CDate", "HbA1CValue", "HbA1CUnits",
+                  "FluvaxDate", "FluvaxName",
+                  "BPDate", "BP"),
+                names(.)
+              ))
+            )
+          } %>>%
           # re-orders the fields
           {
             remove_demographic <- setdiff(

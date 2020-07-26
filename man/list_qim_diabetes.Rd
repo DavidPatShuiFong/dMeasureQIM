@@ -14,8 +14,10 @@ list_qim_diabetes(
   min_date = NA,
   max_date = NA,
   contact_type = NA,
+  type_diabetes = NA,
   ignoreOld = NA,
-  lazy = FALSE
+  lazy = FALSE,
+  store = TRUE
 )
 }
 \arguments{
@@ -39,13 +41,18 @@ FALSE chooses the 'appointment' system $diabetes_list from dMeasure object.}
 
 \item{contact_type}{contact types which are accepted. default is dM$$contact_type}
 
+\item{type_diabetes}{add type of diabetes?}
+
 \item{ignoreOld}{ignore results/observatioins that don't qualify for quality improvement measures
 if not supplied, reads $qim_ignoreOld}
 
 \item{lazy}{recalculate the diabetes contact list?}
+
+\item{store}{keep result in self$qim_diabetes_report?}
 }
 \value{
 dataframe of Patient (name), InternalID and measures
+  if type_diabetes is TRUE, also add DiabetesType
 }
 \description{
 Filtered by date, and chosen clinicians

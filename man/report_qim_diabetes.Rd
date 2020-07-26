@@ -16,6 +16,7 @@ report_qim_diabetes(
   max_date = NA,
   demographic = NA,
   measure = NA,
+  type_diabetes = NA,
   ignoreOld = NA,
   lazy = FALSE,
   store = TRUE
@@ -51,7 +52,10 @@ if not supplied, reads $qim_diabetes_measure
 list of available measures in $qim_diabetes_measureTypes
 currently 'HbA1C', 'Influenza' and 'BP'}
 
-\item{ignoreOld}{ignore results/observatioins that don't qualify for quality improvement measures
+\item{type_diabetes}{separate diabetes by type?}
+
+\item{ignoreOld}{ignore results/observatioins that don't qualify
+for quality improvement measures.
 if not supplied, reads $qim_ignoreOld}
 
 \item{lazy}{recalculate the diabetes contact list?}
@@ -59,8 +63,9 @@ if not supplied, reads $qim_ignoreOld}
 \item{store}{keep result in self$qim_diabetes_report?}
 }
 \value{
-dataframe of Patient (name), demographics, measure (done or not), InternalID, Count, Proportion,
- Proportion_demographic
+dataframe of Patient (name), demographics, measure (done or not),
+ InternalID, Count, Proportion, Proportion_demographic.
+ if type_diabetes set to 'TRUE' then add type_diabetes
 }
 \description{
 Filtered by date, and chosen clinicians

@@ -9,6 +9,10 @@ Changelog
   + for Smoking measure (QIM 02), `SmokingStatus` is used
   + for weight classification measure (QIM 03), `BMIclass` is used
     - now `BMIClass` is computed with age- and sex- specific ranges
+  + for diabetes (QIM 01 and others), option to add diabetes type to description
+    - `report_qim_diabetes` and others accepts a `type_diabetes` option
+    - also determined  by active `self$qim_diabetes_showType` (and private and reactive versions)
+    - userInterface adds pushbutton to turn on/off `self$qim_diabetes_showType` (default ON)
 * `Proportion_Demographic` : proportion of measurement in each demographic sub-group
 * `add_demographics` : function to add demographics to dataframe
 * add `store` option for `report_qim_*` methods.
