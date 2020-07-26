@@ -17,7 +17,8 @@ report_qim_diabetes(
   demographic = NA,
   measure = NA,
   ignoreOld = NA,
-  lazy = FALSE
+  lazy = FALSE,
+  store = TRUE
 )
 }
 \arguments{
@@ -54,6 +55,8 @@ currently 'HbA1C', 'Influenza' and 'BP'}
 if not supplied, reads $qim_ignoreOld}
 
 \item{lazy}{recalculate the diabetes contact list?}
+
+\item{store}{keep result in self$qim_diabetes_report?}
 }
 \value{
 dataframe of Patient (name), demographics, measure (done or not), InternalID, Count, Proportion,

@@ -16,7 +16,8 @@ report_qim_cvdRisk(
   max_date = NA,
   demographic = NA,
   ignoreOld = NA,
-  lazy = FALSE
+  lazy = FALSE,
+  store = TRUE
 )
 }
 \arguments{
@@ -50,6 +51,8 @@ list of available demographic groups in $qim_demographicGroupings}
 if not supplied, reads $qim_ignoreOld}
 
 \item{lazy}{recalculate the cvdRisk contact list?}
+
+\item{store}{keep result in self$qim_cvdRisk_report}
 }
 \value{
 dataframe of Patient (name), Demographic, Measure (done or not), Count, Proportion,

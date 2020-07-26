@@ -497,6 +497,7 @@ list_qim_diabetes_appointments <- function(dMeasureQIM_obj,
 #' @param ignoreOld ignore results/observatioins that don't qualify for quality improvement measures
 #'  if not supplied, reads $qim_ignoreOld
 #' @param lazy recalculate the diabetes contact list?
+#' @param store keep result in self$qim_diabetes_report?
 #'
 #' @return dataframe of Patient (name), demographics, measure (done or not), InternalID, Count, Proportion,
 #'  Proportion_demographic
@@ -513,12 +514,13 @@ report_qim_diabetes <- function(dMeasureQIM_obj,
                                 demographic = NA,
                                 measure = NA,
                                 ignoreOld = NA,
-                                lazy = FALSE) {
+                                lazy = FALSE,
+                                store = TRUE) {
   dMeasureQIM_obj$report_qim_diabetes(
     contact, date_from, date_to, clinicians,
     min_contact, min_date, max_date, contact_type,
     demographic, measure,
-    ignoreOld, lazy
+    ignoreOld, lazy, store = TRUE
   )
 }
 .public(dMeasureQIM, "report_qim_diabetes", function(contact = NA,
@@ -532,7 +534,8 @@ report_qim_diabetes <- function(dMeasureQIM_obj,
                                                      demographic = NA,
                                                      measure = NA,
                                                      ignoreOld = NA,
-                                                     lazy = FALSE) {
+                                                     lazy = FALSE,
+                                                     store = TRUE) {
   if (is.na(contact)) {
     contact <- self$qim_contact
   }
@@ -628,7 +631,9 @@ report_qim_diabetes <- function(dMeasureQIM_obj,
       dplyr::ungroup()
     # proportion (an alternative would be proportion = n / sum(n))
 
-    self$qim_diabetes_report <- report
+    if (store) {
+      self$qim_diabetes_report <- report
+    }
 
     if (self$dM$Log) {
       self$dM$config_db$duration_log_db(log_id)

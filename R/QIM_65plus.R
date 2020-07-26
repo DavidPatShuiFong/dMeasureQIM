@@ -410,6 +410,7 @@ list_qim_65plus_appointments <- function(dMeasureQIM_obj,
 #' @param ignoreOld ignore results/observatioins that don't qualify for quality improvement measures
 #'  if not supplied, reads $qim_ignoreOld
 #' @param lazy recalculate the 65+ contact list?
+#' @param store keep result in self$qim_65plus_report?
 #'
 #' @return dataframe of Patient (name), demographic, Count, Proportion, Proportion_Demographic
 #' @export
@@ -424,12 +425,13 @@ report_qim_65plus <- function(dMeasureQIM_obj,
                               max_date = NA,
                               demographic = NA,
                               ignoreOld = NA,
-                              lazy = FALSE) {
+                              lazy = FALSE,
+                              store = TRUE) {
   dMeasureQIM_obj$report_qim_65plus(
     contact, date_from, date_to, clinicians,
     min_contact, min_date, max_date, contact_type,
     demographic,
-    ignoreOld, lazy
+    ignoreOld, lazy, store
   )
 }
 .public(dMeasureQIM, "report_qim_65plus", function(contact = NA,
@@ -442,7 +444,8 @@ report_qim_65plus <- function(dMeasureQIM_obj,
                                                    contact_type = NA,
                                                    demographic = NA,
                                                    ignoreOld = NA,
-                                                   lazy = FALSE) {
+                                                   lazy = FALSE,
+                                                   store = TRUE) {
   if (is.na(contact)) {
     contact <- self$qim_contact
   }
@@ -524,7 +527,9 @@ report_qim_65plus <- function(dMeasureQIM_obj,
       dplyr::ungroup()
     # proportion (an alternative would be proportion = n / sum(n))
 
-    self$qim_65plus_report <- report
+    if (store) {
+      self$qim_65plus_report <- report
+    }
 
     if (self$dM$Log) {
       self$dM$config_db$duration_log_db(log_id)

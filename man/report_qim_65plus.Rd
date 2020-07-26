@@ -16,7 +16,8 @@ report_qim_65plus(
   max_date = NA,
   demographic = NA,
   ignoreOld = NA,
-  lazy = FALSE
+  lazy = FALSE,
+  store = TRUE
 )
 }
 \arguments{
@@ -48,6 +49,8 @@ list of available demographic groups in $qim_demographicGroupings}
 if not supplied, reads $qim_ignoreOld}
 
 \item{lazy}{recalculate the 65+ contact list?}
+
+\item{store}{keep result in self$qim_65plus_report?}
 }
 \value{
 dataframe of Patient (name), demographic, Count, Proportion, Proportion_Demographic

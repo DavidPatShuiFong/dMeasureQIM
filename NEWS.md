@@ -11,6 +11,9 @@ Changelog
     - now `BMIClass` is computed with age- and sex- specific ranges
 * `Proportion_Demographic` : proportion of measurement in each demographic sub-group
 * `add_demographics` : function to add demographics to dataframe
+* add `store` option for `report_qim_*` methods.
+  + by default, set to `TRUE`, store result to `self$qim_*_report`
+  + if `FALSE`, the results are returned, but not stored to `self$qim_*_report`
 
 ## Bugfix
 

@@ -812,6 +812,7 @@ list_qim_15plus_appointments <- function(dMeasureQIM_obj,
 #' @param ignoreOld ignore results/observatioins that don't qualify for quality improvement measures
 #'  if not supplied, reads $qim_ignoreOld
 #' @param lazy recalculate the diabetes contact list?
+#' @param store keep result in
 #'
 #' @return dataframe of Patient (name), demographics, measures (done or not),
 #'  Count (n), Proportion, Proportion_Demographic
@@ -828,12 +829,13 @@ report_qim_15plus <- function(dMeasureQIM_obj,
                               demographic = NA,
                               measure = NA,
                               ignoreOld = NA,
-                              lazy = FALSE) {
+                              lazy = FALSE,
+                              store = TRUE) {
   dMeasureQIM_obj$report_qim_15plus(
     contact, date_from, date_to, clinicians,
     min_contact, min_date, max_date, contact_type,
     demographic, measure,
-    ignoreOld, lazy
+    ignoreOld, lazy, store
   )
 }
 .public(dMeasureQIM, "report_qim_15plus", function(contact = NA,
@@ -847,7 +849,8 @@ report_qim_15plus <- function(dMeasureQIM_obj,
                                                    demographic = NA,
                                                    measure = NA,
                                                    ignoreOld = NA,
-                                                   lazy = FALSE) {
+                                                   lazy = FALSE,
+                                                   store = TRUE) {
   if (is.na(contact)) {
     contact <- self$qim_contact
   }
@@ -938,7 +941,9 @@ report_qim_15plus <- function(dMeasureQIM_obj,
       dplyr::mutate(Proportion_Demographic = prop.table(n)) %>>%
       dplyr::ungroup()
 
-    self$qim_15plus_report <- report
+    if (store) {
+      self$qim_15plus_report <- report
+    }
 
     # proportion (an alternative would be proportion = n / sum(n))
 

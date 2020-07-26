@@ -220,6 +220,7 @@ list_qim_active <- function(dMeasureQIM_obj,
 #'  if not supplied, reads $qim_demographicGroup
 #'  list of available demographic groups in $qim_demographicGroupings
 #' @param lazy recalculate the diabetes contact list?
+#' @param store keep result in self$qim_active_report?
 #'
 #' @return dataframe of Patient (name), demographics, Count, Proportion, Proportion_Demographic
 #' @export
@@ -233,13 +234,14 @@ report_qim_active <- function(dMeasureQIM_obj,
                               max_date = NA,
                               contact_type = NA,
                               demographic = NA,
-                              lazy = FALSE) {
+                              lazy = FALSE,
+                              store = TRUE) {
   dMeasureQIM_obj$report_qim_active(
     contact, date_from, date_to, clinicians,
     min_contact, min_date, max_date,
     contact_type,
     demographic,
-    lazy
+    lazy, store
   )
 }
 
@@ -252,7 +254,8 @@ report_qim_active <- function(dMeasureQIM_obj,
                                                    max_date = NA,
                                                    contact_type = NA,
                                                    demographic = NA,
-                                                   lazy = FALSE) {
+                                                   lazy = FALSE,
+                                                   store = TRUE) {
   if (is.na(contact)) {
     contact <- self$qim_contact
   }
@@ -331,7 +334,9 @@ report_qim_active <- function(dMeasureQIM_obj,
       dplyr::ungroup()
     # proportion (an alternative would be proportion = n / sum(n))
 
-    self$qim_active_report <- report
+    if (store) {
+      self$qim_active_report <- report
+    }
 
     if (self$dM$Log) {
       self$dM$config_db$duration_log_db(log_id)

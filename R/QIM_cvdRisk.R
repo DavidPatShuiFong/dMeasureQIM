@@ -639,6 +639,7 @@ list_qim_cvdRisk_appointments <- function(dMeasureQIM_obj,
 #' @param ignoreOld ignore results/observatioins that don't qualify for quality improvement measures
 #'  if not supplied, reads $qim_ignoreOld
 #' @param lazy recalculate the cvdRisk contact list?
+#' @param store keep result in self$qim_cvdRisk_report
 #'
 #' @return dataframe of Patient (name), Demographic, Measure (done or not), Count, Proportion,
 #'   Proportion_Demographic
@@ -653,12 +654,13 @@ report_qim_cvdRisk <- function(dMeasureQIM_obj,
                                min_date = NA, max_date = NA,
                                demographic = NA,
                                ignoreOld = NA,
-                               lazy = FALSE) {
+                               lazy = FALSE,
+                               store = TRUE) {
   dMeasureQIM_obj$report_qim_cvdRisk(
     contact, date_from, date_to, clinicians,
     min_contact, min_date, max_date, contact_type,
     demographic,
-    ignoreOld, lazy
+    ignoreOld, lazy, store
   )
 }
 .public(dMeasureQIM, "report_qim_cvdRisk", function(contact = NA,
@@ -670,7 +672,8 @@ report_qim_cvdRisk <- function(dMeasureQIM_obj,
                                                     contact_type = NA,
                                                     demographic = NA,
                                                     ignoreOld = NA,
-                                                    lazy = FALSE) {
+                                                    lazy = FALSE,
+                                                    store = TRUE) {
   if (is.na(contact)) {
     contact <- self$qim_contact
   }
@@ -752,7 +755,9 @@ report_qim_cvdRisk <- function(dMeasureQIM_obj,
       dplyr::ungroup()
     # proportion (an alternative would be proportion = n / sum(n))
 
-    self$qim_cvdRisk_report <- report
+    if (store) {
+      self$qim_cvdRisk_report <- report
+    }
 
     if (self$dM$Log) {
       self$dM$config_db$duration_log_db(log_id)
