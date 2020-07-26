@@ -194,9 +194,6 @@ dMeasureQIM <- R6::R6Class("dMeasureQIM",
 add_demographics <- function(df, dM, reference_date) {
 
   intID <- df %>>% dplyr::pull(InternalID) %>>% c(-1)
-  indigenous_intID <- dM$atsi_list(
-    data.frame(InternalID = intID, Date = Sys.Date())
-  ) %>>% c(-1)
 
   df <- df  %>>%
     dplyr::left_join(
@@ -216,13 +213,22 @@ add_demographics <- function(df, dM, reference_date) {
     dplyr::mutate(
       DOB = as.Date(DOB, origin = "1970-01-01"),
       Age10 =
-        pmax(
-          0,
-          floor((dMeasure::calc_age(DOB, reference_date) - 5) / 10) * 10 + 5
+        pmin(
+          pmax(
+            0,
+            floor((dMeasure::calc_age(DOB, reference_date) - 5) / 10) * 10 + 5
+          ),
+          65
         ),
-      # round age group to nearest 10 years, starting age 5, minimum 0
-      Indigenous = InternalID %in% indigenous_intID,
+      # round age group to nearest 10 years, starting age 5, minimum 0 and maximum 65
       Ethnicity = dplyr::na_if(Ethnicity, ""),
+      Indigenous = dplyr::case_when(
+        Ethnicity == "Aboriginal" ~ "Aboriginal",
+        Ethnicity == "Torres Strait Islander" ~ "Torres Strait Islander",
+        Ethnicity == "Aboriginal/Torres Strait Islander" ~ "Both Aboriginal and Torres Strait Islander",
+        Ethnicity == "" ~ "Not stated",
+        TRUE ~ "Neither"
+      ),
       MaritalStatus = dplyr::na_if(MaritalStatus, ""),
       Sexuality = dplyr::na_if(Sexuality, "")
     )

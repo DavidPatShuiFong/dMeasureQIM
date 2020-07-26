@@ -735,7 +735,7 @@ list_qim_15plus_appointments <- function(dMeasureQIM_obj,
     }
 
     if (!lazy) {
-      self$list_qim_15plus(
+      appointments <- self$list_qim_15plus(
         contact, date_from, date_to, clinicians,
         min_contact, min_date, max_date,
         contact_type, ignoreOld,
@@ -745,9 +745,11 @@ list_qim_15plus_appointments <- function(dMeasureQIM_obj,
         date_from, date_to, clinicians,
         lazy = lazy
       )
+    } else {
+      appointments <- self$qim_15plus_list
     }
 
-    appointments <- self$qim_15plus_list %>>%
+    appointments <- appointments %>>%
       dplyr::left_join(
         self$dM$appointments_filtered_time,
         by = c("InternalID", "Patient"),
@@ -920,14 +922,6 @@ report_qim_15plus <- function(dMeasureQIM_obj,
       )
     }
 
-    if (!lazy) {
-      self$list_qim_15plus(
-        contact, date_from, date_to, clinicians,
-        min_contact, min_date, max_date, contact_type,
-        ignoreOld, lazy, store
-      )
-    }
-
     measure <- dplyr::recode(
       measure,
       "Smoking" = "SmokingStatus",
@@ -939,7 +933,17 @@ report_qim_15plus <- function(dMeasureQIM_obj,
     # group by both demographic groupings and measures of interest
     # add a dummy string in case there are no demographic or measure groups chosen!
 
-    report <- self$qim_15plus_list %>>%
+    if (!lazy) {
+      report <- self$list_qim_15plus(
+        contact, date_from, date_to, clinicians,
+        min_contact, min_date, max_date, contact_type,
+        ignoreOld, lazy, store
+      )
+    } else {
+      report <- self$qim_15plus_list
+    }
+
+    report <- report %>>%
       dplyr::mutate(
         AlcoholDone = !(is.na(AlcoholDate) | AlcoholDate == -Inf)
       ) %>>%

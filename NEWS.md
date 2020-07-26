@@ -3,7 +3,7 @@ Changelog
 # version 0.4.0
 
 * compliance with version 1.1 of [PIP QI Improvement Measures - Technical Specifications v1.1 04052020](https://www1.health.gov.au/internet/main/publishing.nsf/Content/46506AF50A4824B6CA25848600113FFF/$File/PIP-QI-Technical-Specifications.pdf)
-  + change `Age5` to `Age10`
+  + change `Age5` to `Age10` (minimum 0, maximum 65)
   + add `Indigenous`
   + default demographic groups are `Age10`, `Sex`, `Indigenous`
   + for Smoking measure (QIM 02), `SmokingStatus` is used
@@ -13,6 +13,8 @@ Changelog
     - `report_qim_diabetes` and others accepts a `type_diabetes` option
     - also determined  by active `self$qim_diabetes_showType` (and private and reactive versions)
     - userInterface adds pushbutton to turn on/off `self$qim_diabetes_showType` (default ON)
+  + for CVD risk (QIM 08) add the condition that either diabetes must be diagnosed
+    or has been checked (BSL or HbA1C) within the past two years
 * `Proportion_Demographic` : proportion of measurement in each demographic sub-group
 * `add_demographics` : function to add demographics to dataframe
 * add `store` option for `report_qim_*`, `list_qim_*` and `list_qim_*_appointments` methods.

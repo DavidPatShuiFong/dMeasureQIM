@@ -418,7 +418,7 @@ list_qim_cst_appointments <- function(dMeasureQIM_obj,
     }
 
     if (!lazy) {
-      self$list_qim_cst(
+      appointments <- self$list_qim_cst(
         contact, date_from, date_to, clinicians,
         min_contact, min_date, max_date,
         contact_type, ignoreOld,
@@ -427,9 +427,11 @@ list_qim_cst_appointments <- function(dMeasureQIM_obj,
       self$dM$filter_appointments_time(date_from, date_to, clinicians,
         lazy = lazy
       )
+    } else {
+      appointments <- self$qim_cst_list
     }
 
-    appointments <- self$qim_cst_list %>>%
+    appointments <- appointments %>>%
       dplyr::left_join(self$dM$appointments_filtered_time,
         by = c("InternalID", "Patient"),
         copy = TRUE
@@ -586,19 +588,21 @@ report_qim_cst <- function(dMeasureQIM_obj,
       )
     }
 
-    if (!lazy) {
-      self$list_qim_cst(
-        contact, date_from, date_to, clinicians,
-        min_contact, min_date, max_date, contact_type,
-        ignoreOld, lazy, store
-      )
-    }
-
     report_groups <- c(demographic, "CSTDone")
     # group by both demographic groupings and measure ('only CSTDate') of interest
     # add a dummy string in case there are no demographic groups chosen!
 
-    report <- self$qim_cst_list %>>%
+    if (!lazy) {
+      report <- self$list_qim_cst(
+        contact, date_from, date_to, clinicians,
+        min_contact, min_date, max_date, contact_type,
+        ignoreOld, lazy, store
+      )
+    } else {
+      report <- self$qim_cst_list
+    }
+
+    report <- report %>>%
       dplyr::mutate(CSTDone = (CSTDate != -Inf)) %>>%
       # a measure is 'done' if it exists (not equal to Infinity)
       # if ignoreOld = TRUE, the the observation must fall within

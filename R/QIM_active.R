@@ -124,7 +124,7 @@ list_qim_active <- function(dMeasureQIM_obj,
     if (contact) {
       # choose from 'contact' lists, which are based on appointments, billings or services
       if (!lazy) {
-        self$dM$list_contact_count(
+        active_list <- self$dM$list_contact_count(
           date_from = date_from,
           date_to = date_to,
           clinicians = clinicians,
@@ -134,8 +134,11 @@ list_qim_active <- function(dMeasureQIM_obj,
           contact_type = contact_type,
           lazy = lazy
         )
+      } else {
+      active_list <- self$dM$contact_count_list
       }
-      active_list <- self$dM$contact_count_list %>>%
+
+      active_list <- active_list %>>%
         dplyr::select(-c(Latest)) # don't need this field. keeps 'InternalID' and 'Count'
       activeID <- active_list %>>%
         dplyr::pull(InternalID) %>>%
@@ -143,9 +146,11 @@ list_qim_active <- function(dMeasureQIM_obj,
     } else {
       # choose from appointment book alone
       if (!lazy) {
-        self$dM$filter_appointments()
+        active_df <- self$dM$filter_appointments()
+      } else {
+        active_df <- self$dM$appointments_filtered
       }
-      active_df <- self$dM$appointments_filtered %>>%
+      active_df <- active_df %>>%
         dplyr::select(InternalID) %>>%
         dplyr::group_by(InternalID) %>>%
         dplyr::summarise(Count = count()) %>>%
@@ -312,12 +317,14 @@ report_qim_active <- function(dMeasureQIM_obj,
     }
 
     if (!lazy) {
-      self$list_qim_active(
+      report <- self$list_qim_active(
         contact, date_from, date_to, clinicians,
         min_contact, min_date, max_date,
         contact_type,
         lazy, store
       )
+    } else {
+      report <- self$qim_active_list
     }
 
     report_groups <- demographic
@@ -325,7 +332,7 @@ report_qim_active <- function(dMeasureQIM_obj,
     # group by demographic groupings
     # ?add a dummy string in case there are no demographic chosen!
 
-    report <- self$qim_active_list %>>%
+    report <- report %>>%
       dplyr::group_by_at(report_groups) %>>%
       # group_by_at takes a vector of strings
       # note that group_by_at will be deprecated in dplyr 1.0.0

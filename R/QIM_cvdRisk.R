@@ -25,32 +25,49 @@ NULL
     Sexuality = character(),
     CardiovascularDisease = logical(),
     Diabetes = logical(),
-    SmokingDate = as.Date(integer(0),
+    SmokingDate = as.Date(
+      integer(0),
       origin = "1970-01-01"
     ),
     SmokingStatus = character(),
-    UrineAlbuminDate = as.Date(integer(0),
+    UrineAlbuminDate = as.Date(
+      integer(0),
       origin = "1970-01-01"
     ),
     UrineAlbuminValue = double(),
     UrineAlbuminUnits = character(),
     PersistentProteinuria = logical(),
-    eGFRDate = as.Date(integer(0),
+    eGFRDate = as.Date(
+      integer(0),
       origin = "1970-01-01"
     ),
     eGFRValue = double(),
     eGFRUnits = character(),
     FamilialHypercholesterolaemia = logical(),
     LVH = logical(),
-    CholesterolDate = as.Date(integer(0),
+    CholesterolDate = as.Date(
+      integer(0),
       origin = "1970-01-01"
     ),
     Cholesterol = double(), HDL = double(), LDL = double(),
     Triglycerides = double(), CholHDLRatio = double(),
-    BPDate = as.Date(integer(0),
+    BPDate = as.Date(
+      integer(0),
       origin = "1970-01-01"
     ),
     BP = character(),
+    HbA1CDate = as.Date(
+      integer(0),
+      origin = "1970-01-01"
+    ),
+    HbA1CValue = double(),
+    HbA1CUnits = character(),
+    GlucoseDate = as.Date(
+      integer(0),
+      origin = "1970-01-01"
+    ),
+    GlucoseValue = double(),
+    GlucoseUnits = character(),
     frisk = double(), friskHI = character(),
     stringsAsFactors = FALSE
   )
@@ -102,6 +119,9 @@ NULL
 #'     (optional - excluded by default - see $qim_cvdRisk_measure)
 #'
 #'  Presence of diabetes. Diabetes and microalbuminuria
+#'
+#'  if the person does not have diabetes, then the person must have a blood
+#'  sugar reading or HbA1C done (within two years)
 #'
 #'  eGFR
 #'
@@ -295,52 +315,92 @@ list_qim_cvdRisk <- function(dMeasureQIM_obj,
     cvdRisk_list <- cvdRisk_list %>>%
       dplyr::mutate(CardiovascularDisease = InternalID %in% cvdID) %>>%
       dplyr::mutate(Diabetes = InternalID %in% diabetesID) %>>%
-      dplyr::left_join(self$dM$smoking_obs(cvdRiskID,
-        date_from = obs_from, date_to = date_to
-      ),
-      by = "InternalID",
-      copy = TRUE
+      dplyr::left_join(
+        self$dM$smoking_obs(
+          cvdRiskID,
+          date_from = obs_from, date_to = date_to
+        ),
+        by = "InternalID",
+        copy = TRUE
       ) %>>%
-      dplyr::left_join(self$dM$UrineAlbumin_obs(cvdRiskID,
-        date_from = obs_from, date_to = date_to
-      ),
-      by = "InternalID",
-      copy = TRUE
+      dplyr::left_join(
+        self$dM$UrineAlbumin_obs(
+          cvdRiskID,
+          date_from = obs_from, date_to = date_to
+        ),
+        by = "InternalID",
+        copy = TRUE
       ) %>>%
-      dplyr::left_join(self$dM$PersistentProteinuria_obs(cvdRiskID,
-        date_from = obs_from, date_to = date_to
-      ),
-      by = "InternalID",
-      copy = TRUE
+      dplyr::left_join(
+        self$dM$PersistentProteinuria_obs(
+          cvdRiskID,
+          date_from = obs_from, date_to = date_to
+        ),
+        by = "InternalID",
+        copy = TRUE
       ) %>>%
-      dplyr::left_join(self$dM$eGFR_obs(cvdRiskID,
-        date_from = obs_from,
-        date_to = date_to
-      ),
-      by = "InternalID",
-      copy = TRUE
+      dplyr::left_join(
+        self$dM$eGFR_obs(
+          cvdRiskID,
+          date_from = obs_from,
+          date_to = date_to
+        ),
+        by = "InternalID",
+        copy = TRUE
       ) %>>%
-      dplyr::mutate(FamilialHypercholesterolaemia = InternalID %in%
-        fHypercholesterolaemiaID) %>>%
-      dplyr::mutate(LVH = InternalID %in%
-        lvhID) %>>%
-      dplyr::left_join(self$dM$Cholesterol_obs(cvdRiskID,
-        date_from = obs_from,
-        date_to = date_to
-      ),
-      by = "InternalID",
-      copy = TRUE
+      dplyr::mutate(
+        FamilialHypercholesterolaemia = InternalID %in% fHypercholesterolaemiaID
       ) %>>%
-      dplyr::left_join(self$dM$BloodPressure_obs(cvdRiskID,
-        date_from = obs_from,
-        date_to = date_to
-      ),
-      by = "InternalID",
-      copy = TRUE
+      dplyr::mutate(
+        LVH = InternalID %in% lvhID) %>>%
+      dplyr::left_join(
+        self$dM$Cholesterol_obs(
+          cvdRiskID,
+          date_from = obs_from,
+          date_to = date_to
+        ),
+        by = "InternalID",
+        copy = TRUE
+      ) %>>%
+      dplyr::left_join(
+        self$dM$BloodPressure_obs(
+          cvdRiskID,
+          date_from = obs_from,
+          date_to = date_to
+        ),
+        by = "InternalID",
+        copy = TRUE
+      ) %>>%
+      dplyr::left_join(
+        self$dM$HbA1C_obs(
+          cvdRiskID,
+          date_from = dplyr::if_else(
+            ignoreOld,
+            as.Date(
+              seq.Date(date_to, length = 2, by = "-2 year")[[2]]
+              # up to 2 years back (not the default for HbA1C_obs)
+            ),
+            as.Date(-Inf, origin = "1970-01-01")
+          ),
+          date_to = date_to
+        ),
+        by = "InternalID",
+        copy = TRUE
+      ) %>>%
+      dplyr::left_join(
+        self$dM$glucose_obs(
+          cvdRiskID,
+          date_from = obs_from, # default is two years old
+          date_to = date_to
+        ),
+        by = "InternalID",
+        copy = TRUE
       ) %>>%
       dMeasureQIM::add_demographics(self$dM, date_to) %>>%
-      dplyr::mutate(Age = dMeasure::calc_age(as.Date(DOB), date_to)) %>>% {
-        dplyr::left_join(., framinghamRiskEquation::framingham_riskequation(.),
+      dplyr::mutate(Age = dMeasure::calc_age(as.Date(DOB), date_to)) %>>%
+      {
+        dplyr::left_join(
+          ., framinghamRiskEquation::framingham_riskequation(.),
           by = "InternalID"
         )
       } %>>%
@@ -353,7 +413,10 @@ list_qim_cvdRisk <- function(dMeasureQIM_obj,
         PersistentProteinuria, eGFRDate, eGFRValue, eGFRUnits,
         FamilialHypercholesterolaemia, LVH,
         CholesterolDate, Cholesterol, HDL, LDL, Triglycerides, CholHDLRatio,
-        BPDate, BP, frisk, friskHI
+        BPDate, BP,
+        HbA1CDate, HbA1CValue, HbA1CUnits,
+        GlucoseDate, GlucoseValue, GlucoseUnits,
+        frisk, friskHI
       )
 
     if (store) {
@@ -432,6 +495,18 @@ list_qim_cvdRisk <- function(dMeasureQIM_obj,
       origin = "1970-01-01"
     ),
     BP = character(),
+    HbA1CDate = as.Date(
+      integer(0),
+      origin = "1970-01-01"
+    ),
+    HbA1CValue = double(),
+    HbA1CUnits = character(),
+    GlucoseDate = as.Date(
+      integer(0),
+      origin = "1970-01-01"
+    ),
+    GlucoseValue = double(),
+    GlucoseUnits = character(),
     frisk = double(), friskHI = character(),
     stringsAsFactors = FALSE
   )
@@ -575,19 +650,23 @@ list_qim_cvdRisk_appointments <- function(dMeasureQIM_obj,
     }
 
     if (!lazy) {
-      self$list_qim_cvdRisk(
+      appointments <- self$list_qim_cvdRisk(
         contact, date_from, date_to, clinicians,
         min_contact, min_date, max_date,
         contact_type, ignoreOld,
         lazy, store
       )
-      self$dM$filter_appointments_time(date_from, date_to, clinicians,
+      self$dM$filter_appointments_time(
+        date_from, date_to, clinicians,
         lazy = lazy
       )
+    } else {
+      appointments <- self$qim_cvdRisk_list
     }
 
-    appointments <- self$qim_cvdRisk_list %>>%
-      dplyr::left_join(self$dM$appointments_filtered_time,
+    appointments <- appointments %>>%
+      dplyr::left_join(
+        self$dM$appointments_filtered_time,
         by = c("InternalID", "Patient"),
         copy = TRUE
       ) %>>%
@@ -739,20 +818,27 @@ report_qim_cvdRisk <- function(dMeasureQIM_obj,
       )
     }
 
-    if (!lazy) {
-      self$list_qim_cvdRisk(
-        contact, date_from, date_to, clinicians,
-        min_contact, min_date, max_date, contact_type,
-        ignoreOld, lazy, store
-      )
-    }
-
     report_groups <- c(demographic, "CVDriskDone")
     # group by both demographic groupings and measures of interest
     # add a dummy string in case there are no demographic or measure groups chosen!
 
-    report <- self$qim_cvdRisk_list %>>%
-      dplyr::mutate(CVDriskDone = !is.na(frisk) | !is.na(friskHI)) %>>%
+    if (!lazy) {
+      report <- self$list_qim_cvdRisk(
+        contact, date_from, date_to, clinicians,
+        min_contact, min_date, max_date, contact_type,
+        ignoreOld, lazy, store
+      )
+    } else {
+      report <- self$qim_cvdRisk_list
+    }
+    report <- report %>>%
+      dplyr::mutate(
+        CVDriskDone =
+          (!is.na(frisk) | !is.na(friskHI)) &
+          # needs to be able to do a risk calculation
+          (Diabetes | !is.na(HbA1CDate) | !is.na(GlucoseDate))
+        # and need to know whether has diabetes (or has been checked)
+      ) %>>%
       # a measure is 'done' if it exists (not NA)
       # if ignoreOld = TRUE, the the observation must fall within
       #  the required timeframe

@@ -342,7 +342,7 @@ list_qim_copd_appointments <- function(contact = NA,
     }
 
     if (!lazy) {
-      self$list_qim_copd(
+      appointments <- self$list_qim_copd(
         contact, date_from, date_to, clinicians,
         min_contact, min_date, max_date,
         contact_type,
@@ -351,9 +351,11 @@ list_qim_copd_appointments <- function(contact = NA,
       self$dM$filter_appointments_time(date_from, date_to, clinicians,
         lazy = lazy
       )
+    } else {
+      appointments <- self$qim_copd_list
     }
 
-    appointments <- self$qim_copd_list %>>%
+    appointments <- appointments %>>%
       dplyr::left_join(self$dM$appointments_filtered_time,
         by = c("InternalID", "Patient"),
         copy = TRUE
@@ -507,19 +509,21 @@ report_qim_copd <- function(dMeasureQIM_obj,
       )
     }
 
-    if (!lazy) {
-      self$list_qim_copd(
-        contact, date_from, date_to, clinicians,
-        min_contact, min_date, max_date, contact_type,
-        ignoreOld, lazy, store
-      )
-    }
-
     report_groups <- c(demographic, "InfluenzaDone")
     # group by both demographic groupings and measures of interest
     # add a dummy string in case there are no demographic or measure groups chosen!
 
-    report <- self$qim_copd_list %>>%
+    if (!lazy) {
+      report <- self$list_qim_copd(
+        contact, date_from, date_to, clinicians,
+        min_contact, min_date, max_date, contact_type,
+        ignoreOld, lazy, store
+      )
+    } else {
+      report <- self$qim_copd_list
+    }
+
+    report <- report %>>%
       dplyr::mutate(InfluenzaDone = !is.na(FluvaxDate)) %>>%
       # a measure is 'done' if it exists (not NA)
       # if ignoreOld = TRUE, the the observation must fall within

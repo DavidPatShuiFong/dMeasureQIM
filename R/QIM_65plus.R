@@ -136,14 +136,16 @@ list_qim_65plus <- function(dMeasureQIM_obj,
 
     if (contact) {
       if (!lazy) {
-        self$dM$list_contact_65plus(
+        sixtyfiveplus_list <- self$dM$list_contact_65plus(
           date_from, date_to, clinicians,
           min_contact, min_date, max_date,
           contact_type,
           lazy
         )
+      } else {
+        sixtyfiveplus_list <- self$dM$contact_65plus_list
       }
-      sixtyfiveplus_list <- self$dM$contact_65plus_list %>>%
+      sixtyfiveplus_list <- sixtyfiveplus_list %>>%
         dplyr::select(-c(Count, Latest)) # don't need these fields
       sixtyfiveplusID <- sixtyfiveplus_list %>>%
         dplyr::pull(InternalID) %>>%
@@ -342,7 +344,7 @@ list_qim_65plus_appointments <- function(dMeasureQIM_obj,
     }
 
     if (!lazy) {
-      self$list_qim_65plus(
+      appointments <- self$list_qim_65plus(
         contact, date_from, date_to, clinicians,
         min_contact, min_date, max_date,
         contact_type, ignoreOld,
@@ -351,9 +353,11 @@ list_qim_65plus_appointments <- function(dMeasureQIM_obj,
       self$dM$filter_appointments_time(date_from, date_to, clinicians,
         lazy = lazy
       )
+    } else {
+      appointments <- self$qim_65plus_list
     }
 
-    appointments <- self$qim_65plus_list %>>%
+    appointments <- appointments %>>%
       dplyr::left_join(self$dM$appointments_filtered_time,
         by = c("InternalID", "Patient"),
         copy = TRUE
@@ -509,19 +513,21 @@ report_qim_65plus <- function(dMeasureQIM_obj,
       )
     }
 
-    if (!lazy) {
-      self$list_qim_65plus(
-        contact, date_from, date_to, clinicians,
-        min_contact, min_date, max_date, contact_type,
-        ignoreOld, lazy, store
-      )
-    }
-
     report_groups <- c(demographic, "InfluenzaDone")
     # group by both demographic groupings and measures of interest
     # add a dummy string in case there are no demographic or measure groups chosen!
 
-    report <- self$qim_65plus_list %>>%
+    if (!lazy) {
+      report <- self$list_qim_65plus(
+        contact, date_from, date_to, clinicians,
+        min_contact, min_date, max_date, contact_type,
+        ignoreOld, lazy, store
+      )
+    } else {
+      report <- self$qim_65plus_list
+    }
+
+    report <- report %>>%
       dplyr::mutate(InfluenzaDone = !is.na(FluvaxDate)) %>>%
       # a measure is 'done' if it exists (not NA)
       # if ignoreOld = TRUE, the the observation must fall within

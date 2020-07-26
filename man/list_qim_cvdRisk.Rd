@@ -76,6 +76,9 @@ required parameters
 
  Presence of diabetes. Diabetes and microalbuminuria
 
+ if the person does not have diabetes, then the person must have a blood
+ sugar reading or HbA1C done (within two years)
+
  eGFR
 
  previous diagnosis of familial hypercholesterolaemia

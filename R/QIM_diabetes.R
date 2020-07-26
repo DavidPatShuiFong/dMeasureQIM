@@ -224,22 +224,24 @@ list_qim_diabetes <- function(dMeasureQIM_obj,
     # returns InternalID, FluVaxName, FluvaxDate
 
     HbA1CList <- self$dM$HbA1C_obs(diabetesID,
-      date_from = ifelse(ignoreOld,
+      date_from = ifelse(
+        ignoreOld,
         NA,
         as.Date(-Inf, origin = "1970-01-01")
       ),
-      # if ignoreOld, then influenza_vax will (given NA)
+      # if ignoreOld, then HbA1C will (given NA)
       # calculate date_from as fifteen months before date_to
       date_to = date_to
     )
     # returns dataframe of InternalID, HbA1CDate, HbA1CValue, HbA1CUnits
 
     BPList <- self$dM$BloodPressure_obs(diabetesID,
-      date_from = ifelse(ignoreOld,
+      date_from = ifelse(
+        ignoreOld,
         NA,
         as.Date(-Inf, origin = "1970-01-01")
       ),
-      # if ignoreOld, then influenza_vax will (given NA)
+      # if ignoreOld, then BP will (given NA)
       # calculate date_from as fifteen months before date_to
       date_to = date_to
     )
@@ -482,7 +484,7 @@ list_qim_diabetes_appointments <- function(dMeasureQIM_obj,
     }
 
     if (!lazy) {
-      self$list_qim_diabetes(
+      appointments <- self$list_qim_diabetes(
         contact, date_from, date_to, clinicians,
         min_contact, min_date, max_date,
         contact_type, type_diabetes, ignoreOld,
@@ -491,9 +493,11 @@ list_qim_diabetes_appointments <- function(dMeasureQIM_obj,
       self$dM$filter_appointments_time(date_from, date_to, clinicians,
         lazy = lazy
       )
+    } else {
+      appointments <- self$qim_diabetes_list
     }
 
-    self$qim_diabetes_list_appointments <- self$qim_diabetes_list %>>%
+    appointments <- appointments %>>%
       dplyr::left_join(self$dM$appointments_filtered_time,
         by = c("InternalID", "Patient"),
         copy = TRUE
@@ -503,7 +507,7 @@ list_qim_diabetes_appointments <- function(dMeasureQIM_obj,
         Provider, Status, tidyselect::everything()
       )
 
-    appointments <- self$qim_diabetes_list_appointments
+    self$qim_diabetes_list_appointments <- appointments
 
     if (self$dM$Log) {
       self$dM$config_db$duration_log_db(log_id)
@@ -669,16 +673,6 @@ report_qim_diabetes <- function(dMeasureQIM_obj,
       )
     }
 
-    if (!lazy) {
-      self$list_qim_diabetes(
-        contact, date_from, date_to, clinicians,
-        min_contact, min_date, max_date, contact_type,
-        ignoreOld, lazy, store
-      )
-    }
-
-    report <- self$qim_diabetes_list
-
     if (type_diabetes) {
       demographic <- c(demographic, "DiabetesType")
       # diabetes type becomes a 'grouping' demographic
@@ -694,6 +688,16 @@ report_qim_diabetes <- function(dMeasureQIM_obj,
     # group by both demographic groupings and measures of interest
     # add a dummy string in case there are no demographic or measure groups chosen!
     # (dummy string not required?, both group_by_at accepts NULL)
+
+    if (!lazy) {
+      report <- self$list_qim_diabetes(
+        contact, date_from, date_to, clinicians,
+        min_contact, min_date, max_date, contact_type,
+        ignoreOld, lazy, store
+      )
+    } else {
+      report <- self$qim_diabetes_list
+    }
 
     report <- report %>>%
       dplyr::mutate(
