@@ -15,7 +15,8 @@ list_qim_65plus_appointments(
   max_date = NA,
   contact_type = NA,
   ignoreOld = NA,
-  lazy = FALSE
+  lazy = FALSE,
+  store = TRUE
 )
 }
 \arguments{
@@ -43,6 +44,8 @@ FALSE chooses the 'appointment' system $diabetes_list from dMeasure object.}
 if not supplied, reads $qim_ignoreOld}
 
 \item{lazy}{recalculate the 65+ contact list?}
+
+\item{store}{keep result in self$qim_65plus_list_appointments}
 }
 \value{
 dataframe of Patient (name), InternalID and measures

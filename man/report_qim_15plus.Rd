@@ -56,7 +56,7 @@ if not supplied, reads $qim_ignoreOld}
 
 \item{lazy}{recalculate the diabetes contact list?}
 
-\item{store}{keep result in}
+\item{store}{keep result in self$qim_15plus_report}
 }
 \value{
 dataframe of Patient (name), demographics, measures (done or not),

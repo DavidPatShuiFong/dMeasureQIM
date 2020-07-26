@@ -45,6 +45,7 @@ NULL
 #' @param max_date most recent contact at most max_date. default is $contact_maxDate
 #' @param contact_type contact types which are accepted. default is $contact_type
 #' @param lazy recalculate the diabetes contact list?
+#' @param store keep result in self$qim_active_list
 #'
 #' @return dataframe of Patient (name), InternalID and demographics
 #' @export
@@ -57,11 +58,12 @@ list_qim_active <- function(dMeasureQIM_obj,
                             min_date = NA,
                             max_date = NA,
                             contact_type = NA,
-                            lazy = FALSE) {
+                            lazy = FALSE,
+                            store = TRUE) {
   dMeasureQIM_obj$list_qim_active(
     contact, date_from, date_to, clinicians,
     min_contact, min_date, max_date, contact_type,
-    lazy
+    lazy, store
   )
 }
 .public(dMeasureQIM, "list_qim_active", function(contact = NA,
@@ -72,7 +74,8 @@ list_qim_active <- function(dMeasureQIM_obj,
                                                  min_date = NA,
                                                  max_date = NA,
                                                  contact_type = NA,
-                                                 lazy = FALSE) {
+                                                 lazy = FALSE,
+                                                 store = TRUE) {
   if (is.na(contact)) {
     contact <- self$qim_contact
   }
@@ -106,6 +109,8 @@ list_qim_active <- function(dMeasureQIM_obj,
   if (all(is.na(clinicians)) || length(clinicians) == 0) {
     clinicians <- c("") # dplyr::filter does not work on zero-length list()
   }
+
+  active_list <- self$qim_active_list
 
   if (self$dM$emr_db$is_open()) {
     # only if EMR database is open
@@ -165,14 +170,16 @@ list_qim_active <- function(dMeasureQIM_obj,
       dMeasureQIM::add_demographics(self$dM, date_to) %>>%
       dplyr::select(-DOB)
 
-    self$qim_active_list <- active_list
+    if (store) {
+      self$qim_active_list <- active_list
+    }
 
     if (self$dM$Log) {
       self$dM$config_db$duration_log_db(log_id)
     }
   }
 
-  return(self$qim_active_list)
+  return(active_list)
 })
 .reactive_event(
   dMeasureQIM, "qim_active_listR",
@@ -309,7 +316,7 @@ report_qim_active <- function(dMeasureQIM_obj,
         contact, date_from, date_to, clinicians,
         min_contact, min_date, max_date,
         contact_type,
-        lazy
+        lazy, store
       )
     }
 

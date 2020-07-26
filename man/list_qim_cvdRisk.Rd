@@ -15,7 +15,8 @@ list_qim_cvdRisk(
   max_date = NA,
   contact_type = NA,
   ignoreOld = NA,
-  lazy = FALSE
+  lazy = FALSE,
+  store = TRUE
 )
 }
 \arguments{
@@ -45,6 +46,8 @@ list_qim_cvdRisk(
 if not supplied, reads $qim_ignoreOld}
 
 \item{lazy}{recalculate the copd contact list?}
+
+\item{store}{keep result in self$qim_cvdRisk_list_appointments}
 }
 \value{
 dataframe of Patient (name), InternalID and measures

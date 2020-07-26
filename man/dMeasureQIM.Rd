@@ -52,7 +52,8 @@ dMeasureQIM class
   max_date = NA,
   contact_type = NA,
   ignoreOld = NA,
-  lazy = FALSE
+  lazy = FALSE,
+  store = TRUE
 )}\if{html}{\out{</div>}}
 }
 
@@ -72,7 +73,8 @@ dMeasureQIM class
   max_date = NA,
   contact_type = NA,
   ignoreOld = NA,
-  lazy = FALSE
+  lazy = FALSE,
+  store = TRUE
 )}\if{html}{\out{</div>}}
 }
 
@@ -115,7 +117,8 @@ dMeasureQIM class
   max_date = NA,
   contact_type = NA,
   ignoreOld = NA,
-  lazy = FALSE
+  lazy = FALSE,
+  store = TRUE
 )}\if{html}{\out{</div>}}
 }
 
@@ -135,7 +138,8 @@ dMeasureQIM class
   max_date = NA,
   contact_type = NA,
   ignoreOld = NA,
-  lazy = FALSE
+  lazy = FALSE,
+  store = TRUE
 )}\if{html}{\out{</div>}}
 }
 
@@ -176,7 +180,8 @@ dMeasureQIM class
   min_date = NA,
   max_date = NA,
   contact_type = NA,
-  lazy = FALSE
+  lazy = FALSE,
+  store = TRUE
 )}\if{html}{\out{</div>}}
 }
 
@@ -217,7 +222,8 @@ dMeasureQIM class
   max_date = NA,
   contact_type = NA,
   ignoreOld = NA,
-  lazy = FALSE
+  lazy = FALSE,
+  store = TRUE
 )}\if{html}{\out{</div>}}
 }
 
@@ -237,7 +243,8 @@ dMeasureQIM class
   max_date = NA,
   contact_type = NA,
   ignoreOld = NA,
-  lazy = FALSE
+  lazy = FALSE,
+  store = TRUE
 )}\if{html}{\out{</div>}}
 }
 
@@ -279,7 +286,8 @@ dMeasureQIM class
   max_date = NA,
   contact_type = NA,
   ignoreOld = NA,
-  lazy = FALSE
+  lazy = FALSE,
+  store = TRUE
 )}\if{html}{\out{</div>}}
 }
 
@@ -299,7 +307,8 @@ dMeasureQIM class
   max_date = NA,
   contact_type = NA,
   ignoreOld = NA,
-  lazy = FALSE
+  lazy = FALSE,
+  store = TRUE
 )}\if{html}{\out{</div>}}
 }
 
@@ -320,7 +329,8 @@ dMeasureQIM class
   contact_type = NA,
   demographic = NA,
   ignoreOld = NA,
-  lazy = FALSE
+  lazy = FALSE,
+  store = TRUE
 )}\if{html}{\out{</div>}}
 }
 
@@ -340,7 +350,8 @@ dMeasureQIM class
   max_date = NA,
   contact_type = NA,
   ignoreOld = NA,
-  lazy = FALSE
+  lazy = FALSE,
+  store = TRUE
 )}\if{html}{\out{</div>}}
 }
 
@@ -360,7 +371,8 @@ dMeasureQIM class
   max_date = NA,
   contact_type = NA,
   ignoreOld = NA,
-  lazy = FALSE
+  lazy = FALSE,
+  store = TRUE
 )}\if{html}{\out{</div>}}
 }
 
@@ -425,7 +437,8 @@ dMeasureQIM class
   contact_type = NA,
   type_diabetes = NA,
   ignoreOld = NA,
-  lazy = FALSE
+  lazy = FALSE,
+  store = TRUE
 )}\if{html}{\out{</div>}}
 }
 

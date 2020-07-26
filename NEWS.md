@@ -15,7 +15,7 @@ Changelog
     - userInterface adds pushbutton to turn on/off `self$qim_diabetes_showType` (default ON)
 * `Proportion_Demographic` : proportion of measurement in each demographic sub-group
 * `add_demographics` : function to add demographics to dataframe
-* add `store` option for `report_qim_*` methods.
+* add `store` option for `report_qim_*`, `list_qim_*` and `list_qim_*_appointments` methods.
   + by default, set to `TRUE`, store result to `self$qim_*_report`
   + if `FALSE`, the results are returned, but not stored to `self$qim_*_report`
 

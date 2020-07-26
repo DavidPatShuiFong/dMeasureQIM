@@ -132,6 +132,7 @@ NULL
 #' @param ignoreOld ignore results/observatioins that don't qualify for quality improvement measures
 #'  if not supplied, reads $qim_ignoreOld
 #' @param lazy recalculate the copd contact list?
+#' @param store keep result in self$qim_cvdRisk_list_appointments
 #'
 #' @return dataframe of Patient (name), InternalID and measures
 #' @export
@@ -144,12 +145,13 @@ list_qim_cvdRisk <- function(dMeasureQIM_obj,
                              min_date = NA, max_date = NA,
                              contact_type = NA,
                              ignoreOld = NA,
-                             lazy = FALSE) {
+                             lazy = FALSE,
+                             store = TRUE) {
   dMeasureQIM_obj$list_qim_cvdRisk(
     contact, date_from, date_to, clinicians,
     min_contact, min_date, max_date, contact_type,
     ignoreOld,
-    lazy
+    lazy, store
   )
 }
 
@@ -161,7 +163,8 @@ list_qim_cvdRisk <- function(dMeasureQIM_obj,
                                                   min_date = NA, max_date = NA,
                                                   contact_type = NA,
                                                   ignoreOld = NA,
-                                                  lazy = FALSE) {
+                                                  lazy = FALSE,
+                                                  store = TRUE) {
   if (is.na(contact)) {
     contact <- self$qim_contact
   }
@@ -201,6 +204,8 @@ list_qim_cvdRisk <- function(dMeasureQIM_obj,
   if (all(is.na(clinicians)) || length(clinicians) == 0) {
     clinicians <- c("") # dplyr::filter does not work on zero-length list()
   }
+
+  cvdRisk_list <- self$qim_cvdRisk_list
 
   if (self$dM$emr_db$is_open()) {
     # only if EMR database is open
@@ -351,14 +356,16 @@ list_qim_cvdRisk <- function(dMeasureQIM_obj,
         BPDate, BP, frisk, friskHI
       )
 
-    self$qim_cvdRisk_list <- cvdRisk_list
+    if (store) {
+      self$qim_cvdRisk_list <- cvdRisk_list
+    }
 
     if (self$dM$Log) {
       self$dM$config_db$duration_log_db(log_id)
     }
   }
 
-  return(self$qim_cvdRisk_list)
+  return(cvdRisk_list)
 })
 .reactive_event(
   dMeasureQIM, "qim_cvdRisk_listR",
@@ -483,6 +490,7 @@ list_qim_cvdRisk <- function(dMeasureQIM_obj,
 #' @param ignoreOld ignore results/observatioins that don't qualify for quality improvement measures
 #'  if not supplied, reads $qim_ignoreOld
 #' @param lazy recalculate the copd contact list?
+#' @param store keep result in self$qim_cvdRisk_list_appointments
 #'
 #' @return dataframe of Patient (name), InternalID, appointment details and measures
 #' @export
@@ -495,12 +503,13 @@ list_qim_cvdRisk_appointments <- function(dMeasureQIM_obj,
                                           min_date = NA, max_date = NA,
                                           contact_type = NA,
                                           ignoreOld = NA,
-                                          lazy = FALSE) {
+                                          lazy = FALSE,
+                                          store = TRUE) {
   dMeasureQIM_obj$list_qim_cvdRisk_appointments(
     contact, date_from, date_to, clinicians,
     min_contact, min_date, max_date, contact_type,
     ignoreOld,
-    lazy
+    lazy, store
   )
 }
 
@@ -512,7 +521,8 @@ list_qim_cvdRisk_appointments <- function(dMeasureQIM_obj,
                                                                min_date = NA, max_date = NA,
                                                                contact_type = NA,
                                                                ignoreOld = NA,
-                                                               lazy = FALSE) {
+                                                               lazy = FALSE,
+                                                               store = TRUE) {
   if (is.na(contact)) {
     contact <- self$qim_contact
   }
@@ -553,6 +563,8 @@ list_qim_cvdRisk_appointments <- function(dMeasureQIM_obj,
     clinicians <- c("") # dplyr::filter does not work on zero-length list()
   }
 
+  appointments <- self$qim_cvdRisk_list_appointments
+
   if (self$dM$emr_db$is_open()) {
     # only if EMR database is open
     if (self$dM$Log) {
@@ -567,14 +579,14 @@ list_qim_cvdRisk_appointments <- function(dMeasureQIM_obj,
         contact, date_from, date_to, clinicians,
         min_contact, min_date, max_date,
         contact_type, ignoreOld,
-        lazy
+        lazy, store
       )
       self$dM$filter_appointments_time(date_from, date_to, clinicians,
         lazy = lazy
       )
     }
 
-    self$qim_cvdRisk_list_appointments <- self$qim_cvdRisk_list %>>%
+    appointments <- self$qim_cvdRisk_list %>>%
       dplyr::left_join(self$dM$appointments_filtered_time,
         by = c("InternalID", "Patient"),
         copy = TRUE
@@ -584,12 +596,14 @@ list_qim_cvdRisk_appointments <- function(dMeasureQIM_obj,
         Provider, Status, tidyselect::everything()
       )
 
+    self$qim_cvdRisk_list_appointments <- appointments
+
     if (self$dM$Log) {
       self$dM$config_db$duration_log_db(log_id)
     }
   }
 
-  return(self$qim_cvdRisk_list_appointments)
+  return(appointments)
 })
 .reactive_event(
   dMeasureQIM, "qim_cvdRisk_list_appointmentsR",
@@ -729,7 +743,7 @@ report_qim_cvdRisk <- function(dMeasureQIM_obj,
       self$list_qim_cvdRisk(
         contact, date_from, date_to, clinicians,
         min_contact, min_date, max_date, contact_type,
-        ignoreOld, lazy
+        ignoreOld, lazy, store
       )
     }
 
