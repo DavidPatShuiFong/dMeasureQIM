@@ -244,9 +244,14 @@ list_qim_15plus <- function(dMeasureQIM_obj,
             ObservationDate <= date_to
           ) %>>%
           dplyr::group_by(InternalID, ObservationCode) %>>%
-          dplyr::filter(ObservationDate == max(ObservationDate, na.rm = TRUE)) %>>%
-          # the most recent observation by InternalID and ObservationCode
-          dplyr::filter(ObservationTime == max(ObservationTime, na.rm = TRUE)) %>>%
+          dplyr::arrange(
+            dplyr::desc(ObservationDate), dplyr::desc(ObservationTime),
+            .by_group = TRUE
+          ) %>>%
+          dplyr::filter(dplyr::row_number() == 1) %>>%
+          # choose 'maximum' ObservationDate and ObservationTime
+          # breaking 'ties'. 'arrange' places NA at end, so using 'desc' places 'max'
+          # on the 'top'
           dplyr::ungroup() %>>%
           dplyr::collect() %>>%
           dplyr::mutate(ObservationDate = as.Date(ObservationDate)) %>>%

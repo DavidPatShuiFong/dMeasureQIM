@@ -214,7 +214,10 @@ list_qim_cst <- function(dMeasureQIM_obj,
       # only test dates (and names) less than the joined appointment date are kept
       dplyr::group_by(InternalID) %>>%
       # group by patient ID (need most recent investigation for each patient)
-      dplyr::filter(TestDate == max(TestDate, na.rm = TRUE)) %>>%
+      dplyr::arrange(dplyr::desc(TestDate), .by_group = TRUE) %>>%
+      dplyr::filter(dplyr::row_number() == 1) %>>%
+      # 'max' of TestDate, breaking 'ties'
+      # 'arrange' places NA at end of list, so using 'desc' places 'max' on 'top'
       dplyr::ungroup() %>>%
       dplyr::mutate(TestAge = dMeasure::interval(TestDate, date_to)$year) %>>%
       # 'current' time is date_to

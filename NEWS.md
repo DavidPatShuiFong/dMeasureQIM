@@ -24,6 +24,8 @@ Changelog
 ## Bugfix
 
 * QIM 02 15+ smoking `list_qim15_plus` : `ignoreOld` now ignores results more than one year old
+* replace `dplyr::filter(x == max(x))` with `dplyr::arrange(dplyr::desc(x), .by_group = TRUE) %>>% dplyr::filter(dplyr::row_number() == 1)`
+  + `arrange`/`row_number` breaks 'ties', where more than one of 'max' value
 
 ## Changes
 
