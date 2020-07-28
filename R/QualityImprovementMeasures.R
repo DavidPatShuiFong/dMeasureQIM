@@ -221,12 +221,12 @@ add_demographics <- function(df, dM, reference_date) {
           65
         ),
       # round age group to nearest 10 years, starting age 5, minimum 0 and maximum 65
-      Ethnicity = dplyr::na_if(Ethnicity, ""),
+      Ethnicity = dplyr::na_if(Ethnicity, ""), # changes "" to NA
       Indigenous = dplyr::case_when(
         Ethnicity == "Aboriginal" ~ "Aboriginal",
         Ethnicity == "Torres Strait Islander" ~ "Torres Strait Islander",
         Ethnicity == "Aboriginal/Torres Strait Islander" ~ "Both Aboriginal and Torres Strait Islander",
-        Ethnicity == "" ~ "Not stated",
+        is.na(Ethnicity) ~ "Not stated",
         TRUE ~ "Neither"
       ),
       MaritalStatus = dplyr::na_if(MaritalStatus, ""),
