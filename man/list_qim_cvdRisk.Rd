@@ -15,7 +15,8 @@ list_qim_cvdRisk(
   max_date = NA,
   contact_type = NA,
   ignoreOld = NA,
-  lazy = FALSE
+  lazy = FALSE,
+  store = TRUE
 )
 }
 \arguments{
@@ -45,6 +46,8 @@ list_qim_cvdRisk(
 if not supplied, reads $qim_ignoreOld}
 
 \item{lazy}{recalculate the copd contact list?}
+
+\item{store}{keep result in self$qim_cvdRisk_list_appointments}
 }
 \value{
 dataframe of Patient (name), InternalID and measures
@@ -72,6 +75,9 @@ required parameters
     (optional - excluded by default - see $qim_cvdRisk_measure)
 
  Presence of diabetes. Diabetes and microalbuminuria
+
+ if the person does not have diabetes, then the person must have a blood
+ sugar reading or HbA1C done (within two years)
 
  eGFR
 

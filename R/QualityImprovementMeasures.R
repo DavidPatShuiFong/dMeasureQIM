@@ -4,6 +4,7 @@
 
 #' dMeasureQIM - Practice Incentive Program Quality Improvement Measures fields and methods
 #'
+#' @md
 #'
 #' @name qim
 #' @title dMeasure Quality Improvement Measures
@@ -11,6 +12,34 @@
 #' @include r6_helpers.R
 #' functions to help create R6 classes
 NULL
+
+#' dMeasureIntegration
+#'
+#' @name dMeasureIntegration
+#'
+#' @description integration with dMeasure
+#'   (especially DailyMeasure)
+#'
+#' @param information the information required
+#'   `Provides` - modules provided (in this case, `dMeasureQIMRept` and `dMeasureQIMAppt`)
+#'   `Requires` - the modules required (including `dMeasure`)
+#'   `moduleID` - IDs of modules to create
+#'
+#' @return vector of required information
+#'
+#' @export
+dMeasureIntegration <- function(information) {
+  if (information == "Provides") {return(c("dMeasureQIMRept", "dMeasureQIMAppt"))}
+  if (information == "Requires") {return(c("dMeasure"))}
+  if (information == "moduleID") {
+    return(
+      list(
+        list(ID = "qimRept", extraArgs = "contact = TRUE"),
+        list(ID = "qimAppt", extraArgs = "contact = FALSE")
+      )
+    )
+  }
+}
 
 #' dMeasureQIM class
 #' @title dMeasureQIM class
@@ -131,16 +160,16 @@ dMeasureQIM <- R6::R6Class("dMeasureQIM",
   if (!missing(value)) {
     warning("$qim_demographicGroupings is read-only.")
   } else {
-    return(c("Age5", "Sex", "Ethnicity", "MaritalStatus", "Sexuality"))
+    return(c("Age10", "Sex", "Ethnicity", "Indigenous", "MaritalStatus", "Sexuality"))
     # vector of valid demographic groups (for QIM reporting)
-    # Age in 5 year categories
+    # Age in 10 year categories
     # Ethnicity
     # MaritalStatus
     # Sexuality
   }
 })
 
-.private_init(dMeasureQIM, ".qim_demographicGroup", quote(self$qim_demographicGroupings))
+.private_init(dMeasureQIM, ".qim_demographicGroup", quote(c("Age10", "Sex", "Indigenous")))
 .active(dMeasureQIM, "qim_demographicGroup", function(value) {
   # minimum number of contacts listed in $list_contact_count
   if (missing(value)) {
@@ -152,3 +181,57 @@ dMeasureQIM <- R6::R6Class("dMeasureQIM",
   private$set_reactive(self$qim_demographicGroupR, value)
 })
 .reactive(dMeasureQIM, "qim_demographicGroupR", quote(self$qim_demographicGroupings))
+
+#' add demographics
+#'
+#' @param df dataframe with InternalID
+#' @param dM dMeasure object
+#' @param reference_date date to calculate age from
+#'
+#' @return df with DOB, Age10, Sex, Ethnicity, RecordNo,
+#'   MaritalStatus, Sexuality, Indigenous
+#' @export
+add_demographics <- function(df, dM, reference_date) {
+
+  intID <- df %>>% dplyr::pull(InternalID) %>>% c(-1)
+
+  df <- df  %>>%
+    dplyr::left_join(
+      dM$db$patients %>>%
+        dplyr::filter(InternalID %in% intID) %>>%
+        dplyr::select(InternalID, DOB, Sex, Ethnicity, RecordNo),
+      by = "InternalID",
+      copy = TRUE
+    ) %>>%
+    dplyr::left_join(
+      dM$db$clinical %>>%
+        dplyr::filter(InternalID %in% intID) %>>%
+        dplyr::select(InternalID, MaritalStatus, Sexuality),
+      by = "InternalID",
+      copy = TRUE
+    ) %>>%
+    dplyr::mutate(
+      DOB = as.Date(DOB, origin = "1970-01-01"),
+      Age10 =
+        pmin(
+          pmax(
+            0,
+            floor((dMeasure::calc_age(DOB, reference_date) - 5) / 10) * 10 + 5
+          ),
+          65
+        ),
+      # round age group to nearest 10 years, starting age 5, minimum 0 and maximum 65
+      Ethnicity = dplyr::na_if(Ethnicity, ""), # changes "" to NA
+      Indigenous = dplyr::case_when(
+        Ethnicity == "Aboriginal" ~ "Aboriginal",
+        Ethnicity == "Torres Strait Islander" ~ "Torres Strait Islander",
+        Ethnicity == "Aboriginal/Torres Strait Islander" ~ "Both Aboriginal and Torres Strait Islander",
+        is.na(Ethnicity) ~ "Not stated",
+        TRUE ~ "Neither"
+      ),
+      MaritalStatus = dplyr::na_if(MaritalStatus, ""),
+      Sexuality = dplyr::na_if(Sexuality, "")
+    )
+
+  return(df)
+}

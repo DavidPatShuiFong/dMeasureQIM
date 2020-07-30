@@ -17,8 +17,9 @@ NULL
     Patient = character(),
     InternalID = integer(),
     RecordNo = character(),
-    Age5 = integer(),
+    Age10 = integer(),
     Sex = character(),
+    Indigenos = character(),
     Ethnicity = character(),
     MaritalStatus = character(),
     Sexuality = character(),
@@ -35,7 +36,7 @@ NULL
 #'
 #' Filtered by date, and chosen clinicians
 #'
-#' QIM 06 -Proportion of patients with COPD who were immunised against influenza
+#' QIM 06 - Proportion of patients with COPD who were immunised against influenza
 #'
 #' the reference date for 'most recent' measurement is 'date_to'
 #'
@@ -53,6 +54,7 @@ NULL
 #' @param ignoreOld ignore results/observatioins that don't qualify for quality improvement measures
 #'  if not supplied, reads $qim_ignoreOld
 #' @param lazy recalculate the copd contact list?
+#' @param store keep result in self$qim_copd_list
 #'
 #' @return dataframe of Patient (name), InternalID, measures
 #' @export
@@ -66,12 +68,13 @@ list_qim_copd <- function(dMeasureQIM_obj,
                           max_date = NA,
                           contact_type = NA,
                           ignoreOld = NA,
-                          lazy = FALSE) {
+                          lazy = FALSE,
+                          store = TRUE) {
   dMeasureQIM_obj$list_qim_copd(
     contact, date_from, date_to, clinicians,
     min_contact, min_date, max_date, contact_type,
     ignoreOld,
-    lazy
+    lazy, store
   )
 }
 
@@ -84,7 +87,8 @@ list_qim_copd <- function(dMeasureQIM_obj,
                                                max_date = NA,
                                                contact_type = NA,
                                                ignoreOld = NA,
-                                               lazy = FALSE) {
+                                               lazy = FALSE,
+                                               store = TRUE) {
   if (is.na(contact)) {
     contact <- self$qim_contact
   }
@@ -118,6 +122,8 @@ list_qim_copd <- function(dMeasureQIM_obj,
   if (all(is.na(clinicians)) || length(clinicians) == 0) {
     clinicians <- c("") # dplyr::filter does not work on zero-length list()
   }
+
+  copd_list <- self$qim_copd_list
 
   if (self$dM$emr_db$is_open()) {
     # only if EMR database is open
@@ -166,36 +172,27 @@ list_qim_copd <- function(dMeasureQIM_obj,
     )
     # returns InternalID, FluVaxName, FluvaxDate
 
-    self$qim_copd_list <- copd_list %>>%
+    copd_list <- copd_list %>>%
       dplyr::left_join(fluvaxList,
         by = "InternalID",
         copy = TRUE
       ) %>>%
-      dplyr::left_join(self$dM$db$patients %>>%
-        dplyr::filter(InternalID %in% copdID) %>>%
-        dplyr::select(InternalID, DOB, Sex, Ethnicity, RecordNo),
-      by = "InternalID",
-      copy = TRUE
-      ) %>>%
-      dplyr::left_join(self$dM$db$clinical %>>%
-        dplyr::filter(InternalID %in% copdID) %>>%
-        dplyr::select(InternalID, MaritalStatus, Sexuality),
-      by = "InternalID",
-      copy = TRUE
-      ) %>>%
-      dplyr::mutate(Age5 = floor(dMeasure::calc_age(as.Date(DOB), date_to) / 5) * 5) %>>%
-      # round age group to nearest 5 years
+      dMeasureQIM::add_demographics(self$dM, date_to) %>>%
       dplyr::select(
-        Patient, InternalID, RecordNo, Sex, Ethnicity, MaritalStatus, Sexuality, Age5,
-        FluvaxDate, FluvaxName
+        Patient, InternalID, RecordNo, Sex, Ethnicity, MaritalStatus, Sexuality, Age10,
+        FluvaxDate, FluvaxName, Indigenous
       )
+
+    if (store) {
+      self$qim_copd_list <- copd_list
+    }
 
     if (self$dM$Log) {
       self$dM$config_db$duration_log_db(log_id)
     }
   }
 
-  return(self$qim_copd_list)
+  return(copd_list)
 })
 .reactive_event(
   dMeasureQIM, "qim_copd_listR",
@@ -228,7 +225,7 @@ list_qim_copd <- function(dMeasureQIM_obj,
     Provider = character(0),
     Status = character(0),
     RecordNo = character(),
-    Age5 = integer(),
+    Age10 = integer(),
     Sex = character(),
     Ethnicity = character(),
     MaritalStatus = character(),
@@ -245,7 +242,7 @@ list_qim_copd <- function(dMeasureQIM_obj,
 #'
 #' Filtered by date, and chosen clinicians
 #'
-#' QIM 06 -Proportion of patients with COPD who were immunised against influenza
+#' QIM 06 - Proportion of patients with COPD who were immunised against influenza
 #'
 #' the reference date for 'most recent' measurement is 'date_to'
 #'
@@ -263,6 +260,7 @@ list_qim_copd <- function(dMeasureQIM_obj,
 #' @param ignoreOld ignore results/observatioins that don't qualify for quality improvement measures
 #'  if not supplied, reads $qim_ignoreOld
 #' @param lazy recalculate the copd contact list?
+#' @param store keep result in self$qim_copd_list_appointments
 #'
 #' @return dataframe of Patient (name), InternalID, appointment details and measures
 #' @export
@@ -276,13 +274,14 @@ list_qim_copd_appointments <- function(contact = NA,
                                        max_date = NA,
                                        contact_type = NA,
                                        ignoreOld = NA,
-                                       lazy = FALSE) {
+                                       lazy = FALSE,
+                                       store = TRUE) {
   dMeasureQIM_obj$list_qim_copd_appointments(
     contact,
     date_from, date_to, clinicians,
     min_contact, min_date, max_date, contact_type,
     ignoreOld,
-    lazy
+    lazy, store
   )
 }
 
@@ -295,7 +294,8 @@ list_qim_copd_appointments <- function(contact = NA,
                                                             max_date = NA,
                                                             contact_type = NA,
                                                             ignoreOld = NA,
-                                                            lazy = FALSE) {
+                                                            lazy = FALSE,
+                                                            store = TRUE) {
   if (is.na(contact)) {
     contact <- self$qim_contact
   }
@@ -330,6 +330,8 @@ list_qim_copd_appointments <- function(contact = NA,
     clinicians <- c("") # dplyr::filter does not work on zero-length list()
   }
 
+  appointments <- self$qim_copd_list_appointments
+
   if (self$dM$emr_db$is_open()) {
     # only if EMR database is open
     if (self$dM$Log) {
@@ -340,18 +342,20 @@ list_qim_copd_appointments <- function(contact = NA,
     }
 
     if (!lazy) {
-      self$list_qim_copd(
+      appointments <- self$list_qim_copd(
         contact, date_from, date_to, clinicians,
         min_contact, min_date, max_date,
         contact_type,
-        lazy
+        lazy, store
       )
       self$dM$filter_appointments_time(date_from, date_to, clinicians,
         lazy = lazy
       )
+    } else {
+      appointments <- self$qim_copd_list
     }
 
-    self$qim_copd_list_appointments <- self$qim_copd_list %>>%
+    appointments <- appointments %>>%
       dplyr::left_join(self$dM$appointments_filtered_time,
         by = c("InternalID", "Patient"),
         copy = TRUE
@@ -361,12 +365,14 @@ list_qim_copd_appointments <- function(contact = NA,
         Provider, Status, tidyselect::everything()
       )
 
+    self$qim_copd_list_appointments <- appointments
+
     if (self$dM$Log) {
       self$dM$config_db$duration_log_db(log_id)
     }
   }
 
-  return(self$qim_copd_list_appointments)
+  return(appointments)
 })
 .reactive_event(
   dMeasureQIM, "qim_copd_list_appointmentsR",
@@ -394,7 +400,7 @@ list_qim_copd_appointments <- function(contact = NA,
 #'
 #' Shows chosen QIM measures, and by demographic grouping
 #'
-#' QIM 06 -Proportion of patients with COPD who were immunised against influenza
+#' QIM 06 - Proportion of patients with COPD who were immunised against influenza
 #'
 #' the reference date for 'most recent' measurement is 'date_to'
 #'
@@ -415,8 +421,10 @@ list_qim_copd_appointments <- function(contact = NA,
 #' @param ignoreOld ignore results/observatioins that don't qualify for quality improvement measures
 #'  if not supplied, reads $qim_ignoreOld
 #' @param lazy recalculate the copd contact list?
+#' @param store keep result in self$qim_copd_report?
 #'
-#' @return dataframe of Patient (name), demographic, measure (done or not), Count, Proportion
+#' @return dataframe of Patient (name), demographic, measure (done or not), Count, Proportion,
+#'   Proportion_Demographic
 #' @export
 report_qim_copd <- function(dMeasureQIM_obj,
                             contact = NA,
@@ -429,12 +437,13 @@ report_qim_copd <- function(dMeasureQIM_obj,
                             max_date = NA,
                             demographic = NA,
                             ignoreOld = NA,
-                            lazy = FALSE) {
+                            lazy = FALSE,
+                            store = TRUE) {
   dMeasureQIM_obj$report_qim_copd(
     contact, date_from, date_to, clinicians,
     min_contact, min_date, max_date, contact_type,
     demographic,
-    ignoreOld, lazy
+    ignoreOld, lazy, store
   )
 }
 .public(dMeasureQIM, "report_qim_copd", function(contact = NA,
@@ -447,7 +456,8 @@ report_qim_copd <- function(dMeasureQIM_obj,
                                                  contact_type = NA,
                                                  demographic = NA,
                                                  ignoreOld = NA,
-                                                 lazy = FALSE) {
+                                                 lazy = FALSE,
+                                                 store = TRUE) {
   if (is.na(contact)) {
     contact <- self$qim_contact
   }
@@ -488,6 +498,8 @@ report_qim_copd <- function(dMeasureQIM_obj,
     clinicians <- c("") # dplyr::filter does not work on zero-length list()
   }
 
+  report <- self$qim_copd_report
+
   if (self$dM$emr_db$is_open()) {
     # only if EMR database is open
     if (self$dM$Log) {
@@ -497,19 +509,21 @@ report_qim_copd <- function(dMeasureQIM_obj,
       )
     }
 
-    if (!lazy) {
-      self$list_qim_copd(
-        contact, date_from, date_to, clinicians,
-        min_contact, min_date, max_date, contact_type,
-        ignoreOld, lazy
-      )
-    }
-
     report_groups <- c(demographic, "InfluenzaDone")
     # group by both demographic groupings and measures of interest
     # add a dummy string in case there are no demographic or measure groups chosen!
 
-    self$qim_copd_report <- self$qim_copd_list %>>%
+    if (!lazy) {
+      report <- self$list_qim_copd(
+        contact, date_from, date_to, clinicians,
+        min_contact, min_date, max_date, contact_type,
+        ignoreOld, lazy, store
+      )
+    } else {
+      report <- self$qim_copd_list
+    }
+
+    report <- report %>>%
       dplyr::mutate(InfluenzaDone = !is.na(FluvaxDate)) %>>%
       # a measure is 'done' if it exists (not NA)
       # if ignoreOld = TRUE, the the observation must fall within
@@ -521,16 +535,22 @@ report_qim_copd <- function(dMeasureQIM_obj,
         dplyr::select(., intersect(names(.), c(report_groups, "n")))
       } %>>%
       # if no rows, then grouping will not remove unnecessary columns
-      dplyr::mutate(Proportion = prop.table(n))
+      dplyr::mutate(Proportion = prop.table(n)) %>>%
+      dplyr::group_by_at(demographic) %>>%
+      dplyr::mutate(Proportion_Demographic = prop.table(n)) %>>%
+      dplyr::ungroup()
     # proportion (an alternative would be proportion = n / sum(n))
 
+    if (store) {
+      self$qim_copd_report <- report
+    }
 
     if (self$dM$Log) {
       self$dM$config_db$duration_log_db(log_id)
     }
   }
 
-  return(self$qim_copd_report)
+  return(report)
 })
 .reactive_event(
   dMeasureQIM, "qim_copd_reportR",

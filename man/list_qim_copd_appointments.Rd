@@ -15,7 +15,8 @@ list_qim_copd_appointments(
   max_date = NA,
   contact_type = NA,
   ignoreOld = NA,
-  lazy = FALSE
+  lazy = FALSE,
+  store = TRUE
 )
 }
 \arguments{
@@ -43,6 +44,8 @@ FALSE chooses the 'appointment' system $diabetes_list from dMeasure object.}
 if not supplied, reads $qim_ignoreOld}
 
 \item{lazy}{recalculate the copd contact list?}
+
+\item{store}{keep result in self$qim_copd_list_appointments}
 }
 \value{
 dataframe of Patient (name), InternalID, appointment details and measures
@@ -51,7 +54,7 @@ dataframe of Patient (name), InternalID, appointment details and measures
 Filtered by date, and chosen clinicians
 }
 \details{
-QIM 06 -Proportion of patients with COPD who were immunised against influenza
+QIM 06 - Proportion of patients with COPD who were immunised against influenza
 
 the reference date for 'most recent' measurement is 'date_to'
 }
