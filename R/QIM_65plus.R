@@ -140,7 +140,7 @@ list_qim_65plus <- function(dMeasureQIM_obj,
           date_from, date_to, clinicians,
           min_contact, min_date, max_date,
           contact_type,
-          lazy
+          lazy, store
         )
       } else {
         sixtyfiveplus_list <- self$dM$contact_65plus_list

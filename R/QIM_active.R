@@ -132,7 +132,7 @@ list_qim_active <- function(dMeasureQIM_obj,
           min_date = min_date,
           max_date = max_date,
           contact_type = contact_type,
-          lazy = lazy
+          lazy = lazy, store = store
         )
       } else {
       active_list <- self$dM$contact_count_list

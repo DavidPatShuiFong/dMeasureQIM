@@ -151,7 +151,7 @@ NULL
 #' @param contact_type contact types which are accepted. default is $contact_type
 #' @param ignoreOld ignore results/observatioins that don't qualify for quality improvement measures
 #'  if not supplied, reads $qim_ignoreOld
-#' @param lazy recalculate the copd contact list?
+#' @param lazy force recalculate the lists?
 #' @param store keep result in self$qim_cvdRisk_list_appointments
 #'
 #' @return dataframe of Patient (name), InternalID and measures
@@ -238,35 +238,39 @@ list_qim_cvdRisk <- function(dMeasureQIM_obj,
 
     if (contact) {
       if (!lazy) {
-        self$dM$list_contact_45_74(
+        contact_45_74_list <- self$dM$list_contact_45_74(
           date_from, date_to, clinicians,
           min_contact, min_date, max_date,
           contact_type,
-          lazy
+          lazy, store
         )
         if ("Include ATSI 35-44" %in% self$qim_cvdRisk_measure) {
-          self$dM$list_contact_ATSI_35_44(
+          contact_ATSI_35_44_list <- self$dM$list_contact_ATSI_35_44(
             date_from, date_to, clinicians,
             min_contact, min_date, max_date,
             contact_type,
-            lazy
+            lazy, store
           )
         }
         if (!("Exclude 75+" %in% self$qim_cvdRisk_measure)) {
-          self$dM$list_contact_75plus(
+          contact_75plus_list <- self$dM$list_contact_75plus(
             date_from, date_to, clinicians,
             min_contact, min_date, max_date,
             contact_type,
-            lazy
+            lazy, store
           )
         }
+      } else {
+        contact_45_74_list <- self$dM$contact_45_74_list
+        contact_ATSI_35_44_list <- self$dM$contact_ATSI_35_44_list
+        contact_75plus_list <- self$dM$contact_75plus_list
       }
-      cvdRisk_list <- self$dM$contact_45_74_list
+      cvdRisk_list <- contact_45_74_list
       if ("Include ATSI 35-44" %in% self$qim_cvdRisk_measure) {
-        cvdRisk_list <- rbind(cvdRisk_list, self$dM$contact_ATSI_35_44_list)
+        cvdRisk_list <- rbind(cvdRisk_list, contact_ATSI_35_44_list)
       }
       if (!("Exclude 75+" %in% self$qim_cvdRisk_measure)) {
-        cvdRisk_list <- rbind(cvdRisk_list, self$dM$contact_75plus_list)
+        cvdRisk_list <- rbind(cvdRisk_list, contact_75plus_list)
       }
       cvdRisk_list <- dplyr::distinct(cvdRisk_list) %>>% # remove duplicates
         dplyr::select(-c(Count, Latest)) # don't need these fields

@@ -180,14 +180,16 @@ list_qim_15plus <- function(dMeasureQIM_obj,
     if (contact) {
       # from contact list
       if (!lazy) {
-        self$dM$list_contact_15plus(
+        fifteen_plus_list <- self$dM$list_contact_15plus(
           date_from, date_to, clinicians,
           min_contact, min_date, max_date,
           contact_type,
-          lazy
+          lazy, store
         )
+      } else {
+        fifteen_plus_list <- self$dM$contact_15plus_list
       }
-      fifteen_plus_list <- self$dM$contact_15plus_list %>>%
+      fifteen_plus_list <- fifteen_plus_list %>>%
         dplyr::select(-c(Count, Latest)) # don't need these fields
       fifteen_plusID <- fifteen_plus_list %>>%
         dplyr::pull(InternalID) %>>%

@@ -157,14 +157,16 @@ list_qim_diabetes <- function(dMeasureQIM_obj,
     if (contact) {
       # choose from 'contact' lists, which are based on appointments, billings or services
       if (!lazy) {
-        self$dM$list_contact_diabetes(
+        diabetes_list <- self$dM$list_contact_diabetes(
           date_from, date_to, clinicians,
           min_contact, min_date, max_date,
           contact_type,
           lazy
         )
+      } else {
+        diabetes_list <- self$dM$contact_diabetes_list
       }
-      diabetes_list <- self$dM$contact_diabetes_list %>>%
+      diabetes_list <- diabetes_list %>>%
         dplyr::select(-c(Count, Latest)) # don't need these fields
       diabetesID <- diabetes_list %>>%
         dplyr::pull(InternalID) %>>%

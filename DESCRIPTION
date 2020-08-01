@@ -14,7 +14,8 @@ Imports:
     dbplyr,
     R6,
     pipeR,
-    framinghamRiskEquation
+    framinghamRiskEquation,
+    stringi
 Suggests:
     shiny,
     shinydashboard,

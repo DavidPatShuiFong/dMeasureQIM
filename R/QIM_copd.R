@@ -78,17 +78,18 @@ list_qim_copd <- function(dMeasureQIM_obj,
   )
 }
 
-.public(dMeasureQIM, "list_qim_copd", function(contact = NA,
-                                               date_from = NA,
-                                               date_to = NA,
-                                               clinicians = NA,
-                                               min_contact = NA,
-                                               min_date = NA,
-                                               max_date = NA,
-                                               contact_type = NA,
-                                               ignoreOld = NA,
-                                               lazy = FALSE,
-                                               store = TRUE) {
+.public(dMeasureQIM, "list_qim_copd", function(
+  contact = NA,
+  date_from = NA,
+  date_to = NA,
+  clinicians = NA,
+  min_contact = NA,
+  min_date = NA,
+  max_date = NA,
+  contact_type = NA,
+  ignoreOld = NA,
+  lazy = FALSE,
+  store = TRUE) {
   if (is.na(contact)) {
     contact <- self$qim_contact
   }
@@ -136,14 +137,18 @@ list_qim_copd <- function(dMeasureQIM_obj,
 
     if (contact) {
       if (!lazy) {
-        self$dM$list_contact_chroniclungdisease(
-          date_from, date_to, clinicians,
-          min_contact, min_date, max_date,
-          contact_type,
-          lazy
-        )
+        contact_chroniclungdisease_list <-
+          self$dM$list_contact_chroniclungdisease(
+            date_from, date_to, clinicians,
+            min_contact, min_date, max_date,
+            contact_type,
+            lazy, store = store
+          )
+      } else {
+        contact_chroniclungdisease_list <-
+          self$dM$contact_chroniclungdisease_list
       }
-      copd_list <- self$dM$contact_chroniclungdisease_list %>>%
+      copd_list <- contact_chroniclungdisease_list %>>%
         dplyr::select(-c(Count, Latest)) # don't need these fields
       copdID <- copd_list %>>% dplyr::pull(InternalID) %>>%
         c(-1) # make sure not empty vector, which is bad for SQL filter

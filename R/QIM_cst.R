@@ -57,7 +57,7 @@ NULL
 #' @param contact_type contact types which are accepted. default is $contact_type
 #' @param ignoreOld ignore results/observatioins that don't qualify for quality improvement measures
 #'  if not supplied, reads $qim_ignoreOld
-#' @param lazy recalculate the diabetes contact list?
+#' @param lazy force re-calculate?
 #' @param store keep result in  self$qim_cst_list_appointments
 #'
 #' @return dataframe of Patient (name), InternalID, Count, and most recent CST 'observation' (test) date and name
@@ -138,15 +138,17 @@ list_qim_cst <- function(dMeasureQIM_obj,
 
     if (contact) {
       if (!lazy) {
-        self$dM$list_contact_cst(
+        contact_cst_list <- self$dM$list_contact_cst(
           date_from, date_to, clinicians,
           min_contact, min_date, max_date,
           contact_type,
-          lazy
+          lazy, store
         )
+      } else {
+        contact_cst_list <- self$dM$contact_cst_list
       }
 
-      screen_cst <- self$dM$contact_cst_list %>>%
+      screen_cst <- contact_cst_list %>>%
         dplyr::select(-c(Count, Latest)) # don't need these fields
       screen_cst_id <- self$dM$contact_cst_list %>>%
         dplyr::pull(InternalID) %>>%

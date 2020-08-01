@@ -134,6 +134,8 @@ datatableServer <- function(id, dMQIM, contact) {
     # convoluted mechanism to create a tabPanel which responds
     # to 'contact' variable
     #
+    # https://github.com/rstudio/shinydashboard/issues/98
+    #
     # unable to place a uiOutput (which works) within a
     # shinydashboard::tabBox,
     # and insertTab/appendTab/removeTab etc. don't work
