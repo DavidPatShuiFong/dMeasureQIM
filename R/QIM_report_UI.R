@@ -202,6 +202,9 @@ qim_reportCreator <- function(input, output, session, dMQIM) {
   shiny::observeEvent(
     input$report_createReport,
     ignoreInit = TRUE, {
+      shiny::req(length(input$report_qim_chosen) > 0)
+      # need to have at least one report to write
+
       # prepare a data frame
       report_values <- data.frame(
         QIM = character(),
@@ -232,11 +235,37 @@ qim_reportCreator <- function(input, output, session, dMQIM) {
       min_contact = input$report_min_contact
       contact_type = input$report_contact_type
 
+      if (input$report_number > 1) {
+        # create progress bar
+        report_progress <- shiny::Progress$new(
+          session, min = 0, max = input$report_number
+        )
+        # close progress bar when function exits
+        on.exit(report_progress$close())
+        # initialize
+        report_progress$set(
+          message = "Calculating report",
+          detail = "1",
+          value = 0
+        )
+      }
+
       for (i in 1:input$report_number) {
         # in this case, we can be confident that input$report_number
         #  is not a negative number or zero!
 
+        # create progress bar
+        progress <- shiny::Progress$new(
+          session, min = 0, max = length(input$report_qim_chosen)
+        )
+        # initialize
+        progress$set(
+          message = "Calculating measure",
+          value = 0
+        )
+
         if (measure_names[[1]] %in% input$report_qim_chosen) {
+          progress$inc(amount = 1, detail = "QIM 01 - Diabetes HbA1C")
           qim01 <- dMQIM$report_qim_diabetes(
             contact = TRUE, date_from = date_from, date_to = date_to,
             min_contact = min_contact,
@@ -268,6 +297,7 @@ qim_reportCreator <- function(input, output, session, dMQIM) {
         }
 
         if (measure_names[[2]] %in% input$report_qim_chosen) {
+          progress$inc(amount = 1, detail = "QIM 02 - 15+ smoking")
           qim02 <- dMQIM$report_qim_15plus(
             contact = TRUE, date_from = date_from, date_to = date_to,
             min_contact = min_contact,
@@ -300,6 +330,7 @@ qim_reportCreator <- function(input, output, session, dMQIM) {
         }
 
         if (measure_names[[3]] %in% input$report_qim_chosen) {
+          progress$inc(amount = 1, detail = "QIM 03 - 15+ BMI Class")
           qim03 <- dMQIM$report_qim_15plus(
             contact = TRUE, date_from = date_from, date_to = date_to,
             min_contact = min_contact,
@@ -332,6 +363,7 @@ qim_reportCreator <- function(input, output, session, dMQIM) {
         }
 
         if (measure_names[[4]] %in% input$report_qim_chosen) {
+          progress$inc(amount = 1, detail = "QIM 04 - 65+ Influenza")
           qim04 <- dMQIM$report_qim_65plus(
             contact = TRUE, date_from = date_from, date_to = date_to,
             min_contact = min_contact,
@@ -362,6 +394,7 @@ qim_reportCreator <- function(input, output, session, dMQIM) {
           )
         }
         if (measure_names[[5]] %in% input$report_qim_chosen) {
+          progress$inc(amount = 1, detail = "QIM 05 - Diabetes Influenza")
           qim05 <- dMQIM$report_qim_diabetes(
             contact = TRUE, date_from = date_from, date_to = date_to,
             min_contact = min_contact,
@@ -393,6 +426,7 @@ qim_reportCreator <- function(input, output, session, dMQIM) {
         }
 
         if (measure_names[[6]] %in% input$report_qim_chosen) {
+          progress$inc(amount = 1, detail = "QIM 06 - COPD influenza")
           qim06 <- dMQIM$report_qim_copd(
             contact = TRUE, date_from = date_from, date_to = date_to,
             min_contact = min_contact,
@@ -424,6 +458,7 @@ qim_reportCreator <- function(input, output, session, dMQIM) {
         }
 
         if (measure_names[[7]] %in% input$report_qim_chosen) {
+          progress$inc(amount = 1, detail = "QIM 07 - 15+ Alcohol")
           qim07 <- dMQIM$report_qim_15plus(
             contact = TRUE, date_from = date_from, date_to = date_to,
             min_contact = min_contact,
@@ -456,6 +491,7 @@ qim_reportCreator <- function(input, output, session, dMQIM) {
         }
 
         if (measure_names[[8]] %in% input$report_qim_chosen) {
+          progress$inc(amount = 1, detail = "QIM 08 - CVD Risk")
           qim08 <- dMQIM$report_qim_cvdRisk(
             contact = TRUE, date_from = date_from, date_to = date_to,
             min_contact = min_contact,
@@ -487,6 +523,7 @@ qim_reportCreator <- function(input, output, session, dMQIM) {
         }
 
         if (measure_names[[9]] %in% input$report_qim_chosen) {
+          progress$inc(amount = 1, detail = "QIM 09 - Cervical Screening")
           qim09 <- dMQIM$report_qim_cst(
             contact = TRUE, date_from = date_from, date_to = date_to,
             min_contact = min_contact,
@@ -518,6 +555,7 @@ qim_reportCreator <- function(input, output, session, dMQIM) {
         }
 
         if (measure_names[[10]] %in% input$report_qim_chosen) {
+          progress$inc(amount = 1, detail = "QIM 10 - Diabetes BP")
           qim10 <- dMQIM$report_qim_diabetes(
             contact = TRUE, date_from = date_from, date_to = date_to,
             min_contact = min_contact,
@@ -548,6 +586,15 @@ qim_reportCreator <- function(input, output, session, dMQIM) {
           )
         }
 
+        if (input$report_number > 1) {
+        # update progress bar
+          report_progress$inc(
+            amount = 1,
+            detail = as.character(min(i + 1, input$report_number))
+          )
+        }
+        # close QIM progress bar
+        progress$close()
 
         report_spacing <- paste0(
           "-", as.numeric(input$report_spacing_n),
@@ -645,6 +692,5 @@ qim_reportCreator <- function(input, output, session, dMQIM) {
       }
     }
   )
-
 
 }
