@@ -161,3 +161,21 @@ qim_reportCreator_UI <- function(id) {
     )
   )
 }
+
+
+#' Quality Improvement report creation - server
+#'
+#' @param input as required by Shiny modules
+#' @param output as required by Shiny modules
+#' @param session as required by Shiny modules
+#' @param dMQIM dMeasure QIM R6 object
+#'  access to appointments lists, results, correspondence and EMR database
+#'
+#' @return none
+#'
+#' @export
+qim_reportCreator <- function(input, output, session, dMQIM) {
+  ns <- session$ns
+
+
+}

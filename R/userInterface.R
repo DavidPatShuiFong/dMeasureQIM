@@ -101,69 +101,7 @@ datatableUI <- function(id) {
     id = ns("qim_datatable_wrapper"),
     shiny::fluidRow(
       shiny::tagList(
-        shinydashboard::tabBox(
-          id = ns("tab_qim"),
-          title = shiny::tagList(
-            shiny::div(
-              style = "display:inline-block",
-              shiny::uiOutput(ns("settings_group"))
-            ),
-            shiny::div(
-              style = "display:inline-block",
-              "Quality Improvement Measures"
-            )
-          ),
-          width = 12,
-          height = "85vh",
-          shiny::tabPanel(
-            title = "Active",
-            width = 12,
-            shiny::br(),
-            dMeasureQIM::qim_active_UI(ns("qim_active"))
-          ),
-          shiny::tabPanel(
-            title = "Diabetes",
-            width = 12,
-            shiny::br(),
-            dMeasureQIM::qim_diabetes_UI(ns("qim_diabetes"))
-          ),
-          shiny::tabPanel(
-            title = "Cervical Screening",
-            width = 12,
-            shiny::br(),
-            dMeasureQIM::qim_cst_UI(ns("qim_cst"))
-          ),
-          shiny::tabPanel(
-            title = "15+",
-            width = 12,
-            shiny::br(),
-            dMeasureQIM::qim_15plus_UI(ns("qim_15plus"))
-          ),
-          shiny::tabPanel(
-            title = "65+",
-            width = 12,
-            shiny::br(),
-            dMeasureQIM::qim_65plus_UI(ns("qim_65plus"))
-          ),
-          shiny::tabPanel(
-            title = "COPD (Lung Disease)",
-            width = 12,
-            shiny::br(),
-            dMeasureQIM::qim_copd_UI(ns("qim_copd"))
-          ),
-          shiny::tabPanel(
-            title = "Cardiovascular risk",
-            width = 12,
-            shiny::br(),
-            dMeasureQIM::qim_cvdRisk_UI(ns("qim_cvdRisk"))
-          ),
-          shiny::tabPanel(
-            title = "Report creator",
-            width = 12,
-            shiny::br(),
-            dMeasureQIM::qim_reportCreator_UI(ns("qim_reportCreator"))
-          )
-        )
+        shiny::uiOutput(ns("tabs"))
       )
     )
   )
@@ -193,17 +131,53 @@ datatableServer <- function(id, dMQIM, contact) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
-    # result management
-    callModule(dMeasureQIM::qim_active, "qim_active", dMQIM, contact)
-    callModule(dMeasureQIM::qim_diabetes, "qim_diabetes", dMQIM, contact)
-    callModule(dMeasureQIM::qim_cst, "qim_cst", dMQIM, contact)
-    callModule(dMeasureQIM::qim_15plus, "qim_15plus", dMQIM, contact)
-    callModule(dMeasureQIM::qim_65plus, "qim_65plus", dMQIM, contact)
-    callModule(dMeasureQIM::qim_copd, "qim_copd", dMQIM, contact)
-    callModule(dMeasureQIM::qim_cvdRisk, "qim_cvdRisk", dMQIM, contact)
-
-    if (!contact) {
-      # only show the 'Active' panel if contact list
+    # convoluted mechanism to create a tabPanel which responds
+    # to 'contact' variable
+    #
+    # unable to place a uiOutput (which works) within a
+    # shinydashboard::tabBox,
+    # and insertTab/appendTab/removeTab etc. don't work
+    # inside a tabBox
+    tabs.content <- list(
+      list(
+        title = "Diabetes",
+        width = 12,
+        shiny::br(),
+        dMeasureQIM::qim_diabetes_UI(ns("qim_diabetes"))
+      ),
+      list(
+        title = "Cervical Screening",
+        width = 12,
+        shiny::br(),
+        dMeasureQIM::qim_cst_UI(ns("qim_cst"))
+      ),
+      list(
+        title = "15+",
+        width = 12,
+        shiny::br(),
+        dMeasureQIM::qim_15plus_UI(ns("qim_15plus"))
+      ),
+      list(
+        title = "65+",
+        width = 12,
+        shiny::br(),
+        dMeasureQIM::qim_65plus_UI(ns("qim_65plus"))
+      ),
+      list(
+        title = "COPD (Lung Disease)",
+        width = 12,
+        shiny::br(),
+        dMeasureQIM::qim_copd_UI(ns("qim_copd"))
+      ),
+      list(
+        title = "Cardiovascular risk",
+        width = 12,
+        shiny::br(),
+        dMeasureQIM::qim_cvdRisk_UI(ns("qim_cvdRisk"))
+      )
+    )
+    if (contact) {
+      # only show the 'Active' and 'Create Report' panel if contact list
       #
       #  'Active' is whether the patient qualifies as 'active' depending
       #  on criteria such as appointments, visits (recordings in the file)
@@ -213,13 +187,65 @@ datatableServer <- function(id, dMQIM, contact) {
       # e.g. one definition of 'active' is 3 'visits' over 2 years
       # though an alternative definition could be three 'billings' over
       # three years
-
-      # if an 'appointment' list is being used
-      # then don't show the 'Active' panel
-      shiny::removeTab(inputId = "tab_qim", target = "Active", session = session)
-      # for some reason the above line doesn't remove the tab...
-      shiny::updateTabsetPanel(session = session, inputId = "tab_qim", selected = "Diabetes")
+      tabs.content <- append(
+        list(list(
+          title = "Active",
+          width = 12,
+          shiny::br(),
+          dMeasureQIM::qim_active_UI(ns("qim_active"))
+        )),
+        tabs.content
+      )
+      tabs.content <- append(
+        tabs.content,
+        list(list(
+          title = "Report creator",
+          value = "reportCreator",
+          width = 12,
+          shiny::br(),
+          dMeasureQIM::qim_reportCreator_UI(ns("qim_reportCreator"))
+        ))
+      )
     }
+    tabs <- lapply(
+      1:length(tabs.content),
+      function(i) do.call(tabPanel, tabs.content[[i]])
+    )
+    tabs <- append(
+      list(
+        id = ns("tab_qim"),
+        title = shiny::tagList(
+          shiny::div(
+            style = "display:inline-block",
+            shiny::uiOutput(ns("settings_group"))
+          ),
+          shiny::div(
+            style = "display:inline-block",
+            "Quality Improvement Measures"
+          )
+        ),
+        width = 12,
+        height = "85vh"
+      ),
+      tabs
+    )
+    output$tabs <- renderUI({
+      do.call(shinydashboard::tabBox, tabs)
+    })
+
+    # result management
+    callModule(dMeasureQIM::qim_diabetes, "qim_diabetes", dMQIM, contact)
+    callModule(dMeasureQIM::qim_cst, "qim_cst", dMQIM, contact)
+    callModule(dMeasureQIM::qim_15plus, "qim_15plus", dMQIM, contact)
+    callModule(dMeasureQIM::qim_65plus, "qim_65plus", dMQIM, contact)
+    callModule(dMeasureQIM::qim_copd, "qim_copd", dMQIM, contact)
+    callModule(dMeasureQIM::qim_cvdRisk, "qim_cvdRisk", dMQIM, contact)
+    if (contact) {
+      # only in 'contact' mode
+      callModule(dMeasureQIM::qim_active, "qim_active", dMQIM, contact)
+      callModule(dMeasureQIM::qim_reportCreator, "qim_reportCreator", dMQIM)
+    }
+
     initial_demographic <- dMQIM$qim_demographicGroup
     # this is an unusual kludge, for some reason specifying dMQIM$qim_demographicGroup
     # in the 'choices' of checkboxGroupButtons does not work
