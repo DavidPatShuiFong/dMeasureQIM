@@ -299,6 +299,256 @@ qim_reportCreator <- function(input, output, session, dMQIM) {
           )
         }
 
+        if (measure_names[[3]] %in% input$report_qim_chosen) {
+          qim03 <- dMQIM$report_qim_15plus(
+            contact = TRUE, date_from = date_from, date_to = date_to,
+            min_contact = min_contact,
+            # 'default' is clinician list chosen in right panel
+            min_date = as.Date("2000-01-01"), max_date = Sys.Date(),
+            # no limitations on min/max date essentially
+            contact_type = contact_type,
+            demographic = c("Age10", "Sex", "Indigenous"),
+            measure = "Weight",
+            ignoreOld = TRUE, lazy = FALSE, store = FALSE
+          ) %>>%
+            dplyr::mutate(QIM = "QIM 03",
+                          Measure = "BMIClass",
+                          DiabetesType = "",
+                          DateFrom = as.character(date_from),
+                          DateTo = as.character(date_to)) %>>%
+            dplyr::rename(State = BMIClass,
+                          ProportionDemographic = Proportion_Demographic) %>>%
+            dplyr::select(QIM, Age10, Sex, Indigenous, DiabetesType,
+                          Measure, State, n, ProportionDemographic,
+                          DateFrom, DateTo)
+          # keep Age10, Sex, Indigenous, DiabetesType, HbA1CDone,
+          # n, Proportion_Demographic
+          report_values(
+            rbind(
+              report_values(),
+              qim03
+            )
+          )
+        }
+
+        if (measure_names[[4]] %in% input$report_qim_chosen) {
+          qim04 <- dMQIM$report_qim_65plus(
+            contact = TRUE, date_from = date_from, date_to = date_to,
+            min_contact = min_contact,
+            # 'default' is clinician list chosen in right panel
+            min_date = as.Date("2000-01-01"), max_date = Sys.Date(),
+            # no limitations on min/max date essentially
+            contact_type = contact_type,
+            demographic = c("Age10", "Sex", "Indigenous"),
+            ignoreOld = TRUE, lazy = FALSE, store = FALSE
+          ) %>>%
+            dplyr::mutate(QIM = "QIM 04",
+                          Measure = "InfluenzaDone",
+                          DiabetesType = "",
+                          DateFrom = as.character(date_from),
+                          DateTo = as.character(date_to)) %>>%
+            dplyr::rename(State = InfluenzaDone,
+                          ProportionDemographic = Proportion_Demographic) %>>%
+            dplyr::select(QIM, Age10, Sex, Indigenous, DiabetesType,
+                          Measure, State, n, ProportionDemographic,
+                          DateFrom, DateTo)
+          # keep Age10, Sex, Indigenous, DiabetesType, HbA1CDone,
+          # n, Proportion_Demographic
+          report_values(
+            rbind(
+              report_values(),
+              qim04
+            )
+          )
+        }
+        if (measure_names[[5]] %in% input$report_qim_chosen) {
+          qim05 <- dMQIM$report_qim_diabetes(
+            contact = TRUE, date_from = date_from, date_to = date_to,
+            min_contact = min_contact,
+            # 'default' is clinician list chosen in right panel
+            min_date = as.Date("2000-01-01"), max_date = Sys.Date(),
+            # no limitations on min/max date essentially
+            contact_type = contact_type,
+            demographic = c("Age10", "Sex", "Indigenous"),
+            measure = "Influenza", type_diabetes = TRUE,
+            ignoreOld = TRUE, lazy = FALSE, store = FALSE
+          ) %>>%
+            dplyr::mutate(QIM = "QIM 05",
+                          Measure = "InfluenzaDone",
+                          DateFrom = as.character(date_from),
+                          DateTo = as.character(date_to)) %>>%
+            dplyr::rename(State = InfluenzaDone,
+                          ProportionDemographic = Proportion_Demographic) %>>%
+            dplyr::select(QIM, Age10, Sex, Indigenous, DiabetesType,
+                          Measure, State, n, ProportionDemographic,
+                          DateFrom, DateTo)
+          # keep Age10, Sex, Indigenous, DiabetesType, HbA1CDone,
+          # n, Proportion_Demographic
+          report_values(
+            rbind(
+              report_values(),
+              qim05
+            )
+          )
+        }
+
+        if (measure_names[[6]] %in% input$report_qim_chosen) {
+          qim06 <- dMQIM$report_qim_copd(
+            contact = TRUE, date_from = date_from, date_to = date_to,
+            min_contact = min_contact,
+            # 'default' is clinician list chosen in right panel
+            min_date = as.Date("2000-01-01"), max_date = Sys.Date(),
+            # no limitations on min/max date essentially
+            contact_type = contact_type,
+            demographic = c("Age10", "Sex", "Indigenous"),
+            ignoreOld = TRUE, lazy = FALSE, store = FALSE
+          ) %>>%
+            dplyr::mutate(QIM = "QIM 06",
+                          Measure = "InfluenzaDone",
+                          DiabetesType = "",
+                          DateFrom = as.character(date_from),
+                          DateTo = as.character(date_to)) %>>%
+            dplyr::rename(State = InfluenzaDone,
+                          ProportionDemographic = Proportion_Demographic) %>>%
+            dplyr::select(QIM, Age10, Sex, Indigenous, DiabetesType,
+                          Measure, State, n, ProportionDemographic,
+                          DateFrom, DateTo)
+          # keep Age10, Sex, Indigenous, DiabetesType, HbA1CDone,
+          # n, Proportion_Demographic
+          report_values(
+            rbind(
+              report_values(),
+              qim06
+            )
+          )
+        }
+
+        if (measure_names[[7]] %in% input$report_qim_chosen) {
+          qim07 <- dMQIM$report_qim_15plus(
+            contact = TRUE, date_from = date_from, date_to = date_to,
+            min_contact = min_contact,
+            # 'default' is clinician list chosen in right panel
+            min_date = as.Date("2000-01-01"), max_date = Sys.Date(),
+            # no limitations on min/max date essentially
+            contact_type = contact_type,
+            demographic = c("Age10", "Sex", "Indigenous"),
+            measure = "Alcohol",
+            ignoreOld = TRUE, lazy = FALSE, store = FALSE
+          ) %>>%
+            dplyr::mutate(QIM = "QIM 07",
+                          Measure = "AlcoholDone",
+                          DiabetesType = "",
+                          DateFrom = as.character(date_from),
+                          DateTo = as.character(date_to)) %>>%
+            dplyr::rename(State = AlcoholDone,
+                          ProportionDemographic = Proportion_Demographic) %>>%
+            dplyr::select(QIM, Age10, Sex, Indigenous, DiabetesType,
+                          Measure, State, n, ProportionDemographic,
+                          DateFrom, DateTo)
+          # keep Age10, Sex, Indigenous, DiabetesType, HbA1CDone,
+          # n, Proportion_Demographic
+          report_values(
+            rbind(
+              report_values(),
+              qim07
+            )
+          )
+        }
+
+        if (measure_names[[8]] %in% input$report_qim_chosen) {
+          qim08 <- dMQIM$report_qim_cvdRisk(
+            contact = TRUE, date_from = date_from, date_to = date_to,
+            min_contact = min_contact,
+            # 'default' is clinician list chosen in right panel
+            min_date = as.Date("2000-01-01"), max_date = Sys.Date(),
+            # no limitations on min/max date essentially
+            contact_type = contact_type,
+            demographic = c("Age10", "Sex", "Indigenous"),
+            ignoreOld = TRUE, lazy = FALSE, store = FALSE
+          ) %>>%
+            dplyr::mutate(QIM = "QIM 08",
+                          Measure = "CVD Risk Done",
+                          DiabetesType = "",
+                          DateFrom = as.character(date_from),
+                          DateTo = as.character(date_to)) %>>%
+            dplyr::rename(State = CVDriskDone,
+                          ProportionDemographic = Proportion_Demographic) %>>%
+            dplyr::select(QIM, Age10, Sex, Indigenous, DiabetesType,
+                          Measure, State, n, ProportionDemographic,
+                          DateFrom, DateTo)
+          # keep Age10, Sex, Indigenous, DiabetesType, HbA1CDone,
+          # n, Proportion_Demographic
+          report_values(
+            rbind(
+              report_values(),
+              qim08
+            )
+          )
+        }
+
+        if (measure_names[[9]] %in% input$report_qim_chosen) {
+          qim09 <- dMQIM$report_qim_cst(
+            contact = TRUE, date_from = date_from, date_to = date_to,
+            min_contact = min_contact,
+            # 'default' is clinician list chosen in right panel
+            min_date = as.Date("2000-01-01"), max_date = Sys.Date(),
+            # no limitations on min/max date essentially
+            contact_type = contact_type,
+            demographic = c("Age10", "Sex", "Indigenous"),
+            ignoreOld = TRUE, lazy = FALSE, store = FALSE
+          ) %>>%
+            dplyr::mutate(QIM = "QIM 09",
+                          Measure = "CST Done",
+                          DiabetesType = "",
+                          DateFrom = as.character(date_from),
+                          DateTo = as.character(date_to)) %>>%
+            dplyr::rename(State = CSTDone,
+                          ProportionDemographic = Proportion_Demographic) %>>%
+            dplyr::select(QIM, Age10, Sex, Indigenous, DiabetesType,
+                          Measure, State, n, ProportionDemographic,
+                          DateFrom, DateTo)
+          # keep Age10, Sex, Indigenous, DiabetesType, HbA1CDone,
+          # n, Proportion_Demographic
+          report_values(
+            rbind(
+              report_values(),
+              qim09
+            )
+          )
+        }
+
+        if (measure_names[[10]] %in% input$report_qim_chosen) {
+          qim10 <- dMQIM$report_qim_diabetes(
+            contact = TRUE, date_from = date_from, date_to = date_to,
+            min_contact = min_contact,
+            # 'default' is clinician list chosen in right panel
+            min_date = as.Date("2000-01-01"), max_date = Sys.Date(),
+            # no limitations on min/max date essentially
+            contact_type = contact_type,
+            demographic = c("Age10", "Sex", "Indigenous"),
+            measure = "BP", type_diabetes = TRUE,
+            ignoreOld = TRUE, lazy = FALSE, store = FALSE
+          ) %>>%
+            dplyr::mutate(QIM = "QIM 10",
+                          Measure = "BPDone",
+                          DateFrom = as.character(date_from),
+                          DateTo = as.character(date_to)) %>>%
+            dplyr::rename(State = BPDone,
+                          ProportionDemographic = Proportion_Demographic) %>>%
+            dplyr::select(QIM, Age10, Sex, Indigenous, DiabetesType,
+                          Measure, State, n, ProportionDemographic,
+                          DateFrom, DateTo)
+          # keep Age10, Sex, Indigenous, DiabetesType, HbA1CDone,
+          # n, Proportion_Demographic
+          report_values(
+            rbind(
+              report_values(),
+              qim10
+            )
+          )
+        }
+
+
         report_spacing <- paste0(
           "-", as.numeric(input$report_spacing_n),
           " ",
