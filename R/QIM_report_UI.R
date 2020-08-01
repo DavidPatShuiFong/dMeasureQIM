@@ -96,7 +96,7 @@ qim_reportCreator_UI <- function(id) {
           style = "height:15em",
           shiny::tags$h5("QIM Measures"),
           shinyWidgets::pickerInput(
-            inputId = ns("report_visit_type"),
+            inputId = ns("report_qim_chosen"),
             label = "",
             choices = measure_names,
             selected = measure_names,
@@ -176,6 +176,67 @@ qim_reportCreator_UI <- function(id) {
 #' @export
 qim_reportCreator <- function(input, output, session, dMQIM) {
   ns <- session$ns
+
+  duration_warning <- shiny::reactiveVal(FALSE)
+  shiny::observeEvent(
+    c(input$report_duration_n, input$report_duration_unit),
+    ignoreInit = TRUE, {
+      if ((input$report_duration_n != 24 ||
+           input$report_duration_unit != "Months") &&
+          !duration_warning()) {
+        shinytoastr::toastr_warning(
+          message = paste(
+            "'Standard' QIM report contact duration is 24 months"
+          ),
+          position = "bottom-center",
+          closeButton = TRUE,
+          timeOut = 0
+        )
+        duration_warning(TRUE)
+      }
+    }
+  )
+
+  contact_type_warning <- shiny::reactiveVal(FALSE)
+  shiny::observeEvent(
+    c(input$report_contact_type, input$report_min_contact),
+    ignoreInit = TRUE, ignoreNULL = FALSE, {
+      if ((input$report_contact_type != "Services" ||
+           input$report_min_contact != 3) &&
+          !contact_type_warning()) {
+        shinytoastr::toastr_warning(
+          message = paste(
+            "'Standard' QIM report contact type is minimum",
+            "of three (3) services."
+          ),
+          position = "bottom-center",
+          closeButton = TRUE,
+          timeOut = 0
+        )
+        contact_type_warning(TRUE)
+      }
+    }
+  )
+
+  n_report_warning <- shiny::reactiveVal(FALSE)
+  shiny::observeEvent(
+    input$report_number,
+    ignoreInit = TRUE, {
+      if (input$report_number != 1 &&
+          !n_report_warning()) {
+        shinytoastr::toastr_warning(
+          message = paste(
+            "Each report could take a long time",
+            "to create!"
+          ),
+          position = "bottom-center",
+          closeButton = TRUE,
+          timeOut = 0
+        )
+        n_report_warning(TRUE)
+      }
+    }
+  )
 
 
 }
