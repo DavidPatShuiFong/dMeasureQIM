@@ -15,7 +15,8 @@ Imports:
     R6,
     pipeR,
     framinghamRiskEquation,
-    stringi
+    stringi,
+    tidyr
 Suggests:
     shiny,
     shinydashboard,
@@ -40,7 +41,6 @@ Collate:
     'QIM_cvdRisk_UI.R'
     'QIM_diabetes.R'
     'QIM_diabetes_UI.R'
-    'QIM_report.R'
     'QIM_report_UI.R'
     'introduction.R'
     'userInterface.R'

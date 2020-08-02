@@ -569,7 +569,7 @@ report_qim_cst <- function(dMeasureQIM_obj,
   if (is.na(contact_type[[1]])) {
     contact_type <- self$dM$contact_type
   }
-  if (is.na(demographic)) {
+  if (length(demographic) == 1 && is.na(demographic)) {
     demographic <- self$qim_demographicGroup
   }
   if (is.na(ignoreOld)) {

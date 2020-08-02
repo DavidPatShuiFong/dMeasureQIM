@@ -2,9 +2,11 @@ Changelog
 
 # version 0.4.0
 
+* report create and download (comma-separated-values '.csv')
 * compliance with version 1.1 of [PIP QI Improvement Measures - Technical Specifications v1.1 04052020](https://www1.health.gov.au/internet/main/publishing.nsf/Content/46506AF50A4824B6CA25848600113FFF/$File/PIP-QI-Technical-Specifications.pdf)
   + change `Age5` to `Age10` (minimum 0, maximum 65)
   + add `Indigenous`
+  + `Sex` categories "Female", "Male", "X" (for indeterminate/intersec/unspecified) and "Not stated" (not available 'NA')
   + default demographic groups are `Age10`, `Sex`, `Indigenous`
   + for Smoking measure (QIM 02), `SmokingStatus` is used
   + for weight classification measure (QIM 03), `BMIclass` is used

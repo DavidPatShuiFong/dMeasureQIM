@@ -14,7 +14,7 @@ add_demographics(df, dM, reference_date)
 \item{reference_date}{date to calculate age from}
 }
 \value{
-df with DOB, Age10, Sex, Ethnicity, RecordNo,
+dataframe with DOB, Age10, Sex, Indigenous, RecordNo,
   MaritalStatus, Sexuality, Indigenous
 }
 \description{

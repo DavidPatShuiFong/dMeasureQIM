@@ -3,6 +3,7 @@
 export("%>>%")
 export(add_BMI)
 export(add_demographics)
+export(complete_demographics)
 export(dMeasureIntegration)
 export(dMeasureQIM)
 export(dMeasureShinytabItems)

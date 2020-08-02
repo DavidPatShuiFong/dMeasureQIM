@@ -46,7 +46,8 @@ dMeasureIntegration <- function(information) {
 #' @description Quality Improvement Measures reports and case-finding in EMR (Best Practice)
 #'     a module for dMeasure
 #' @export
-dMeasureQIM <- R6::R6Class("dMeasureQIM",
+dMeasureQIM <- R6::R6Class(
+  "dMeasureQIM",
   public = list(
     # dM is a dMeasure object
     dM = NULL,
@@ -188,7 +189,7 @@ dMeasureQIM <- R6::R6Class("dMeasureQIM",
 #' @param dM dMeasure object
 #' @param reference_date date to calculate age from
 #'
-#' @return df with DOB, Age10, Sex, Ethnicity, RecordNo,
+#' @return dataframe with DOB, Age10, Sex, Indigenous, RecordNo,
 #'   MaritalStatus, Sexuality, Indigenous
 #' @export
 add_demographics <- function(df, dM, reference_date) {
@@ -225,13 +226,95 @@ add_demographics <- function(df, dM, reference_date) {
       Indigenous = dplyr::case_when(
         Ethnicity == "Aboriginal" ~ "Aboriginal",
         Ethnicity == "Torres Strait Islander" ~ "Torres Strait Islander",
-        Ethnicity == "Aboriginal/Torres Strait Islander" ~ "Both Aboriginal and Torres Strait Islander",
+        Ethnicity == "Aboriginal/Torres Strait Islander" ~
+          "Both Aboriginal and Torres Strait Islander",
         is.na(Ethnicity) ~ "Not stated",
         TRUE ~ "Neither"
+      ),
+      Sex = dplyr::case_when(
+        Sex == "Female" ~ "Female",
+        Sex == "Male" ~ "Male",
+        is.na(Sex) ~ "Not stated",
+        TRUE ~ "X" # for indeterminate/intersec/unspecified
       ),
       MaritalStatus = dplyr::na_if(MaritalStatus, ""),
       Sexuality = dplyr::na_if(Sexuality, "")
     )
 
   return(df)
+}
+
+#' complete demographics
+#'
+#' includes different types of status e.g. TRUE/FALSE
+#'
+#' @param df dataframe to process
+#' @param qim_name name of qim
+#' @param age_min minimum age group
+#' @param age_max maximum age group
+#' @param include_diabetes include diabetes demographic
+#' @param measure name of measure
+#' @param states vector of status types
+#'
+#' @return dataframe with DOB, Age10, Sex, Indigenous and maybe DiabetesStatus
+#' @export
+complete_demographics <- function(
+  df,
+  qim_name,
+  age_min = 0,
+  age_max = 65,
+  include_diabetes = FALSE,
+  measure,
+  states = c(FALSE, TRUE)
+) {
+
+  # restrict by age
+  age_list <- c(0, 5, 15, 25, 35, 45, 55, 65)
+  age_list <- age_list[age_list >= age_min & age_list <= age_max]
+
+  # to_expand <- list(
+  #   .data = df,
+  #   Age10 = age_list,
+  #   Sex = c("Female", "Male", "X", "Not stated"),
+  #   Indigenous = c("Aboriginal", "Torres Strait Islander",
+  #                  "Both Aboriginal and Torres Strait Islander",
+  #                  "Neither", "Not stated"),
+  #   State = states,
+  #   DiabetesType = ifelse(
+  #     include_diabetes,
+  #     # include, then include diabetes types
+  #     c("Type 1", "Type 2", as.character(NA)),
+  #     # if do not include, then just a 'blank'
+  #     ""
+  #   )
+  # )
+
+  # missing_rows <- do.call(tidyr::expand, to_expand) %>>%
+  df_complete <- df %>>%
+    tidyr::expand(
+      Age10 = age_list,
+      Sex = c("Female", "Male", "X", "Not stated"),
+      Indigenous = c("Aboriginal", "Torres Strait Islander",
+                     "Both Aboriginal and Torres Strait Islander",
+                     "Neither", "Not stated"),
+      State = states,
+      DiabetesType = ifelse(
+        include_diabetes,
+        # include, then include diabetes types
+        c("Type 1", "Type 2", as.character(NA)),
+        # if do not include, then just a 'blank'
+        ""
+      )
+    ) %>>%
+    dplyr::anti_join(df) %>>% # this finds 'missing' rows
+    dplyr::mutate(
+      QIM = qim_name,
+      Measure = measure,
+      n = 0, # no entries
+      ProportionDemographic = 0 # no entries
+    ) %>>%
+    rbind(df) # join back to original dataframe
+
+  return(df_complete)
+
 }
