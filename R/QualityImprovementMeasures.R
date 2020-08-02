@@ -255,6 +255,7 @@ add_demographics <- function(df, dM, reference_date) {
 #' @param include_diabetes include diabetes demographic
 #' @param measure name of measure
 #' @param states vector of status types
+#' @param atsi_only include only ATSI sub-groups?
 #'
 #' @return dataframe with DOB, Age10, Sex, Indigenous and maybe DiabetesStatus
 #' @export
@@ -265,48 +266,38 @@ complete_demographics <- function(
   age_max = 65,
   include_diabetes = FALSE,
   measure,
-  states = c(FALSE, TRUE)
+  states = c(FALSE, TRUE),
+  atsi_only = FALSE
 ) {
 
   # restrict by age
   age_list <- c(0, 5, 15, 25, 35, 45, 55, 65)
   age_list <- age_list[age_list >= age_min & age_list <= age_max]
-
-  # to_expand <- list(
-  #   .data = df,
-  #   Age10 = age_list,
-  #   Sex = c("Female", "Male", "X", "Not stated"),
-  #   Indigenous = c("Aboriginal", "Torres Strait Islander",
-  #                  "Both Aboriginal and Torres Strait Islander",
-  #                  "Neither", "Not stated"),
-  #   State = states,
-  #   DiabetesType = ifelse(
-  #     include_diabetes,
-  #     # include, then include diabetes types
-  #     c("Type 1", "Type 2", as.character(NA)),
-  #     # if do not include, then just a 'blank'
-  #     ""
-  #   )
-  # )
+  indigenous_list <- c("Aboriginal", "Torres Strait Islander",
+                       "Both Aboriginal and Torres Strait Islander")
+  if (!atsi_only) {
+    indigenous_list <- c(indigenous_list, "Neither", "Not stated")
+  }
+  if (include_diabetes) {
+    # include, then include diabetes types
+    diabetes_list <- c("Type 1", "Type 2", as.character(NA))
+  } else {
+    diabetes_list <- c("")
+  }
 
   # missing_rows <- do.call(tidyr::expand, to_expand) %>>%
   df_complete <- df %>>%
     tidyr::expand(
       Age10 = age_list,
       Sex = c("Female", "Male", "X", "Not stated"),
-      Indigenous = c("Aboriginal", "Torres Strait Islander",
-                     "Both Aboriginal and Torres Strait Islander",
-                     "Neither", "Not stated"),
-      State = states,
-      DiabetesType = ifelse(
-        include_diabetes,
-        # include, then include diabetes types
-        c("Type 1", "Type 2", as.character(NA)),
-        # if do not include, then just a 'blank'
-        ""
-      )
+      Indigenous = indigenous_list,
+      DiabetesType = diabetes_list,
+      State = states
     ) %>>%
-    dplyr::anti_join(df) %>>% # this finds 'missing' rows
+    dplyr::anti_join(
+      df,
+      by = c("Age10", "Sex", "Indigenous", "State", "DiabetesType")
+    ) %>>% # this finds 'missing' rows
     dplyr::mutate(
       QIM = qim_name,
       Measure = measure,
@@ -316,5 +307,4 @@ complete_demographics <- function(
     rbind(df) # join back to original dataframe
 
   return(df_complete)
-
 }

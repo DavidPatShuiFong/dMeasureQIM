@@ -37,6 +37,10 @@ NULL
 #' Filtered by date, and chosen clinicians
 #'
 #' QIM 06 - Proportion of patients with COPD who were immunised against influenza
+#'  only those age 15 years or more
+#'
+#'  https://www1.health.gov.au/internet/main/publishing.nsf/Content/
+#'   46506AF50A4824B6CA25848600113FFF/$File/PIP-QI-Technical-Specifications.pdf
 #'
 #' the reference date for 'most recent' measurement is 'date_to'
 #'
@@ -152,6 +156,21 @@ list_qim_copd <- function(dMeasureQIM_obj,
         dplyr::select(-c(Count, Latest)) # don't need these fields
       copdID <- copd_list %>>% dplyr::pull(InternalID) %>>%
         c(-1) # make sure not empty vector, which is bad for SQL filter
+      copd_list <- copd_list %>>%
+        dplyr::left_join(
+          self$dM$db$patients %>>%
+            dplyr::filter(InternalID %in% copdID) %>>%
+            dplyr::select(InternalID, DOB),
+          by = "InternalID", copy = TRUE
+        ) %>>%
+        dplyr::mutate(DOB = as.Date(DOB),
+                      Age = dMeasure::calc_age(DOB, date_to)) %>>%
+        dplyr::filter(Age >= 15) %>>%
+        # QIM 06 COPD requires Age of at least 15 years
+        dplyr::select(-c(Age, DOB)) # don't need this anymore
+      copdID <- copd_list %>>% dplyr::pull(InternalID) %>>%
+        c(-1) # make sure not empty vector, which is bad for SQL filter
+      # re-calculate
     } else {
       if (!lazy) {
         self$dM$filter_appointments()
@@ -159,14 +178,19 @@ list_qim_copd <- function(dMeasureQIM_obj,
       copdID <- c(self$dM$chroniclungdisease_list(), -1)
       copd_list <- self$dM$db$patients %>>%
         dplyr::filter(InternalID %in% copdID) %>>%
-        dplyr::select(Firstname, Surname, InternalID) %>>%
+        dplyr::select(Firstname, Surname, InternalID, DOB) %>>%
         dplyr::collect() %>>%
+        dplyr::mutate(DOB = as.Date(DOB),
+                      Age = dMeasure::calc_age(DOB, date_to)) %>>%
+        dplyr::filter(Age >= 15) %>>%
+        # QIM 06 COPD requires Age of at least 15 years
         dplyr::mutate(Patient = paste(Firstname, Surname)) %>>%
         dplyr::select(Patient, InternalID)
       # derived from self$appointments_filtered
     }
 
-    fluvaxList <- self$dM$influenzaVax_obs(copdID,
+    fluvaxList <- self$dM$influenzaVax_obs(
+      copdID,
       date_from = ifelse(ignoreOld,
         NA,
         as.Date(-Inf, origin = "1970-01-01")
