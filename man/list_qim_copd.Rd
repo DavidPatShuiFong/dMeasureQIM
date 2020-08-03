@@ -55,6 +55,10 @@ Filtered by date, and chosen clinicians
 }
 \details{
 QIM 06 - Proportion of patients with COPD who were immunised against influenza
+ only those age 15 years or more
+
+ https://www1.health.gov.au/internet/main/publishing.nsf/Content/
+  46506AF50A4824B6CA25848600113FFF/$File/PIP-QI-Technical-Specifications.pdf
 
 the reference date for 'most recent' measurement is 'date_to'
 }

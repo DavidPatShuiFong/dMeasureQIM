@@ -143,9 +143,12 @@ qim_reportCreator_UI <- function(id) {
             label = "Name for file",
             value = paste0("QIMReport-", Sys.Date(), ".csv")
           ),
-          shiny::downloadButton(
-            outputId = ns("download_button"),
-            label = "Download"
+          shinyjs::disabled(
+            # enable when there is something to save...
+            shiny::downloadButton(
+              outputId = ns("download_button"),
+              label = "Download"
+            )
           )
         )
       ),
@@ -268,6 +271,11 @@ qim_reportCreator <- function(input, output, session, dMQIM) {
         )
       }
 
+      small_cell_suppression <- "Small cell suppression" %in%
+        input$report_filter_options
+      include_all_demographic_groups <- "Include all demographics groups" %in%
+        input$report_filter_options
+
       for (i in 1:input$report_number) {
         # in this case, we can be confident that input$report_number
         #  is not a negative number or zero!
@@ -282,126 +290,19 @@ qim_reportCreator <- function(input, output, session, dMQIM) {
           value = 0
         )
 
-        qim <- data.frame(
-          QIM = character(),
-          Age10 = numeric(),
-          Sex = character(),
-          Indigenous = character(),
-          DiabetesType = character(),
-          Measure = character(),
-          State = character(),
-          n = numeric(),
-          ProportionDemographic = numeric(),
-          DateFrom = character(),
-          DateTo = character()
-        )
-
-        # called to create reports in a 'standard' format
-        # from the 10 QIM measures
-        #
-        # gets report from 'report_function'
-        # then adds extra 'DiabetesType' column if necessary
-        # adds more columns describing the measurement
-        # renames the 'result' column to 'State'
-        #
-        #
-        #
-        getReport <- function(
-          report_function, # the dMQIM method to call
-          progress_detail, # the message to report in the 'progress' dialog
-          measure = NA,
-          # some (but not all) 'report_function' can choose the 'measure'
-          # if not required, then use 'NA'
-          require_type_diabetes,
-          # diabetes methods may give option to specify diabetes types
-          qim_name, measure_name,
-          # the overall name of the QIM, and the name of the measure
-          state_variable_name,
-          # the name of the column in the return from 'report_function'
-          # which becomes the 'State' column,
-          age_min = 0, age_max = 65, # min/max age for 'all demographic' option
-          states = c(FALSE, TRUE)
-        ) {
-          progress$inc(amount = 1, detail = progress_detail)
-
-          function_args <- list(
-            contact = TRUE, date_from = date_from, date_to = date_to,
-            min_contact = min_contact,
-            # 'default' is clinician list chosen in right panel
-            min_date = as.Date("2000-01-01"), max_date = Sys.Date(),
-            # no limitations on min/max date essentially
-            contact_type = contact_type,
-            demographic = c("Age10", "Sex", "Indigenous"),
-            ignoreOld = TRUE, lazy = FALSE, store = FALSE
-          )
-          if (!is.na(measure)) {
-            function_args <- append(
-              function_args,
-              list(measure = measure)
-            )
-          }
-          if (require_type_diabetes) {
-            function_args <- append(
-              function_args,
-              list(type_diabetes = TRUE)
-            )
-          }
-          qim_report <- do.call(report_function, function_args) %>>%
-            dplyr::mutate(
-              QIM = qim_name, Measure = measure_name
-            ) %>>% {
-              if (require_type_diabetes) {
-                . # 'DiabetesType' should already exit
-              } else {
-                dplyr::mutate(., DiabetesType = "")
-                # create a 'blank'
-              }
-            } %>>%
-            dplyr::rename(
-              State = !!state_variable_name,
-              ProportionDemographic = Proportion_Demographic
-            ) %>>% {
-              if ("Small cell suppression" %in% input$report_filter_options) {
-                dplyr::filter(., n >= 5)
-                # 'suppress' the cell (removed completely!) if < 5
-                # section 2.4 'Small cell suppresion' of
-                #  "Practice Incentives ProgramQuality Improvement Measures User Guide"
-                #
-                # https://www1.health.gov.au/internet/main/publishing.nsf/Content/
-                #  46506AF50A4824B6CA25848600113FFF/$File/PIP%20QI%20-%20User%20Guide.pdf
-              } else {
-                .
-              }
-            } %>>%
-            dplyr::select(
-              QIM, Age10, Sex, Indigenous, DiabetesType,
-              Measure, State, n, ProportionDemographic
-            )
-          # keep Age10, Sex, Indigenous, DiabetesType, HbA1CDone,
-          # n, Proportion_Demographic
-
-          if ("Include all demographics groups" %in%
-              input$report_filter_options) {
-            qim_report <- dMeasureQIM::complete_demographics(
-              qim_report,
-              qim_name = qim_name,
-              age_min = age_min, age_max = age_max,
-              include_diabetes = require_type_diabetes,
-              measure = measure_name,
-              states = states
-            )
-          }
-
-          return(qim_report)
-        }
+        qim <- empty_result
 
         if (measure_names[[1]] %in% input$report_qim_chosen) {
           qim01 <- getReport(
             dMQIM$report_qim_diabetes,
-            progress_detail = "QIM 01 - Diabetes HbA1C",
+            date_from = date_from, date_to = date_to,
+            contact_type = contact_type, min_contact = min_contact,
+            progress = progress, progress_detail = "QIM 01 - Diabetes HbA1C",
             measure = "HbA1C", require_type_diabetes = TRUE,
             qim_name = "QIM 01", measure_name = "HbA1C",
             state_variable_name = dplyr::quo(HbA1CDone),
+            small_cell_suppression = small_cell_suppression,
+            include_all_demographic_groups = include_all_demographic_groups
           )
           qim <- rbind(qim, qim01)
         }
@@ -409,10 +310,14 @@ qim_reportCreator <- function(input, output, session, dMQIM) {
         if (measure_names[[2]] %in% input$report_qim_chosen) {
           qim02 <- getReport(
             dMQIM$report_qim_15plus,
-            progress_detail = "QIM 02 - 15+ smoking",
+            date_from = date_from, date_to = date_to,
+            contact_type = contact_type, min_contact = min_contact,
+            progress = progress, progress_detail = "QIM 02 - 15+ smoking",
             measure = "Smoking", require_type_diabetes = FALSE,
             qim_name = "QIM 02", measure_name = "Smoking",
             state_variable_name = dplyr::quo(SmokingStatus),
+            small_cell_suppression = small_cell_suppression,
+            include_all_demographic_groups = include_all_demographic_groups,
             age_min = 15,
             states = c(as.character(NA), "Non smoker", "Ex smoker", "Smoker")
             # dervied from dMQIM$dM$db$SMOKINGSTATUS %>>% dplyr::pull(SMOKINGTEXT)
@@ -426,10 +331,14 @@ qim_reportCreator <- function(input, output, session, dMQIM) {
         if (measure_names[[3]] %in% input$report_qim_chosen) {
           qim03 <- getReport(
             dMQIM$report_qim_15plus,
-            progress_detail = "QIM 03 - 15+ BMI Class",
+            date_from = date_from, date_to = date_to,
+            contact_type = contact_type, min_contact = min_contact,
+            progress = progress, progress_detail = "QIM 03 - 15+ BMI Class",
             measure = "Weight", require_type_diabetes = FALSE,
             qim_name = "QIM 03", measure_name = "BMIClass",
             state_variable_name = dplyr::quo(BMIClass),
+            small_cell_suppression = small_cell_suppression,
+            include_all_demographic_groups = include_all_demographic_groups,
             age_min = 15,
             states = c(
               as.character(NA),
@@ -442,10 +351,14 @@ qim_reportCreator <- function(input, output, session, dMQIM) {
         if (measure_names[[4]] %in% input$report_qim_chosen) {
           qim04 <- getReport(
             dMQIM$report_qim_65plus,
-            progress_detail = "QIM 04 - 64+ Influenza",
+            date_from = date_from, date_to = date_to,
+            contact_type = contact_type, min_contact = min_contact,
+            progress = progress, progress_detail = "QIM 04 - 64+ Influenza",
             measure = NA, require_type_diabetes = FALSE,
             qim_name = "QIM 04", measure_name = "InfluenzaDone",
             state_variable_name = dplyr::quo(InfluenzaDone),
+            small_cell_suppression = small_cell_suppression,
+            include_all_demographic_groups = include_all_demographic_groups,
             age_min = 65
           )
           qim <- rbind(qim, qim04)
@@ -454,10 +367,14 @@ qim_reportCreator <- function(input, output, session, dMQIM) {
         if (measure_names[[5]] %in% input$report_qim_chosen) {
           qim05 <- getReport(
             dMQIM$report_qim_diabetes,
-            progress_detail = "QIM 05 - Diabetes Influenza",
+            date_from = date_from, date_to = date_to,
+            contact_type = contact_type, min_contact = min_contact,
+            progress = progress, progress_detail = "QIM 05 - Diabetes Influenza",
             measure = "Influenza", require_type_diabetes = TRUE,
             qim_name = "QIM 05", measure_name = "InfluenzaDone",
-            state_variable_name = dplyr::quo(InfluenzaDone)
+            state_variable_name = dplyr::quo(InfluenzaDone),
+            small_cell_suppression = small_cell_suppression,
+            include_all_demographic_groups = include_all_demographic_groups
           )
           qim <- rbind(qim, qim05)
         }
@@ -465,10 +382,14 @@ qim_reportCreator <- function(input, output, session, dMQIM) {
         if (measure_names[[6]] %in% input$report_qim_chosen) {
           qim06 <- getReport(
             dMQIM$report_qim_copd,
-            progress_detail = "QIM 06 - COPD Influenza",
+            date_from = date_from, date_to = date_to,
+            contact_type = contact_type, min_contact = min_contact,
+            progress = progress, progress_detail = "QIM 06 - COPD Influenza",
             measure = NA, require_type_diabetes = FALSE,
             qim_name = "QIM 06", measure_name = "InfluenzaDone",
             state_variable_name = dplyr::quo(InfluenzaDone),
+            small_cell_suppression = small_cell_suppression,
+            include_all_demographic_groups = include_all_demographic_groups,
             age_min = 15
           )
           qim <- rbind(qim, qim06)
@@ -477,10 +398,14 @@ qim_reportCreator <- function(input, output, session, dMQIM) {
         if (measure_names[[7]] %in% input$report_qim_chosen) {
           qim07 <- getReport(
             dMQIM$report_qim_15plus,
-            progress_detail = "QIM 07 - 15+ Alcohol",
+            date_from = date_from, date_to = date_to,
+            contact_type = contact_type, min_contact = min_contact,
+            progress = progress, progress_detail = "QIM 07 - 15+ Alcohol",
             measure = "Alcohol", require_type_diabetes = FALSE,
             qim_name = "QIM 07", measure_name = "AlcoholDone",
             state_variable_name = dplyr::quo(AlcoholDone),
+            small_cell_suppression = small_cell_suppression,
+            include_all_demographic_groups = include_all_demographic_groups,
             age_min = 15
           )
           qim <- rbind(qim, qim07)
@@ -489,10 +414,14 @@ qim_reportCreator <- function(input, output, session, dMQIM) {
         if (measure_names[[8]] %in% input$report_qim_chosen) {
           qim08 <- getReport(
             dMQIM$report_qim_cvdRisk,
-            progress_detail = "QIM 08 - CVD Risk",
+            date_from = date_from, date_to = date_to,
+            contact_type = contact_type, min_contact = min_contact,
+            progress = progress, progress_detail = "QIM 08 - CVD Risk",
             measure = NA, require_type_diabetes = FALSE,
             qim_name = "QIM 08", measure_name = "CVDRiskDone",
             state_variable_name = dplyr::quo(CVDriskDone),
+            small_cell_suppression = small_cell_suppression,
+            include_all_demographic_groups = include_all_demographic_groups,
             age_min = 45
           )
           if ("Include all demographics groups" %in%
@@ -512,10 +441,14 @@ qim_reportCreator <- function(input, output, session, dMQIM) {
         if (measure_names[[9]] %in% input$report_qim_chosen) {
           qim09 <- getReport(
             dMQIM$report_qim_cst,
-            progress_detail = "QIM 09 - Cervical screening",
+            date_from = date_from, date_to = date_to,
+            contact_type = contact_type, min_contact = min_contact,
+            progress = progress, progress_detail = "QIM 09 - Cervical screening",
             measure = NA, require_type_diabetes = FALSE,
             qim_name = "QIM 09", measure_name = "CSTDone",
             state_variable_name = dplyr::quo(CSTDone),
+            small_cell_suppression = small_cell_suppression,
+            include_all_demographic_groups = include_all_demographic_groups,
             age_min = 25
           )
           qim <- rbind(qim, qim09)        }
@@ -523,10 +456,14 @@ qim_reportCreator <- function(input, output, session, dMQIM) {
         if (measure_names[[10]] %in% input$report_qim_chosen) {
           qim10 <- getReport(
             dMQIM$report_qim_diabetes,
-            progress_detail = "QIM 10 - Diabetes BP",
+            date_from = date_from, date_to = date_to,
+            contact_type = contact_type, min_contact = min_contact,
+            progress = progress, progress_detail = "QIM 10 - Diabetes BP",
             measure = "BP", require_type_diabetes = TRUE,
             qim_name = "QIM 10", measure_name = "BPDone",
-            state_variable_name = dplyr::quo(BPDone)
+            state_variable_name = dplyr::quo(BPDone),
+            small_cell_suppression = small_cell_suppression,
+            include_all_demographic_groups = include_all_demographic_groups
           )
           qim <- rbind(qim, qim10)
         }
@@ -627,7 +564,7 @@ qim_reportCreator <- function(input, output, session, dMQIM) {
           ),
           position = "bottom-center",
           closeButton = TRUE,
-          timeOut = 0
+          timeOut = 20000
         )
         contact_type_warning(TRUE)
       }

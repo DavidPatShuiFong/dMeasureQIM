@@ -11,7 +11,8 @@ complete_demographics(
   age_max = 65,
   include_diabetes = FALSE,
   measure,
-  states = c(FALSE, TRUE)
+  states = c(FALSE, TRUE),
+  atsi_only = FALSE
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ complete_demographics(
 \item{measure}{name of measure}
 
 \item{states}{vector of status types}
+
+\item{atsi_only}{include only ATSI sub-groups?}
 }
 \value{
 dataframe with DOB, Age10, Sex, Indigenous and maybe DiabetesStatus
