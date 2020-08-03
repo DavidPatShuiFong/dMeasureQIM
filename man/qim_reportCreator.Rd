@@ -17,7 +17,10 @@ qim_reportCreator(input, output, session, dMQIM)
 access to appointments lists, results, correspondence and EMR database}
 }
 \value{
-none
+list with following components
+\describe{
+ \item{report_values}{dataframe of report}
+}
 }
 \description{
 Quality Improvement report creation - server

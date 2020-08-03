@@ -200,13 +200,22 @@ datatableServer <- function(id, dMQIM, contact) {
       )
       tabs.content <- append(
         tabs.content,
-        list(list(
-          title = "Report creator",
-          value = "reportCreator",
-          width = 12,
-          shiny::br(),
-          dMeasureQIM::qim_reportCreator_UI(ns("qim_reportCreator"))
-        ))
+        list(
+          list(
+            title = "Report creator",
+            value = "reportCreator",
+            width = 12,
+            shiny::br(),
+            dMeasureQIM::qim_reportCreator_UI(ns("qim_reportCreator"))
+          ),
+          list(
+            title = "Report charter",
+            value = "reportCharter",
+            width = 12,
+            shiny::br(),
+            dMeasureQIM::qim_reportCharter_UI(ns("qim_reportCharter"))
+          )
+        )
       )
     }
     tabs <- lapply(
@@ -245,7 +254,12 @@ datatableServer <- function(id, dMQIM, contact) {
     if (contact) {
       # only in 'contact' mode
       callModule(dMeasureQIM::qim_active, "qim_active", dMQIM, contact)
-      callModule(dMeasureQIM::qim_reportCreator, "qim_reportCreator", dMQIM)
+      report <- callModule(
+        dMeasureQIM::qim_reportCreator, "qim_reportCreator", dMQIM
+      )
+      callModule(
+        dMeasureQIM::qim_reportCharter, "qim_reportCharter",
+        dMQIM, report)
     }
 
     initial_demographic <- dMQIM$qim_demographicGroup

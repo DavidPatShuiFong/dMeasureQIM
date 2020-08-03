@@ -2,18 +2,13 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-measure_names <- c(
-  "QIM 01 - Diabetes HbA1C results",
-  "QIM 02 - 15+ smoking status",
-  "QIM 03 - 15+ weight classification",
-  "QIM 04 - 65+ influenza immunization",
-  "QIM 05 - Diabetes influenza immunization",
-  "QIM 06 - COPD influenza immunization",
-  "QIM 07 - 15+ alcohol consumption status",
-  "QIM 08 - Cardiovascular risk assessable",
-  "QIM 09 - Cervical screening up-to-date",
-  "QIM 10 - Diabetes blood pressure recording"
-)
+#' @name qim_report_UI
+#' @title dMeasure Quality Improvement Measures - reports for QIM UI
+#'
+#' need definitions including 'measure_names'
+#'
+#' @include QualityImprovementMeasures.R
+NULL
 
 #' @export
 qim_reportCreator_UI <- function(id) {
@@ -220,7 +215,10 @@ qim_reportCreator_UI <- function(id) {
 #' @param dMQIM dMeasure QIM R6 object
 #'  access to appointments lists, results, correspondence and EMR database
 #'
-#' @return none
+#' @return list with following components
+#' \describe{
+#'  \item{report_values}{dataframe of report}
+#' }
 #'
 #' @export
 qim_reportCreator <- function(input, output, session, dMQIM) {
@@ -708,4 +706,5 @@ qim_reportCreator <- function(input, output, session, dMQIM) {
     }
   )
 
+  return(list(report_values = reactive({report_values()})))
 }

@@ -183,6 +183,34 @@ dMeasureQIM <- R6::R6Class(
 })
 .reactive(dMeasureQIM, "qim_demographicGroupR", quote(self$qim_demographicGroupings))
 
+# names of QIM measures
+measure_names <- c(
+  "QIM 01 - Diabetes HbA1C results",
+  "QIM 02 - 15+ smoking status",
+  "QIM 03 - 15+ weight classification",
+  "QIM 04 - 65+ influenza immunization",
+  "QIM 05 - Diabetes influenza immunization",
+  "QIM 06 - COPD influenza immunization",
+  "QIM 07 - 15+ alcohol consumption status",
+  "QIM 08 - Cardiovascular risk assessable",
+  "QIM 09 - Cervical screening up-to-date",
+  "QIM 10 - Diabetes blood pressure recording"
+)
+sex_choices <- c("Female", "Male", "Not stated", "X")
+ethnicity_choices <- c(
+  "Aboriginal",
+  "Torres Strait Islander",
+  "Both Aboriginal and Torres Strait Islander",
+  "Not stated",
+  "Neither"
+)
+# diabetes type 'not specified' is actually ""
+# and applies to QIM measures where DiabetesType is
+# not specified
+diabetes_choices <- c(
+  "Type 1", "Type 2", "NA", "Not specified"
+)
+
 #' add demographics
 #'
 #' @param df dataframe with InternalID
