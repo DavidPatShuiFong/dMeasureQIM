@@ -2,7 +2,10 @@ Changelog
 
 # version 0.4.0
 
-* report create and download (comma-separated-values '.csv')
+## New
+
+* report creation download (comma-separated-values '.csv') and restore ('upload')
+  + `getReport` to modify QIM-specific reports to generic 'long-format' which can be used by all QIM reports
   + support small number suppression
 * compliance with version 1.1 of [PIP QI Improvement Measures - Technical Specifications v1.1 04052020](https://www1.health.gov.au/internet/main/publishing.nsf/Content/46506AF50A4824B6CA25848600113FFF/$File/PIP-QI-Technical-Specifications.pdf)
   + change `Age5` to `Age10` (minimum 0, maximum 65)
@@ -20,6 +23,9 @@ Changelog
     or has been checked (BSL or HbA1C) within the past two years
 * `Proportion_Demographic` : proportion of measurement in each demographic sub-group
 * `add_demographics` : function to add demographics to dataframe
+
+## Changes
+
 * add `store` option for `report_qim_*`, `list_qim_*` and `list_qim_*_appointments` methods.
   + by default, set to `TRUE`, store result to `self$qim_*_report`
   + if `FALSE`, the results are returned, but not stored to `self$qim_*_report`

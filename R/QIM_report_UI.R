@@ -187,11 +187,30 @@ qim_reportCreator_UI <- function(id) {
             )
           )
         )
+      ),
+      shiny::column(
+        width = 4,
+        shiny::wellPanel(
+          style = "height:23em",
+          shiny::tags$h5("Load report"),
+          shiny::fileInput(
+            ns("loadCSVFile"),
+            "Choose GPstat! QIMReport .CSV file",
+            accept = c("text/csv",
+                       "text/comma-separated-values, text/plain",
+                       ".csv")
+          ),
+          shiny::br(),
+          shiny::hr(),
+          shiny::actionButton(
+            inputId = ns("show_report_values"),
+            label = "Show report"
+          )
+        )
       )
     )
   )
 }
-
 
 #' Quality Improvement report creation - server
 #'
@@ -599,7 +618,6 @@ qim_reportCreator <- function(input, output, session, dMQIM) {
     }
   )
 
-
   # warn if more than one report being generated
   # could take a long time!
   n_report_warning <- shiny::reactiveVal(FALSE)
@@ -615,10 +633,78 @@ qim_reportCreator <- function(input, output, session, dMQIM) {
           ),
           position = "bottom-center",
           closeButton = TRUE,
-          timeOut = 0
+          timeOut = 10000
         )
         n_report_warning(TRUE)
       }
+    }
+  )
+
+  shiny::observeEvent(
+    input$loadCSVFile,
+    ignoreInit = TRUE, ignoreNULL = TRUE, {
+      shiny::req(input$loadCSVFile)
+
+      inFile <- input$loadCSVFile
+
+      data <- read.csv(
+        inFile$datapath,
+        stringsAsFactors = FALSE,
+        na.strings = "NA"
+      )
+
+      if (
+        !all(
+          c("QIM", "Age10", "Sex", "Indigenous",
+            "DiabetesType", "Measure", "State", "n",
+            "ProportionDemographic",
+            "DateFrom", "DateTo",
+            "MinContact")
+          %in% names(data)
+        )
+      ) {
+        # absolute minimum columns are not present
+        shinytoastr::toastr_error(
+          message = paste(
+            "Not a valid GPstat QIM report"
+          ),
+          position = "bottom-left",
+          closeButton = TRUE,
+          timeOut = 0
+        )
+      } else {
+        # all required columns are present
+        data <- data %>>%
+          dplyr::mutate(
+            Age10 = as.numeric(Age10),
+            n = as.numeric(n),
+            ProportionDemographic = as.numeric(ProportionDemographic),
+            DateFrom = as.Date(DateFrom),
+            DateFrom = as.Date(DateTo),
+            MinContact = as.numeric(MinContact)
+          )
+        report_values(data)
+      }
+    })
+
+  shiny::observeEvent(
+    input$show_report_values,
+    ignoreInit = TRUE, {
+      shiny::showModal(shiny::modalDialog(
+        title = "Report",
+        DT::renderDataTable({
+          DT::datatable(
+            data = report_values(),
+            extensions = c("Buttons", "Responsive"),
+            options = list(scrollX = TRUE,
+                           dom = "frtiBp",
+                           buttons = I("colvis"))
+          )
+        }),
+        easyClose = TRUE,
+        size = "l",
+        footer = NULL
+      ))
     }
   )
 
