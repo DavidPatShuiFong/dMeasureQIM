@@ -208,23 +208,25 @@ ethnicity_choices <- c(
 # and applies to QIM measures where DiabetesType is
 # not specified
 diabetes_choices <- c(
-  "Type 1", "Type 2", "NA", "Not specified"
+  # 'not specified' refers to QIMs which are not diabetic oriented
+  # 'not stated' means diabetes has not been defined as type 1 or type 2
+  "Type 1", "Type 2", "Not specified", "Not stated"
 )
 
 #' add demographics
 #'
-#' @param df dataframe with InternalID
+#' @param d dataframe with InternalID
 #' @param dM dMeasure object
 #' @param reference_date date to calculate age from
 #'
 #' @return dataframe with DOB, Age10, Sex, Indigenous, RecordNo,
 #'   MaritalStatus, Sexuality, Indigenous
 #' @export
-add_demographics <- function(df, dM, reference_date) {
+add_demographics <- function(d, dM, reference_date) {
 
-  intID <- df %>>% dplyr::pull(InternalID) %>>% c(-1)
+  intID <- d %>>% dplyr::pull(InternalID) %>>% c(-1)
 
-  df <- df  %>>%
+  d <- d  %>>%
     dplyr::left_join(
       dM$db$patients %>>%
         dplyr::filter(InternalID %in% intID) %>>%
@@ -269,14 +271,23 @@ add_demographics <- function(df, dM, reference_date) {
       Sexuality = dplyr::na_if(Sexuality, "")
     )
 
-  return(df)
+  return(d)
 }
 
 #' complete demographics
 #'
-#' includes different types of status e.g. TRUE/FALSE
+#' @md
 #'
-#' @param df dataframe to process
+#' Create 'missing' rows, which have 'n = 0' values.
+#'
+#' In part, responds to columns existing  in `d`.
+#'
+#' Includes different types of status e.g. TRUE/FALSE
+#'
+#' @param d dataframe to process
+#'   with QIM, Age10, Sex, Indigenous, DiabetesType
+#'   Measure, State, n.
+#'   optionally - ProportionDemographic, DateFrom, DateTo
 #' @param qim_name name of qim
 #' @param age_min minimum age group
 #' @param age_max maximum age group
@@ -285,10 +296,12 @@ add_demographics <- function(df, dM, reference_date) {
 #' @param states vector of status types
 #' @param atsi_only include only ATSI sub-groups?
 #'
-#' @return dataframe with DOB, Age10, Sex, Indigenous and maybe DiabetesStatus
+#' @return dataframe with DOB, Age10, Sex, Indigenous, DiabetesType
+#'   Measure, State, n.
+#'   optionally - ProportionDemographic, DateFrom, DateTo
 #' @export
 complete_demographics <- function(
-  df,
+  d,
   qim_name,
   age_min = 0,
   age_max = 65,
@@ -314,25 +327,168 @@ complete_demographics <- function(
   }
 
   # missing_rows <- do.call(tidyr::expand, to_expand) %>>%
-  df_complete <- df %>>%
+  df_complete <- d %>>%
     tidyr::expand(
       Age10 = age_list,
       Sex = c("Female", "Male", "X", "Not stated"),
       Indigenous = indigenous_list,
       DiabetesType = diabetes_list,
-      State = states
+      State = as.character(states)
     ) %>>%
     dplyr::anti_join(
-      df,
+      d,
       by = c("Age10", "Sex", "Indigenous", "State", "DiabetesType")
     ) %>>% # this finds 'missing' rows
     dplyr::mutate(
       QIM = qim_name,
       Measure = measure,
       n = 0, # no entries
+    )
+
+  if ("ProportionDemographic" %in% names(d)) {
+    df_complete <- df_complete %>>%
+    dplyr::mutate(
       ProportionDemographic = 0 # no entries
-    ) %>>%
-    rbind(df) # join back to original dataframe
+    )
+  }
+  if ("DateFrom" %in% names(d)) {
+    df_complete <- df_complete %>>%
+      dplyr::mutate(
+        DateFrom = d[[1, "DateFrom"]] # copy first entry
+      )
+  }
+  if ("DateTo" %in% names(d)) {
+    df_complete <- df_complete %>>%
+      dplyr::mutate(
+        DateTo = d[[1, "DateTo"]] # copy first entry
+      )
+  }
+
+  df_complete <- rbind(df_complete, d)
+  # join back to original dataframe
 
   return(df_complete)
+}
+
+#' fill report with 'complete' quality improvement measures and demographics
+#'
+#' determines from the content of 'QIM' what is required to fill
+#' in the 'missing' (zero) rows
+#'
+#' @param d dataframe to process
+#'   with QIM, Age10, Sex, Indigenous, DiabetesType
+#'   Measure, State, n.
+#'   optionally - ProportionDemographic, DateFrom, DateTo
+#'
+#' @return dataframe with DOB, Age10, Sex, Indigenous, DiabetesType
+#'   Measure, State, n.
+#'   optionally - ProportionDemographic, DateFrom, DateTo
+#'
+#' @export
+fill_demographics <- function(d) {
+
+  qim_name <- d[[1, "QIM"]] # the name of the QIM
+  qim <- as.numeric(stringi::stri_sub(qim_name, -2, -1)) # the number of the QIM
+  measure_name = d[[1, "Measure"]]
+
+  if (qim == 1) { # diabetes HbA1C
+    dt <- dMeasureQIM::complete_demographics(
+      d, qim_name = qim_name,
+      age_min = 0, age_max = 65,
+      include_diabetes = TRUE,
+      measure = measure_name,
+      states = c(FALSE, TRUE)
+    )
+  } else if (qim == 2) { # 15+ smoking
+    dt <- dMeasureQIM::complete_demographics(
+      d, qim_name = qim_name,
+      age_min = 15, age_max = 65,
+      include_diabetes = FALSE,
+      measure = measure_name,
+      states = c(as.character(NA), "Non smoker", "Ex smoker", "Smoker")
+      # derived from dMQIM$dM$db$SMOKINGSTATUS %>>% dplyr::pull(SMOKINGTEXT)
+      #   should be "", "Non smoker", "Ex smoker", "Smoker"
+      #   the "" being 'unknown', and replaced with NA
+      #   in dM$smoking_obs
+    )
+  } else if (qim == 3) { # 15+ BMI
+    dt <- dMeasureQIM::complete_demographics(
+      d, qim_name = qim_name,
+      age_min = 15, age_max = 65,
+      include_diabetes = FALSE,
+      measure = measure_name,
+      states = c(
+        as.character(NA),
+        "Underweight", "Healthy", "Overweight", "Obese"
+      )
+    )
+  } else if (qim == 4) { # 65+ influenza
+    dt <- dMeasureQIM::complete_demographics(
+      d, qim_name = qim_name,
+      age_min = 65, age_max = 65,
+      include_diabetes = FALSE,
+      measure = measure_name,
+      states = c(FALSE, TRUE)
+    )
+  } else if (qim == 5) { # diabetes influenza
+    dt <- dMeasureQIM::complete_demographics(
+      d, qim_name = qim_name,
+      age_min = 0, age_max = 65,
+      include_diabetes = TRUE,
+      measure = measure_name,
+      states = c(FALSE, TRUE)
+    )
+  } else if (qim == 6) { # COPD influenza
+    dt <- dMeasureQIM::complete_demographics(
+      d, qim_name = qim_name,
+      age_min = 15, age_max = 65,
+      include_diabetes = FALSE,
+      measure = measure_name,
+      states = c(FALSE, TRUE)
+    )
+  } else if (qim == 7) { # 15+ alcohol
+    dt <- dMeasureQIM::complete_demographics(
+      d, qim_name = qim_name,
+      age_min = 15, age_max = 65,
+      include_diabetes = FALSE,
+      measure = measure_name,
+      states = c(FALSE, TRUE)
+    )
+  } else if (qim == 8) { # CVD risk
+    dt <- dMeasureQIM::complete_demographics(
+      d, qim_name = qim_name,
+      age_min = 45, age_max = 65,
+      include_diabetes = FALSE,
+      measure = measure_name,
+      states = c(FALSE, TRUE)
+    ) %>>%
+      # cvdRisk is a special case, as it includes indigenous
+      # at age10 35 (all other groups are only 45 and more)
+      dMeasureQIM::complete_demographics(
+        qim_name = qim_name,
+        age_min = 35, age_max = 35,
+        include_diabetes = FALSE,
+        measure = measure_name,
+        states = c(FALSE, TRUE),
+        atsi_only = TRUE
+      )
+  } else if (qim == 9) { # cervical screening
+    dt <- dMeasureQIM::complete_demographics(
+      d, qim_name = qim_name,
+      age_min = 25, age_max = 65,
+      include_diabetes = FALSE,
+      measure = measure_name,
+      states = c(FALSE, TRUE)
+    )
+  } else if (qim == 10) {
+    dt <- dMeasureQIM::complete_demographics(
+      d, qim_name = qim_name,
+      age_min = 45, age_max = 65,
+      include_diabetes = FALSE,
+      measure = measure_name,
+      states = c(FALSE, TRUE)
+    )
+  }
+
+  return(dt)
 }

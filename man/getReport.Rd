@@ -18,10 +18,7 @@ getReport(
   measure_name,
   state_variable_name,
   small_cell_suppression = FALSE,
-  include_all_demographic_groups = FALSE,
-  age_min = 0,
-  age_max = 65,
-  states = c(FALSE, TRUE)
+  include_all_demographic_groups = FALSE
 )
 }
 \arguments{
@@ -58,12 +55,6 @@ row entirely) if count is less than 5.}
 
 \item{include_all_demographic_groups}{include all possible
 demographic groups/subgroups, even if there was no count}
-
-\item{age_min}{minimum age for 'all demographic' option}
-
-\item{age_max}{manimum age for 'all demographic' option}
-
-\item{states}{states for 'all demographic' option}
 }
 \description{
 create reports in a 'standard' format

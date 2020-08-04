@@ -182,26 +182,6 @@ qim_reportCreator_UI <- function(id) {
             )
           )
         )
-      ),
-      shiny::column(
-        width = 4,
-        shiny::wellPanel(
-          style = "height:23em",
-          shiny::tags$h5("Load report"),
-          shiny::fileInput(
-            ns("loadCSVFile"),
-            "Choose GPstat! QIMReport .CSV file",
-            accept = c("text/csv",
-                       "text/comma-separated-values, text/plain",
-                       ".csv")
-          ),
-          shiny::br(),
-          shiny::hr(),
-          shiny::actionButton(
-            inputId = ns("show_report_values"),
-            label = "Show report"
-          )
-        )
       )
     )
   )
@@ -334,13 +314,7 @@ qim_reportCreator <- function(input, output, session, dMQIM) {
             qim_name = "QIM 02", measure_name = "Smoking",
             state_variable_name = dplyr::quo(SmokingStatus),
             small_cell_suppression = small_cell_suppression,
-            include_all_demographic_groups = include_all_demographic_groups,
-            age_min = 15,
-            states = c(as.character(NA), "Non smoker", "Ex smoker", "Smoker")
-            # dervied from dMQIM$dM$db$SMOKINGSTATUS %>>% dplyr::pull(SMOKINGTEXT)
-            #   should be "", "Non smoker", "Ex smoker", "Smoker"
-            #   the "" being 'unknown', and replaced with NA
-            #   in dM$smoking_obs
+            include_all_demographic_groups = include_all_demographic_groups
           )
           qim <- rbind(qim, qim02)
         }
@@ -355,12 +329,7 @@ qim_reportCreator <- function(input, output, session, dMQIM) {
             qim_name = "QIM 03", measure_name = "BMIClass",
             state_variable_name = dplyr::quo(BMIClass),
             small_cell_suppression = small_cell_suppression,
-            include_all_demographic_groups = include_all_demographic_groups,
-            age_min = 15,
-            states = c(
-              as.character(NA),
-              "Underweight", "Healthy", "Overweight", "Obese"
-            )
+            include_all_demographic_groups = include_all_demographic_groups
           )
           qim <- rbind(qim, qim03)
         }
@@ -370,13 +339,12 @@ qim_reportCreator <- function(input, output, session, dMQIM) {
             dMQIM$report_qim_65plus,
             date_from = date_from, date_to = date_to,
             contact_type = contact_type, min_contact = min_contact,
-            progress = progress, progress_detail = "QIM 04 - 64+ Influenza",
+            progress = progress, progress_detail = "QIM 04 - 65+ Influenza",
             measure = NA, require_type_diabetes = FALSE,
             qim_name = "QIM 04", measure_name = "InfluenzaDone",
             state_variable_name = dplyr::quo(InfluenzaDone),
             small_cell_suppression = small_cell_suppression,
-            include_all_demographic_groups = include_all_demographic_groups,
-            age_min = 65
+            include_all_demographic_groups = include_all_demographic_groups
           )
           qim <- rbind(qim, qim04)
         }
@@ -406,8 +374,7 @@ qim_reportCreator <- function(input, output, session, dMQIM) {
             qim_name = "QIM 06", measure_name = "InfluenzaDone",
             state_variable_name = dplyr::quo(InfluenzaDone),
             small_cell_suppression = small_cell_suppression,
-            include_all_demographic_groups = include_all_demographic_groups,
-            age_min = 15
+            include_all_demographic_groups = include_all_demographic_groups
           )
           qim <- rbind(qim, qim06)
         }
@@ -422,8 +389,7 @@ qim_reportCreator <- function(input, output, session, dMQIM) {
             qim_name = "QIM 07", measure_name = "AlcoholDone",
             state_variable_name = dplyr::quo(AlcoholDone),
             small_cell_suppression = small_cell_suppression,
-            include_all_demographic_groups = include_all_demographic_groups,
-            age_min = 15
+            include_all_demographic_groups = include_all_demographic_groups
           )
           qim <- rbind(qim, qim07)
         }
@@ -438,20 +404,8 @@ qim_reportCreator <- function(input, output, session, dMQIM) {
             qim_name = "QIM 08", measure_name = "CVDRiskDone",
             state_variable_name = dplyr::quo(CVDriskDone),
             small_cell_suppression = small_cell_suppression,
-            include_all_demographic_groups = include_all_demographic_groups,
-            age_min = 45
+            include_all_demographic_groups = include_all_demographic_groups
           )
-          if ("Include all demographics groups" %in%
-              input$report_filter_options) {
-            # cvdRisk is a special case, as it includes indigenous
-            # at age10 35 (all other groups are only 45 and more)
-            qim08 <- dMeasureQIM::complete_demographics(
-              qim08,
-              qim_name = "QIM 08",
-              age_min = 35, age_max = 35,
-              measure = "CVDRiskDone"
-            )
-          }
           qim <- rbind(qim, qim08)
         }
 
@@ -465,8 +419,7 @@ qim_reportCreator <- function(input, output, session, dMQIM) {
             qim_name = "QIM 09", measure_name = "CSTDone",
             state_variable_name = dplyr::quo(CSTDone),
             small_cell_suppression = small_cell_suppression,
-            include_all_demographic_groups = include_all_demographic_groups,
-            age_min = 25
+            include_all_demographic_groups = include_all_demographic_groups
           )
           qim <- rbind(qim, qim09)        }
 
@@ -635,74 +588,6 @@ qim_reportCreator <- function(input, output, session, dMQIM) {
         )
         n_report_warning(TRUE)
       }
-    }
-  )
-
-  shiny::observeEvent(
-    input$loadCSVFile,
-    ignoreInit = TRUE, ignoreNULL = TRUE, {
-      shiny::req(input$loadCSVFile)
-
-      inFile <- input$loadCSVFile
-
-      data <- read.csv(
-        inFile$datapath,
-        stringsAsFactors = FALSE,
-        na.strings = "NA"
-      )
-
-      if (
-        !all(
-          c("QIM", "Age10", "Sex", "Indigenous",
-            "DiabetesType", "Measure", "State", "n",
-            "ProportionDemographic",
-            "DateFrom", "DateTo",
-            "MinContact")
-          %in% names(data)
-        )
-      ) {
-        # absolute minimum columns are not present
-        shinytoastr::toastr_error(
-          message = paste(
-            "Not a valid GPstat QIM report"
-          ),
-          position = "bottom-left",
-          closeButton = TRUE,
-          timeOut = 0
-        )
-      } else {
-        # all required columns are present
-        data <- data %>>%
-          dplyr::mutate(
-            Age10 = as.numeric(Age10),
-            n = as.numeric(n),
-            ProportionDemographic = as.numeric(ProportionDemographic),
-            DateFrom = as.Date(DateFrom),
-            DateFrom = as.Date(DateTo),
-            MinContact = as.numeric(MinContact)
-          )
-        report_values(data)
-      }
-    })
-
-  shiny::observeEvent(
-    input$show_report_values,
-    ignoreInit = TRUE, {
-      shiny::showModal(shiny::modalDialog(
-        title = "Report",
-        DT::renderDataTable({
-          DT::datatable(
-            data = report_values(),
-            extensions = c("Buttons", "Responsive"),
-            options = list(scrollX = TRUE,
-                           dom = "frtiBp",
-                           buttons = I("colvis"))
-          )
-        }),
-        easyClose = TRUE,
-        size = "l",
-        footer = NULL
-      ))
     }
   )
 

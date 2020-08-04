@@ -52,15 +52,8 @@ if not supplied, reads $qim_ignoreOld}
 }
 \value{
 dataframe of Patient (name), InternalID and measures
-  if type_diabetes is TRUE, also add DiabetesType
+if type_diabetes is TRUE, also add DiabetesType ('Type 1', 'Type 2', \code{NA})
 }
 \description{
-Filtered by date, and chosen clinicians
-}
-\details{
-QIM 01 - HbA1C - most recent. the QIM measure is within last twelve months
-QIM 05 - Influenza immunization - most recent. the QIM measure is within last 15 months
-QIM 10 - Blood pressure - most recent. the QIM measure is within the last six months
-
-the reference date for 'most recent' measurement is 'date_to'
+List of diabetics, with Quality Improvement Measures, in the contact list
 }

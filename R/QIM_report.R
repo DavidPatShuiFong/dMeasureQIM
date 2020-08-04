@@ -42,9 +42,6 @@ NULL
 #'   row entirely) if count is less than 5.
 #' @param include_all_demographic_groups include all possible
 #'   demographic groups/subgroups, even if there was no count
-#' @param age_min minimum age for 'all demographic' option
-#' @param age_max manimum age for 'all demographic' option
-#' @param states states for 'all demographic' option
 #' @export
 getReport <- function(
   report_function,
@@ -57,11 +54,9 @@ getReport <- function(
   qim_name, measure_name,
   state_variable_name,
   small_cell_suppression = FALSE,
-  include_all_demographic_groups = FALSE,
-  age_min = 0, age_max = 65,
-  states = c(FALSE, TRUE)
+  include_all_demographic_groups = FALSE
 ) {
-  if (!is.na(progress)) {
+  if (is.environment(progress)) { # a OOP object (as opposed to 'NA')
     progress$inc(amount = 1, detail = progress_detail)
   }
 
@@ -117,14 +112,7 @@ getReport <- function(
   # n, Proportion_Demographic
 
   if (include_all_demographic_groups) {
-    qim_report <- dMeasureQIM::complete_demographics(
-      qim_report,
-      qim_name = qim_name,
-      age_min = age_min, age_max = age_max,
-      include_diabetes = require_type_diabetes,
-      measure = measure_name,
-      states = states
-    )
+    qim_report <- dMeasureQIM::fill_demographics(qim_report)
   }
 
   return(qim_report)

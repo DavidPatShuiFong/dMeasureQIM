@@ -45,6 +45,8 @@ NULL
 ##### QIM diabetes methods ##########################################################
 #' List of diabetics, with Quality Improvement Measures, in the contact list
 #'
+#' @md
+#'
 #' Filtered by date, and chosen clinicians
 #'
 #' QIM 01 - HbA1C - most recent. the QIM measure is within last twelve months
@@ -71,7 +73,7 @@ NULL
 #' @param store keep result in self$qim_diabetes_report?
 #'
 #' @return dataframe of Patient (name), InternalID and measures
-#'   if type_diabetes is TRUE, also add DiabetesType
+#'   if type_diabetes is TRUE, also add DiabetesType ('Type 1', 'Type 2', `NA`)
 #' @export
 list_qim_diabetes <- function(dMeasureQIM_obj,
                               contact = NA,

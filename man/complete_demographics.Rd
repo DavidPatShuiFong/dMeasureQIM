@@ -5,7 +5,7 @@
 \title{complete demographics}
 \usage{
 complete_demographics(
-  df,
+  d,
   qim_name,
   age_min = 0,
   age_max = 65,
@@ -16,7 +16,10 @@ complete_demographics(
 )
 }
 \arguments{
-\item{df}{dataframe to process}
+\item{d}{dataframe to process
+with QIM, Age10, Sex, Indigenous, DiabetesType
+Measure, State, n.
+optionally - ProportionDemographic, DateFrom, DateTo}
 
 \item{qim_name}{name of qim}
 
@@ -33,8 +36,10 @@ complete_demographics(
 \item{atsi_only}{include only ATSI sub-groups?}
 }
 \value{
-dataframe with DOB, Age10, Sex, Indigenous and maybe DiabetesStatus
+dataframe with DOB, Age10, Sex, Indigenous, DiabetesType
+Measure, State, n.
+optionally - ProportionDemographic, DateFrom, DateTo
 }
 \description{
-includes different types of status e.g. TRUE/FALSE
+complete demographics
 }

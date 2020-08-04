@@ -4,10 +4,10 @@
 \alias{add_demographics}
 \title{add demographics}
 \usage{
-add_demographics(df, dM, reference_date)
+add_demographics(d, dM, reference_date)
 }
 \arguments{
-\item{df}{dataframe with InternalID}
+\item{d}{dataframe with InternalID}
 
 \item{dM}{dMeasure object}
 
