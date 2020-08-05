@@ -11,8 +11,8 @@
 NULL
 
 data_categories <- c(
-  "State", "Age10", "Sex", "Indigenous",
-  "DiabetesType"
+  "Age10", "Sex", "Indigenous",
+  "DiabetesType", "State"
 )
 stack_categories <- data_categories[data_categories != "Age"]
 
@@ -312,52 +312,52 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
           session = session,
           inputId = "mirror_group",
           choices = NULL,
-          selected = NULL
+          selected = character(0)
         )
       } else if (input$mirror_chosen == "Sex") {
         shinyWidgets::updatePickerInput(
           session = session,
           inputId = "mirror_group",
           choices = sex_choices,
-          selected = NULL
+          selected = character(0)
         )
       } else if (input$mirror_chosen == "Indigenous") {
         shinyWidgets::updatePickerInput(
           session = session,
           inputId = "mirror_group",
           choices = ethnicity_choices,
-          selected = NULL
+          selected = character(0)
         )
       } else if (input$mirror_chosen == "Diabetes") {
         shinyWidgets::updatePickerInput(
           session = session,
           inputId = "mirror_group",
           choices = diabetes_choices,
-          selected = NULL
+          selected = character(0)
         )
       } else if (input$mirror_chosen == "State") {
         # complex, this depends on the chosen QIM
         if (input$qim_chosen == measure_names[1]) {
-          choices <- c("HbA1C done", "HbA1C not done")
+          choices <- c("HbA1C not done", "HbA1C done")
         } else if (input$qim_chosen == measure_names[2]) {
           choices <- c("Not defined", "Non smoker", "Ex smoker", "Smoker")
         } else if (input$qim_chosen == measure_names[3]) {
           choices <- c("Not defined",
                        "Underweight", "Healthy", "Overweight", "Obese")
         } else if (input$qim_chosen == measure_names[4]) {
-          choices <- c("Influenza done", "Influenza not done")
+          choices <- c("Influenza not done", "Influenza done")
         } else if (input$qim_chosen == measure_names[5]) {
-          choices <- c("Influenza done", "Influenza not done")
+          choices <- c("Influenza not done", "Influenza done")
         } else if (input$qim_chosen == measure_names[6]) {
-          choices <- c("Influenza done", "Influenza not done")
+          choices <- c("Influenza not done", "Influenza done")
         } else if (input$qim_chosen == measure_names[7]) {
-          choices <- c("Alcohol done", "Alcohol not done")
+          choices <- c("Alcohol not done", "Alcohol done")
         } else if (input$qim_chosen == measure_names[8]) {
-          choices <- c("CVD Risk done", "CVD Risk not done")
+          choices <- c("CVD Risk not done", "CVD Risk done")
         } else if (input$qim_chosen == measure_names[9]) {
-          choices <- c("CST done", "CST not done")
+          choices <- c("CST not done", "CST done")
         } else if (input$qim_chosen == measure_names[10]) {
-          choices <- c("BP done", "BP not done")
+          choices <- c("BP not done", "BP done")
         } else {
           warning("Invalid QIM choice")
           choices <- NULL
@@ -382,18 +382,23 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
 
   shiny::observeEvent(
     c(report_filled(),
-      input$series_chosen, input$category_chosen, input$stack_chosen),
+      input$series_chosen, input$category_chosen,
+      input$stack_chosen, input$mirror_group),
     ignoreInit = TRUE, ignoreNULL = FALSE, {
       shiny::req(report_filled())
 
-
+      ##### reduce the data to groups, and get a summary statistic 'n' ####
       report <- report_filled() %>>%
         dplyr::group_by(!!!dplyr::syms(input$series_chosen)) %>>%
         dplyr::summarise(n = sum(n)) %>>%
         dplyr::ungroup()
 
+      ##### define series names ###########################################
       series_names <- input$series_chosen
       if (input$category_chosen != "None") {
+        # 'category' is removed from the 'series' description
+        # category will be on the 'x axis' (in a bar chart, 'x' is vertical!)
+        # so does not not define a separate series
         series_names <- series_names[series_names != input$category_chosen]
         report$category <- report[, input$category_chosen]
       } else {
@@ -405,14 +410,128 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
             "", !!!dplyr::syms(series_names),
             # if input$series_chosen is NULL then will be ""
             # na.rm = TRUE removes "" if $series_chosen != NULL
-            sep = " + ", na.rm = TRUE)
+            sep = "+", na.rm = TRUE)
         )
 
+      ##### define stacks ####################
       if (input$stack_chosen != "None") {
         report$stack <- report[, input$stack_chosen]
       } else {
         report$stack <- NA
       }
+
+      ##### mirror ###########################
+      if (input$mirror_chosen == "Sex") {
+        for (x in sex_choices) {
+          if (x %in% input$mirror_group) {
+            report <- report %>>%
+              dplyr::mutate(n = dplyr::if_else(Sex == x, -n, n))
+          }
+        }
+      }
+
+      if (input$mirror_chosen == "Indigenous") {
+        for (x in ethnicity_choices) {
+          if (x %in% input$mirror_group) {
+            report <- report %>>%
+              dplyr::mutate(n = dplyr::if_else(Indigenous == x, -n, n))
+          }
+        }
+      }
+
+      if (input$mirror_chosen == "DiabetesType") {
+        for (x in diabetes_choices) {
+          if (x %in% input$mirror_group) {
+            report <- report %>>%
+              dplyr::mutate(n = dplyr::if_else(DiabetesType == x, -n, n))
+          }
+        }
+      }
+
+      if (input$mirror_chosen == "State") {
+        if (input$qim_chosen %in% data_categories[c(1,4,5,6,7,8,9,10)]) {
+          # these are all 'not done' == FALSE and 'done' == TRUE options
+          if (
+            any(stringi::stri_sub(input$mirror_group, -8, -1) == "not done")
+            # was a 'not done' == FALSE chosen to be 'mirrored'
+          ) {
+            report <- report %>>%
+              dplyr::mutate(n = dplyr::if_else(State == "FALSE", -n, n))
+            # if 'FALSE' then 'mirror' (turn negative)
+          }
+          if (
+            any(
+              stringi::stri_sub(input$mirror_group, -8, -1) != "not done" &
+              stringi::stri_sub(input$mirror_group, -4, -1) == "done"
+              # not a 'not done', but is a 'done' == TRUE
+              # note that it is possible for *both* FALSE
+              #  and TRUE to be 'mirrored'
+            )
+          ) {
+            report <- report %>>%
+              dplyr::mutate(n = dplyr::if_else(State == "TRUE", -n, n))
+            # if TRUE then 'mirror' (turn negative)
+          }
+        }
+
+        if (input$qim_chosen == data_categories[2]) {
+          # 15+ smoker. 'not defined' is NA, should have already been converted
+          lapply(
+            c("Not defined", "Non smoker", "Ex smoker", "Smoker"),
+            function(x) {
+              if (x %in% input$mirror_group) {
+                report <- report %>>%
+                  dplyr::mutate(n = dplyr::if_else(State == x, -n, n))
+              }
+            }
+          )
+        }
+
+        if (input$qim_chosen == data_categories[3]) {
+          # 15+ BMI
+          lapply(
+            c("Not defined", "Underweight", "Healthy", "Overweight", "Obese"),
+            function(x) {
+              if (x %in% input$mirror_group) {
+                report <- report %>>%
+                  dplyr::mutate(n = dplyr::if_else(State == x, -n, n))
+              }
+            }
+          )
+        }
+      }
+
+      ##### calculate proportions #################################
+      proportion_groups <- NULL
+      if (input$category_chosen != "None") {
+        proportion_groups <- c(proportion_groups, input$category_chosen)
+      }
+      if (input$stack_chosen != "None") {
+        proportion_groups <- c(proportion_groups, input$stack_chosen)
+      }
+      report$Mirrored <- FALSE
+      if (input$mirror_chosen != "None") {
+        proportion_groups <- c(proportion_groups, "Mirrored")
+        report <- report %>>%
+          dplyr::mutate(Mirrored = dplyr::if_else(n < 0, TRUE, FALSE))
+        # any 'n' value less than zero has been mirrored
+      }
+      # categories, stacks and mirror all define separate groupings
+      report <- report %>>%
+        dplyr::group_by(!!!dplyr::syms(proportion_groups)) %>>%
+        dplyr::mutate(proportion = n/sum(n)) %>>%
+        dplyr::ungroup()
+
+      report <- report %>>%
+        dplyr::select( # re-order the columns
+          dplyr::one_of( # first the demographic/data categories
+            data_categories[data_categories %in% input$series_chosen]
+          ),
+          "series_name", # the 'name'
+          "n", # and the number
+          "proportion",
+          dplyr::everything() # everything else
+        )
 
       report_grouped(report)
 
@@ -429,9 +548,10 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
             data = report_grouped(),
             extensions = c("Buttons", "Responsive"),
             options = list(scrollX = TRUE,
-              dom = "frtiBp",
-              buttons = I("colvis"))
-          )
+                           dom = "frtiBp",
+                           buttons = I("colvis"))
+          ) %>>%
+            DT::formatSignif(columns = "proportion", digits = 3)
         }),
         easyClose = TRUE,
         size = "l",
@@ -562,25 +682,25 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
     }
   )
 
-shiny::observeEvent(
-  input$show_report_values,
-  ignoreInit = TRUE, {
-    shiny::showModal(shiny::modalDialog(
-      title = "Report",
-      DT::renderDataTable({
-        DT::datatable(
-          data = report_values(),
-          extensions = c("Buttons", "Responsive"),
-          options = list(scrollX = TRUE,
-                         dom = "frtiBp",
-                         buttons = I("colvis"))
-        )
-      }),
-      easyClose = TRUE,
-      size = "l",
-      footer = NULL
-    ))
-  }
-)
+  shiny::observeEvent(
+    input$show_report_values,
+    ignoreInit = TRUE, {
+      shiny::showModal(shiny::modalDialog(
+        title = "Report",
+        DT::renderDataTable({
+          DT::datatable(
+            data = report_values(),
+            extensions = c("Buttons", "Responsive"),
+            options = list(scrollX = TRUE,
+                           dom = "frtiBp",
+                           buttons = I("colvis"))
+          )
+        }),
+        easyClose = TRUE,
+        size = "l",
+        footer = NULL
+      ))
+    }
+  )
 
 }
