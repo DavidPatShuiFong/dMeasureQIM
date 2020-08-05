@@ -11,8 +11,8 @@
 NULL
 
 data_categories <- c(
-  "State", "Age", "Sex", "Indigenous",
-  "Diabetes"
+  "State", "Age10", "Sex", "Indigenous",
+  "DiabetesType"
 )
 stack_categories <- data_categories[data_categories != "Age"]
 
@@ -210,14 +210,26 @@ qim_reportCharter_UI <- function(id) {
 qim_reportCharter <- function(input, output, session, dMQIM, report) {
   ns <- session$ns
 
-  report_values <- shiny::reactiveVal()
+  empty_result <- data.frame(
+    QIM = character(),
+    Age10 = numeric(),
+    Sex = character(),
+    Indigenous = character(),
+    DiabetesType = character(),
+    Measure = character(),
+    State = character(),
+    n = numeric(),
+    DateFrom = character(),
+    DateTo = character()
+  )
+  report_values <- shiny::reactiveVal(empty_result)
   # where .CSV files are first stored,
   # or dataframes transferred from qim_reportCreator module
   # via 'report'
-  report_filled <- shiny::reactiveVal()
+  report_filled <- shiny::reactiveVal(empty_result)
   # report_values filtered, and then 'filled' with
   # 'missing' demographic rows (where 'n' = 0)
-  report_grouped <- shiny::reactiveVal()
+  report_grouped <- shiny::reactiveVal(empty_result)
   # report_filled grouped, according to chart options
 
   ##### data series choices #################################
@@ -246,7 +258,8 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
 
   # modify choices for input$stack_chosen
   shiny::observeEvent(
-    c(input$series_chosen, input$category_chosen, input$mirror_chosen),
+    c(input$series_chosen, input$category_chosen,
+      input$mirror_chosen),
     ignoreInit = TRUE, ignoreNULL = FALSE, {
       # MUST be one of input$series_chosen
       choices <- input$series_chosen
@@ -297,28 +310,28 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
       if (is.null(input$mirror_chosen) || input$mirror_chosen == "None") {
         shinyWidgets::updatePickerInput(
           session = session,
-          inputId = "mirror_chosen",
+          inputId = "mirror_group",
           choices = NULL,
           selected = NULL
         )
       } else if (input$mirror_chosen == "Sex") {
         shinyWidgets::updatePickerInput(
           session = session,
-          inputId = "mirror_chosen",
+          inputId = "mirror_group",
           choices = sex_choices,
           selected = NULL
         )
       } else if (input$mirror_chosen == "Indigenous") {
         shinyWidgets::updatePickerInput(
           session = session,
-          inputId = "mirror_chosen",
+          inputId = "mirror_group",
           choices = ethnicity_choices,
           selected = NULL
         )
       } else if (input$mirror_chosen == "Diabetes") {
         shinyWidgets::updatePickerInput(
           session = session,
-          inputId = "mirror_chosen",
+          inputId = "mirror_group",
           choices = diabetes_choices,
           selected = NULL
         )
@@ -369,18 +382,37 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
 
   shiny::observeEvent(
     c(report_filled(),
-      input$series_chosen),
+      input$series_chosen, input$category_chosen, input$stack_chosen),
     ignoreInit = TRUE, ignoreNULL = FALSE, {
-      browser()
       shiny::req(report_filled())
 
-      report <- report_filled %>>%
-        dplyr::group_by(!!!dplyr::sums(input$series_chosen)) %>>%
+
+      report <- report_filled() %>>%
+        dplyr::group_by(!!!dplyr::syms(input$series_chosen)) %>>%
         dplyr::summarise(n = sum(n)) %>>%
-        dplyr::ungroup() %>>%
+        dplyr::ungroup()
+
+      series_names <- input$series_chosen
+      if (input$category_chosen != "None") {
+        series_names <- series_names[series_names != input$category_chosen]
+        report$category <- report[, input$category_chosen]
+      } else {
+        report$category <- NA
+      }
+      report <- report %>>%
         dplyr::mutate(
-          series_name = paste(!!!syms(input$series_chosen), sep = " + ")
+          series_name = dMeasure::paste2(
+            "", !!!dplyr::syms(series_names),
+            # if input$series_chosen is NULL then will be ""
+            # na.rm = TRUE removes "" if $series_chosen != NULL
+            sep = " + ", na.rm = TRUE)
         )
+
+      if (input$stack_chosen != "None") {
+        report$stack <- report[, input$stack_chosen]
+      } else {
+        report$stack <- NA
+      }
 
       report_grouped(report)
 

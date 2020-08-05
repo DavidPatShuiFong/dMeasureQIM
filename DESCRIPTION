@@ -18,7 +18,7 @@ Imports:
     stringi,
     tidyr
 Suggests:
-    shiny,
+    shiny (>= 1.5.0),
     shinydashboard,
     DT (>= 0.5.3),
     shinyWidgets (>= 0.5.2),
