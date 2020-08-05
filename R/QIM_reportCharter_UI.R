@@ -155,6 +155,11 @@ qim_reportCharter_UI <- function(id) {
                 label = "Proportion",
                 value = FALSE,
                 labelWidth = "10 em"
+              ),
+              shiny::hr(),
+              shiny::actionButton(
+                inputId = ns("show_grouped_values"),
+                label = "Show grouped values"
               )
             )
           ),
@@ -212,6 +217,8 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
   report_filled <- shiny::reactiveVal()
   # report_values filtered, and then 'filled' with
   # 'missing' demographic rows (where 'n' = 0)
+  report_grouped <- shiny::reactiveVal()
+  # report_filled grouped, according to chart options
 
   ##### data series choices #################################
 
@@ -358,6 +365,49 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
     )
   })
 
+  ##### create summary table ####################################################
+
+  shiny::observeEvent(
+    c(report_filled(),
+      input$series_chosen),
+    ignoreInit = TRUE, ignoreNULL = FALSE, {
+      browser()
+      shiny::req(report_filled())
+
+      report <- report_filled %>>%
+        dplyr::group_by(!!!dplyr::sums(input$series_chosen)) %>>%
+        dplyr::summarise(n = sum(n)) %>>%
+        dplyr::ungroup() %>>%
+        dplyr::mutate(
+          series_name = paste(!!!syms(input$series_chosen), sep = " + ")
+        )
+
+      report_grouped(report)
+
+    }
+  )
+
+  shiny::observeEvent(
+    input$show_grouped_values,
+    ignoreInit = TRUE, {
+      shiny::showModal(shiny::modalDialog(
+        title = "Report",
+        DT::renderDataTable({
+          DT::datatable(
+            data = report_grouped(),
+            extensions = c("Buttons", "Responsive"),
+            options = list(scrollX = TRUE,
+              dom = "frtiBp",
+              buttons = I("colvis"))
+          )
+        }),
+        easyClose = TRUE,
+        size = "l",
+        footer = NULL
+      ))
+    }
+  )
+
   ##### Restore/Load CSV report #################################################
   # includes restoration from
 
@@ -500,4 +550,5 @@ shiny::observeEvent(
     ))
   }
 )
+
 }
