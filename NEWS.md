@@ -7,6 +7,8 @@ Changelog
 * report creation download (comma-separated-values '.csv') and restore ('upload')
   + `getReport` to modify QIM-specific reports to generic 'long-format' which can be used by all QIM reports
   + support small number suppression
+  + save and restore reports
+  + charting
 * compliance with version 1.1 of [PIP QI Improvement Measures - Technical Specifications v1.1 04052020](https://www1.health.gov.au/internet/main/publishing.nsf/Content/46506AF50A4824B6CA25848600113FFF/$File/PIP-QI-Technical-Specifications.pdf)
   + change `Age5` to `Age10` (minimum 0, maximum 65)
   + add `Indigenous`

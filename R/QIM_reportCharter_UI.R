@@ -188,7 +188,8 @@ qim_reportCharter_UI <- function(id) {
         )
       ),
       shiny::column(
-        width = 9
+        width = 9,
+        highcharter::highchartOutput(ns("chart"), height = "700px")
       )
     )
   )
@@ -231,13 +232,14 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
   # 'missing' demographic rows (where 'n' = 0)
   report_grouped <- shiny::reactiveVal(empty_result)
   # report_filled grouped, according to chart options
+  rendered_chart <- shiny::reactiveVal(NULL)
 
   ##### data series choices #################################
 
   # modify choices for input$category_chosen
   shiny::observeEvent(
     c(input$series_chosen, input$stack_chosen, input$mirror_chosen),
-    ignoreInit = TRUE, ignoreNULL = FALSE, {
+    ignoreInit = TRUE, ignoreNULL = FALSE, priority = 5, {
       # MUST be one of input$series_chosen
       choices <- input$series_chosen
       # cannot be chosen in 'stack' or 'mirror' (except 'None'!)
@@ -245,7 +247,8 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
       choices <- choices[choices != input$mirror_chosen]
       choices <- c("None", choices)
       # retain previous choice
-      chosen <- input$category_chosen
+      chosen <- intersect(choices, input$category_chosen)
+      if (length(chosen) == 0) {chosen <- "None"} # i.e. 'character(0)'
 
       shinyWidgets::updatePickerInput(
         session = session,
@@ -259,7 +262,7 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
   # modify choices for input$stack_chosen
   shiny::observeEvent(
     c(input$series_chosen, input$category_chosen,
-      input$mirror_chosen),
+      input$mirror_chosen), priority = 5,
     ignoreInit = TRUE, ignoreNULL = FALSE, {
       # MUST be one of input$series_chosen
       choices <- input$series_chosen
@@ -270,7 +273,8 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
       choices <- choices[choices != "Age"]
       # can still be 'None'
       choices <- c("None", choices)
-      chosen <- input$stack_chosen
+      chosen <- intersect(choices, input$stack_chosen)
+      if (length(chosen) == 0) {chosen <- "None"} # i.e. 'character(0)'
 
       shinyWidgets::updatePickerInput(
         session = session,
@@ -283,7 +287,7 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
 
   shiny::observeEvent(
     c(input$series_chosen, input$category_chosen, input$stack_chosen),
-    ignoreInit = TRUE, ignoreNULL = FALSE, {
+    ignoreInit = TRUE, ignoreNULL = FALSE, priority = 5, {
       # MUST be one of input$series_chosen
       choices <- input$series_chosen
       # cannot be chosen in 'category' or stack' (except 'None'!)
@@ -293,7 +297,8 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
       choices <- choices[choices != "Age"]
       # can still be 'None'
       choices <- c("None", choices)
-      chosen <- input$mirror_chosen # previous choice
+      chosen <- intersect(choices, input$mirror_chosen) # previous choice
+      if (length(chosen) == 0) {chosen <- "None"} # i.e. 'character(0)'
 
       shinyWidgets::updatePickerInput(
         session = session,
@@ -305,7 +310,7 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
   )
 
   shiny::observeEvent(
-    c(input$mirror_chosen),
+    c(input$mirror_chosen), priority = 5,
     ignoreInit = TRUE, ignoreNULL = FALSE, {
       if (is.null(input$mirror_chosen) || input$mirror_chosen == "None") {
         shinyWidgets::updatePickerInput(
@@ -328,7 +333,7 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
           choices = ethnicity_choices,
           selected = character(0)
         )
-      } else if (input$mirror_chosen == "Diabetes") {
+      } else if (input$mirror_chosen == "DiabetesType") {
         shinyWidgets::updatePickerInput(
           session = session,
           inputId = "mirror_group",
@@ -372,18 +377,12 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
     }
   )
 
-  output$charting_mirror <- shiny::renderUI({
-    shiny::tagList(
-
-    )
-  })
-
   ##### create summary table ####################################################
 
   shiny::observeEvent(
     c(report_filled(),
       input$series_chosen, input$category_chosen,
-      input$stack_chosen, input$mirror_group),
+      input$stack_chosen, input$mirror_group), priority = -5,
     ignoreInit = TRUE, ignoreNULL = FALSE, {
       shiny::req(report_filled())
 
@@ -392,17 +391,21 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
         dplyr::group_by(!!!dplyr::syms(input$series_chosen)) %>>%
         dplyr::summarise(n = sum(n)) %>>%
         dplyr::ungroup()
-
       ##### define series names ###########################################
       series_names <- input$series_chosen
-      if (input$category_chosen != "None") {
+      if (input$category_chosen != "None" && input$category_chosen %in% input$series_chosen) {
+        # input$category_chosen should always be in input$series_chosen
+        # but sometimes the state of choices for input$category_chosen might 'lag'
+        #
         # 'category' is removed from the 'series' description
         # category will be on the 'x axis' (in a bar chart, 'x' is vertical!)
         # so does not not define a separate series
         series_names <- series_names[series_names != input$category_chosen]
-        report$category <- report[, input$category_chosen]
+        report$category <- unlist(
+          report[, input$category_chosen], use.names = FALSE
+        )
       } else {
-        report$category <- NA
+        report$category <- "All"
       }
       report <- report %>>%
         dplyr::mutate(
@@ -414,14 +417,16 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
         )
 
       ##### define stacks ####################
-      if (input$stack_chosen != "None") {
-        report$stack <- report[, input$stack_chosen]
+      if (input$stack_chosen != "None" && input$stack_chosen %in% input$series_chosen) {
+        report$stack <- unlist(report[, input$stack_chosen], use.names = FALSE)
       } else {
-        report$stack <- NA
+        report$stack <- as.character(NA)
       }
 
       ##### mirror ###########################
-      if (input$mirror_chosen == "Sex") {
+      if (input$mirror_chosen == "Sex" && "Sex" %in% input$series_chosen) {
+        # 'Sex' should not be an option in input$mirror_chosen if it is not
+        # in $series_chosen, but unfortunately there may be a lag...
         for (x in sex_choices) {
           if (x %in% input$mirror_group) {
             report <- report %>>%
@@ -430,7 +435,7 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
         }
       }
 
-      if (input$mirror_chosen == "Indigenous") {
+      if (input$mirror_chosen == "Indigenous" && "Indigenous" %in% input$series_chosen) {
         for (x in ethnicity_choices) {
           if (x %in% input$mirror_group) {
             report <- report %>>%
@@ -439,7 +444,7 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
         }
       }
 
-      if (input$mirror_chosen == "DiabetesType") {
+      if (input$mirror_chosen == "DiabetesType" && "DiabetesType" %in% input$series_chosen) {
         for (x in diabetes_choices) {
           if (x %in% input$mirror_group) {
             report <- report %>>%
@@ -448,8 +453,8 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
         }
       }
 
-      if (input$mirror_chosen == "State") {
-        if (input$qim_chosen %in% data_categories[c(1,4,5,6,7,8,9,10)]) {
+      if (input$mirror_chosen == "State" && "State" %in% input$series_chosen) {
+        if (input$qim_chosen %in% measure_names[c(1,4,5,6,7,8,9,10)]) {
           # these are all 'not done' == FALSE and 'done' == TRUE options
           if (
             any(stringi::stri_sub(input$mirror_group, -8, -1) == "not done")
@@ -474,7 +479,7 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
           }
         }
 
-        if (input$qim_chosen == data_categories[2]) {
+        if (input$qim_chosen == measure_names[2]) {
           # 15+ smoker. 'not defined' is NA, should have already been converted
           lapply(
             c("Not defined", "Non smoker", "Ex smoker", "Smoker"),
@@ -487,7 +492,7 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
           )
         }
 
-        if (input$qim_chosen == data_categories[3]) {
+        if (input$qim_chosen == measure_names[3]) {
           # 15+ BMI
           lapply(
             c("Not defined", "Underweight", "Healthy", "Overweight", "Obese"),
@@ -504,22 +509,23 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
       ##### calculate proportions #################################
       proportion_groups <- NULL
       if (input$category_chosen != "None") {
-        proportion_groups <- c(proportion_groups, input$category_chosen)
+        proportion_groups <- c(proportion_groups, "category")
       }
       if (input$stack_chosen != "None") {
-        proportion_groups <- c(proportion_groups, input$stack_chosen)
+        proportion_groups <- c(proportion_groups, "stack")
       }
-      report$Mirrored <- FALSE
+      report$mirrored <- FALSE
       if (input$mirror_chosen != "None") {
-        proportion_groups <- c(proportion_groups, "Mirrored")
+        proportion_groups <- c(proportion_groups, "mirrored")
         report <- report %>>%
-          dplyr::mutate(Mirrored = dplyr::if_else(n < 0, TRUE, FALSE))
+          dplyr::mutate(mirrored = dplyr::if_else(n < 0, TRUE, FALSE))
         # any 'n' value less than zero has been mirrored
       }
       # categories, stacks and mirror all define separate groupings
       report <- report %>>%
         dplyr::group_by(!!!dplyr::syms(proportion_groups)) %>>%
-        dplyr::mutate(proportion = n/sum(n)) %>>%
+        dplyr::mutate(proportion = n / sum(n) * sign(n)) %>>%
+        # retain 'sign' of 'n'
         dplyr::ungroup()
 
       report <- report %>>%
@@ -534,9 +540,76 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
         )
 
       report_grouped(report)
-
     }
   )
+
+  shiny::observeEvent(
+    c(report_grouped(), input$proportion),
+    ignoreInit = TRUE, priority = -10, {
+      shiny::req(report_grouped())
+      shiny::req(nrow(report_grouped() > 0))
+
+      if (input$proportion) {
+        y_variable <- "proportion"
+        decimal_points <- 2
+        # will be a number between 0 and 1
+      } else {
+        y_variable <- "n"
+        decimal_points <- 0
+        # will be whole numbers (integers)
+      }
+
+      grouped_report <- report_grouped() %>>%
+        dplyr::mutate(category = as.character(category))
+
+      hc <- highcharter::hchart(
+        grouped_report,
+        type = "bar",
+        highcharter::hcaes(
+          x = category, y = !!dplyr::sym(y_variable),
+          group = series_name
+        ),
+        stack = (dplyr::distinct(report_grouped(), series_name, stack) %>%
+                   dplyr::arrange(series_name) %>%
+                   dplyr::pull(stack))
+      ) %>>%
+        highcharter::hc_xAxis(
+          reversed = FALSE # !!!
+        ) %>>%
+        highcharter::hc_yAxis(
+          labels = list(
+            formatter = highcharter::JS(
+              "function(){return Math.abs(this.value);}"
+            )
+          ),
+          plotLines = list(list(
+            color = "#C0C0C0",
+            width = 3,
+            value = 0
+          ))
+        ) %>>%
+        highcharter::hc_tooltip(
+          shared = FALSE,
+          formatter = highcharter::JS(
+            paste0(
+              "function() {
+            return this.point.name + '<br/>' +
+            '<b>' + this.series.name + ':</b> ' +
+            Highcharts.numberFormat(Math.abs(this.point.y), ",
+              decimal_points, ");}"
+            )
+          )
+        ) %>>%
+        highcharter::hc_plotOptions(
+          bar = list(stacking = "normal")
+        )
+      rendered_chart(hc)
+    }
+  )
+
+  output$chart <- highcharter::renderHighchart({
+    rendered_chart()
+  })
 
   shiny::observeEvent(
     input$show_grouped_values,
@@ -639,10 +712,10 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
   shiny::observeEvent(
     c(report_values(), input$qim_chosen,
       input$sex_chosen, input$ethnicity_chosen,
-      input$diabetes_chosen),
+      input$diabetes_chosen), priority = -3,
     ignoreInit = TRUE, ignoreNULL = TRUE, {
-      shiny::req(report_values)
-
+      shiny::req(report_values())
+      shiny::req(nrow(report_values()) > 0)
       if (nrow(report_values()) > 0) {
         report <- report_values() %>>%
           # just the necessary columns
@@ -663,6 +736,13 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
             list(Sex = "Not stated", Indigenous = "Not stated",
                  DiabetesType = "Not stated",
                  State = "Not defined")
+          ) %>>%
+          dplyr::mutate( # also replace "" empty strings
+            DiabetesType = dplyr::if_else(
+              DiabetesType == "",
+              "Not stated",
+              DiabetesType
+            )
           ) %>>%
           # then filter by age, sex, ethnicity and diabetestype
           # (if specified by the user)
