@@ -27,7 +27,7 @@ qim_reportCharter_UI <- function(id) {
           id = ns("charter_leftpanel"),
           width = 12,
           shiny::tabPanel(
-            title = "Filters",
+            title = "Charting",
             shiny::wellPanel(
               style = "height:35em",
               shinyWidgets::pickerInput(
@@ -36,52 +36,6 @@ qim_reportCharter_UI <- function(id) {
                 choices = measure_names,
                 selected = measure_names[1]
               ),
-              shinyWidgets::sliderTextInput(
-                inputId = ns("age_range"),
-                label = "Age range",
-                choices = c(0, 5, 15, 25, 35, 45, 55, 65),
-                selected = c(0, 65),
-                # an age 'range'
-              ),
-              shinyWidgets::pickerInput(
-                inputId = ns("sex_chosen"),
-                label = "Sex",
-                choices = sex_choices,
-                selected = sex_choices,
-                multiple = TRUE,
-                options = list(
-                  style = "btn-primary",
-                  `actions-box` = TRUE
-                )
-              ),
-              shinyWidgets::pickerInput(
-                inputId = ns("ethnicity_chosen"),
-                label = "Ethnicity",
-                choices = ethnicity_choices,
-                selected = ethnicity_choices,
-                multiple = TRUE,
-                options = list(
-                  style = "btn-primary",
-                  `actions-box` = TRUE
-                )
-              ),
-              shinyWidgets::pickerInput(
-                inputId = ns("diabetes_chosen"),
-                label = "Diabetes",
-                choices = diabetes_choices,
-                selected = diabetes_choices,
-                multiple = TRUE,
-                options = list(
-                  style = "btn-primary",
-                  `actions-box` = TRUE
-                )
-              )
-            )
-          ),
-          shiny::tabPanel(
-            title = "Charting",
-            shiny::wellPanel(
-              height = "35em",
               shinyWidgets::pickerInput(
                 inputId = ns("series_chosen"),
                 label = "Series",
@@ -160,6 +114,52 @@ qim_reportCharter_UI <- function(id) {
               shiny::actionButton(
                 inputId = ns("show_grouped_values"),
                 label = "Show grouped values"
+              )
+            )
+          ),
+          shiny::tabPanel(
+            title = "Filters",
+            shiny::wellPanel(
+              height = "35em",
+              shinyWidgets::sliderTextInput(
+                inputId = ns("age_range"),
+                label = "Age range",
+                choices = c(0, 5, 15, 25, 35, 45, 55, 65),
+                selected = c(0, 65),
+                # an age 'range'
+              ),
+              shinyWidgets::pickerInput(
+                inputId = ns("sex_chosen"),
+                label = "Sex",
+                choices = sex_choices,
+                selected = sex_choices,
+                multiple = TRUE,
+                options = list(
+                  style = "btn-primary",
+                  `actions-box` = TRUE
+                )
+              ),
+              shinyWidgets::pickerInput(
+                inputId = ns("ethnicity_chosen"),
+                label = "Ethnicity",
+                choices = ethnicity_choices,
+                selected = ethnicity_choices,
+                multiple = TRUE,
+                options = list(
+                  style = "btn-primary",
+                  `actions-box` = TRUE
+                )
+              ),
+              shinyWidgets::pickerInput(
+                inputId = ns("diabetes_chosen"),
+                label = "Diabetes",
+                choices = diabetes_choices,
+                selected = diabetes_choices,
+                multiple = TRUE,
+                options = list(
+                  style = "btn-primary",
+                  `actions-box` = TRUE
+                )
               )
             )
           ),
