@@ -336,13 +336,14 @@ complete_demographics <- function(
       State = as.character(states)
     ) %>>%
     dplyr::anti_join(
-      d,
+      d %>>% dplyr::mutate(State = as.character(State)),
+      # need to keep 'type' of 'State' consistent!
       by = c("Age10", "Sex", "Indigenous", "State", "DiabetesType")
     ) %>>% # this finds 'missing' rows
     dplyr::mutate(
       QIM = qim_name,
       Measure = measure,
-      n = 0, # no entries
+      n = 0 # no entries
     )
 
   if ("ProportionDemographic" %in% names(d)) {

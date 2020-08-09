@@ -288,7 +288,6 @@ qim_reportCreator <- function(input, output, session, dMQIM) {
         )
 
         qim <- empty_result
-
         if (measure_names[[1]] %in% input$report_qim_chosen) {
           qim01 <- getReport(
             dMQIM$report_qim_diabetes,

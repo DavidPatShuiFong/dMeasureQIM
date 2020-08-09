@@ -29,7 +29,7 @@ qim_reportCharter_UI <- function(id) {
           shiny::tabPanel(
             title = "Charting",
             shiny::wellPanel(
-              style = "height:35em",
+              style = "height:45em",
               shinyWidgets::pickerInput(
                 inputId = ns("qim_chosen"),
                 label = "QIM",
@@ -160,6 +160,17 @@ qim_reportCharter_UI <- function(id) {
                   style = "btn-primary",
                   `actions-box` = TRUE
                 )
+              ),
+              shinyWidgets::pickerInput(
+                inputId = ns("dateto_chosen"),
+                label = "End dates",
+                choices = NULL,
+                selected = NULL,
+                multiple = TRUE,
+                options = list(
+                  style = "btn-primary",
+                  `action-box` = TRUE
+                )
               )
             )
           ),
@@ -210,6 +221,10 @@ qim_reportCharter_UI <- function(id) {
 #' @export
 qim_reportCharter <- function(input, output, session, dMQIM, report) {
   ns <- session$ns
+
+  options(shiny.maxRequestSize = 30*1024^2)
+  # the file limit size is normally 5 megabytes for upload
+  # this increases to 30 megabytes
 
   empty_result <- data.frame(
     QIM = character(),
@@ -707,6 +722,20 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
           )
         report_values(data)
       }
+    })
+
+  shiny::observeEvent(
+    c(report_values()),
+    ignoreInit = TRUE, ignoreNULL = FALSE, {
+      shiny::req(report_values())
+
+      dateto_choices <- unique(report_values()$DateTo)
+      shinyWidgets::updatePickerInput(
+        session = session,
+        inputId = "dateto_chosen",
+        choices = dateto_choices,
+        selected = dateto_choices # choose all of them
+      )
     })
 
   shiny::observeEvent(
