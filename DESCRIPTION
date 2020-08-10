@@ -23,7 +23,7 @@ Suggests:
     DT (>= 0.5.3),
     shinyWidgets (>= 0.5.2),
     shinytoastr,
-    highcharter (>= 0.8.2)
+    highcharter (>= 0.7.0)
 RoxygenNote: 7.1.0.9000
 Collate: 
     'r6_helpers.R'
