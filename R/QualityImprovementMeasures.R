@@ -481,11 +481,11 @@ fill_demographics <- function(d) {
       measure = measure_name,
       states = c(FALSE, TRUE)
     )
-  } else if (qim == 10) {
+  } else if (qim == 10) { # diabetes BP
     dt <- dMeasureQIM::complete_demographics(
       d, qim_name = qim_name,
-      age_min = 45, age_max = 65,
-      include_diabetes = FALSE,
+      age_min = 0, age_max = 65,
+      include_diabetes = TRUE,
       measure = measure_name,
       states = c(FALSE, TRUE)
     )
