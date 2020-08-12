@@ -240,54 +240,109 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
 
   ##### dateto picker ######################################
 
-  output$dateto_picker <- shiny::renderUI({
-    dateto_choices <- unique(report_values()$DateTo)
-
-    if (input$category_chosen == "DateTo" || input$stack_chosen == "DateTo") {
-      # if the date periods are a category/stack then the user
-      #  can choose more than one period
-      shinyWidgets::pickerInput(
-        inputId = ns("dateto_chosen"),
-        label = "End dates",
-        choices = dateto_choices,
-        selected = max(dateto_choices),
-        multiple = TRUE,
-        options = list(
-          style = "btn-primary",
-          `action-box` = TRUE
-        )
+  dateto_picker_state <- shiny::reactiveVal("single")
+  # single if only single choice
+  # multiple if currently multiple choices possible
+  #  multiple is the case if 'category_chosen' or 'stack_chosen' is "DateTo"
+  dateto_picker_choices <- shiny::reactiveVal(NULL)
+  dateto_picker <- shiny::reactiveVal(
+    # by default a 'null' picker
+    shinyWidgets::pickerInput(
+      inputId = ns("dateto_chosen"),
+      label = "End dates",
+      choices = NULL,
+      selected = NULL,
+      multiple = FALSE,
+      options = list(
+        style = "btn-primary",
+        `action-box` = TRUE
       )
-    } else {
-      # if the date periods are *NOT* chosen as a category/stack
-      # then the use can only choose one period
-      if (length(dateto_choices) > 0) {
-        shinyWidgets::pickerInput(
-          inputId = ns("dateto_chosen"),
-          label = "End dates",
-          choices = dateto_choices,
-          selected = max(dateto_choices),
-          multiple = FALSE,
-          options = list(
-            style = "btn-primary",
-            `action-box` = TRUE
-          )
-        )
+    )
+  )
+  output$dateto_picker <- shiny::renderUI({dateto_picker()})
+  shiny::observeEvent(
+    c(report_values(),
+      input$category_chosen, input$stack_chosen),
+    ignoreInit = TRUE, ignoreNULL = FALSE, {
+      # change the dateto_picker if there is a change
+      # in available choices, or if there is a change
+      # from 'single' to 'multiple' mode
+      #   - this happens if input$category_chosen or input$stack_chosen is
+      #     changed from/to 'DateTo'
+
+      dateto_choices <- unique(report_values()$DateTo)
+      if (input$category_chosen == "DateTo" || input$stack_chosen == "DateTo") {
+        # if the date periods are a category/stack then the user
+        #  can choose more than one period
+        if (is.null(dateto_picker_choices()) || # previous choices were NULL!
+            # can't compare NULL with dateto_choices later on (causes an error)
+            dateto_picker_state() == "single" || # switching from single to multiple
+            dateto_picker_choices() != dateto_choices) { # change in choices
+          # there has been a change in state
+          # otherwise this event can be triggered by any change in
+          #  input$category_choice or input$stack_chosen
+          dateto_picker_state("multiple")
+          dateto_picker_choices(dateto_choices)
+          dateto_picker(shinyWidgets::pickerInput(
+            inputId = ns("dateto_chosen"),
+            label = "End dates",
+            choices = dateto_choices,
+            selected = max(dateto_choices),
+            multiple = TRUE,
+            options = list(
+              style = "btn-primary",
+              `action-box` = TRUE
+            )
+          ))
+        }
       } else {
-        # in this case, there is no data available anyway!
-        shinyWidgets::pickerInput(
-          inputId = ns("dateto_chosen"),
-          label = "End dates",
-          choices = NULL,
-          selected = NULL,
-          multiple = FALSE,
-          options = list(
-            style = "btn-primary",
-            `action-box` = TRUE
-          )
-        )
+        # if the date periods are *NOT* chosen as a category/stack
+        # then the use can only choose one period
+        if (length(dateto_choices) > 0) {
+          if (is.null(dateto_picker_choices()) || # previously no choices
+              dateto_picker_state() == "multiple" || # switch from multiple to single
+              dateto_picker_choices() != dateto_choices) { # different choices
+            # only change if there is a change from
+            #  1. no choices to some choices
+            #  2. some choices to different choices
+            #  3. multiple picker to single picker
+            #     this happens if 'DateTo' is de-selected from
+            #     category- stack- choice
+            # otherwise this event could be triggered by any change
+            #  in input$category_chosen or input$stack_chosen
+            dateto_picker_state("single") # single choice state
+            dateto_picker_choices(dateto_choices)
+            dateto_picker(shinyWidgets::pickerInput(
+              inputId = ns("dateto_chosen"),
+              label = "End dates",
+              choices = dateto_choices,
+              selected = max(dateto_choices),
+              multiple = FALSE,
+              options = list(
+                style = "btn-primary",
+                `action-box` = TRUE
+              )
+            ))
+          }
+        } else {
+          # in this case, there is no data available anyway!
+          dateto_picker_state("single") # single choice state
+          dateto_picker_choices(NULL)
+          dateto_picker(shinyWidgets::pickerInput(
+            inputId = ns("dateto_chosen"),
+            label = "End dates",
+            choices = NULL,
+            selected = NULL,
+            multiple = FALSE,
+            options = list(
+              style = "btn-primary",
+              `action-box` = TRUE
+            )
+          ))
+        }
       }
-    }
-  })
+
+    })
 
   ##### data series choices #################################
 
@@ -300,14 +355,16 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
 
       # MUST be one of input$series_chosen
       choices <- input$series_chosen
-      # cannot be chosen in 'stack' or 'mirror' (except 'None'!)
+      if (length(unique(report_values()$DateTo)) > 1) {
+        # if more than one date period is available
+        # then allow 'DateTo' to be a category
+        choices <- c(choices, "DateTo")
+      }
+      # available choices cannot be already chosen in 'stack'
+      # or 'mirror' (except 'None'!)
       choices <- choices[choices != input$stack_chosen]
       choices <- choices[choices != input$mirror_chosen]
       choices <- c("None", choices)
-      if (length(unique(report_values()$DateTo)) > 1) {
-        # if more than one date period is available
-        choices <- c(choices, "DateTo")
-      }
       # retain previous choice
       chosen <- intersect(choices, input$category_chosen)
       if (length(chosen) == 0) {chosen <- "None"} # i.e. 'character(0)'
@@ -324,11 +381,20 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
   # modify choices for input$stack_chosen
   shiny::observeEvent(
     c(input$series_chosen, input$category_chosen,
-      input$mirror_chosen), priority = 5,
+      input$mirror_chosen, report_values()),
+    priority = 5,
     ignoreInit = TRUE, ignoreNULL = FALSE, {
+      shiny::req(report_values()) # report needs to be available!
+
       # MUST be one of input$series_chosen
       choices <- input$series_chosen
-      # cannot be chosen in 'category' or 'mirror' (except 'None'!)
+      if (length(unique(report_values()$DateTo)) > 1) {
+        # if more than one date period is available
+        # then allow to be a stack choice
+        choices <- c(choices, "DateTo")
+      }
+      # available choice cannot be already be chosen in 'category'
+      # or 'mirror' (except 'None'!)
       choices <- choices[choices != input$category_chosen]
       choices <- choices[choices != input$mirror_chosen]
       # cannot be 'age'
@@ -352,7 +418,7 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
     ignoreInit = TRUE, ignoreNULL = FALSE, priority = 5, {
       # MUST be one of input$series_chosen
       choices <- input$series_chosen
-      # cannot be chosen in 'category' or stack' (except 'None'!)
+      # cannot already be chosen in 'category' or stack' (except 'None'!)
       choices <- choices[choices != input$category_chosen]
       choices <- choices[choices != input$stack_chosen]
       # cannot be 'age'
@@ -444,13 +510,19 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
   shiny::observeEvent(
     c(report_filled(),
       input$series_chosen, input$category_chosen,
-      input$stack_chosen, input$mirror_group), priority = -5,
+      input$stack_chosen, input$mirror_group),
+    priority = -5,
     ignoreInit = TRUE, ignoreNULL = FALSE, {
       shiny::req(report_filled())
 
       ##### reduce the data to groups, and get a summary statistic 'n' ####
       group_names <- input$series_chosen
-      if (input$category_chosen == "DateTo") {group_names <- c(group_names, "DateTo")}
+      if (input$category_chosen == "DateTo" ||
+          input$stack_chosen == "DateTo") {
+        # can only choose 'DateTo' as a category/stack if more than
+        #  one DateTo available. DateTo cannot be chosen as a series
+        group_names <- c(group_names, "DateTo")
+      }
       report <- report_filled() %>>%
         dplyr::group_by(!!!dplyr::syms(group_names)) %>>%
         dplyr::summarise(n = sum(n)) %>>%
@@ -475,6 +547,10 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
         report$category <- "All"
       }
       report <- report %>>%
+        # add name for each of the series
+        # a special case is when 'DateTo' is selected as a stack
+        # in which case the DateTo name will be added when the stack
+        # is defined
         dplyr::mutate(
           series_name = dMeasure::paste2(
             "", !!!dplyr::syms(series_names),
@@ -484,8 +560,20 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
         )
 
       ##### define stacks ####################
-      if (input$stack_chosen != "None" && input$stack_chosen %in% input$series_chosen) {
+      if (input$stack_chosen != "None" &&
+          (input$stack_chosen %in% input$series_chosen ||
+           input$stack_chosen == "DateTo")) {
         report$stack <- unlist(report[, input$stack_chosen], use.names = FALSE)
+        if (input$stack_chosen == "DateTo") {
+          # special case, 'DateTo' is not a chosen series, but becomes
+          # a series if it is chosen as a stack (but not a group!)
+          report <- report %>>%
+            dplyr::mutate(
+              series_name = dMeasure::paste2(
+                series_name, stack, sep = " ", na.rm = TRUE
+              )
+            )
+        }
       } else {
         report$stack <- as.character(NA)
       }
