@@ -29,7 +29,7 @@ qim_reportCharter_UI <- function(id) {
           shiny::tabPanel(
             title = "Charting",
             shiny::wellPanel(
-              style = "height:45em",
+              style = "height:50em",
               shinyWidgets::pickerInput(
                 inputId = ns("qim_chosen"),
                 label = "QIM",
@@ -104,6 +104,7 @@ qim_reportCharter_UI <- function(id) {
                   `actions-box` = TRUE
                 )
               ),
+              shiny::uiOutput(ns("dateto_picker")),
               shinyWidgets::switchInput(
                 inputId = ns("proportion"),
                 label = "Proportion",
@@ -159,17 +160,6 @@ qim_reportCharter_UI <- function(id) {
                 options = list(
                   style = "btn-primary",
                   `actions-box` = TRUE
-                )
-              ),
-              shinyWidgets::pickerInput(
-                inputId = ns("dateto_chosen"),
-                label = "End dates",
-                choices = NULL,
-                selected = NULL,
-                multiple = TRUE,
-                options = list(
-                  style = "btn-primary",
-                  `action-box` = TRUE
                 )
               )
             )
@@ -248,6 +238,36 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
   report_grouped <- shiny::reactiveVal(empty_result)
   # report_filled grouped, according to chart options
   rendered_chart <- shiny::reactiveVal(NULL)
+
+  ##### dateto picker ######################################
+
+  output$dateto_picker <- shiny::renderUI({
+    shinyWidgets::pickerInput(
+      inputId = ns("dateto_chosen"),
+      label = "End dates",
+      choices = NULL,
+      selected = NULL,
+      multiple = FALSE,
+      options = list(
+        style = "btn-primary",
+        `action-box` = TRUE
+      )
+    )
+  })
+
+  shiny::observeEvent(
+    c(report_values()),
+    ignoreInit = TRUE, ignoreNULL = FALSE, {
+      shiny::req(report_values())
+
+      dateto_choices <- unique(report_values()$DateTo)
+      shinyWidgets::updatePickerInput(
+        session = session,
+        inputId = "dateto_chosen",
+        choices = dateto_choices,
+        selected = max(dateto_choices) # choose the most recent
+      )
+    })
 
   ##### data series choices #################################
 
@@ -649,7 +669,7 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
   )
 
   ##### Restore/Load CSV report #################################################
-  # includes restoration from
+  # includes restoration/load from file
 
   shiny::observeEvent(
     report$report_values(),
@@ -725,23 +745,10 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
     })
 
   shiny::observeEvent(
-    c(report_values()),
-    ignoreInit = TRUE, ignoreNULL = FALSE, {
-      shiny::req(report_values())
-
-      dateto_choices <- unique(report_values()$DateTo)
-      shinyWidgets::updatePickerInput(
-        session = session,
-        inputId = "dateto_chosen",
-        choices = dateto_choices,
-        selected = dateto_choices # choose all of them
-      )
-    })
-
-  shiny::observeEvent(
     c(report_values(), input$qim_chosen,
       input$sex_chosen, input$ethnicity_chosen,
-      input$diabetes_chosen), priority = -3,
+      input$diabetes_chosen, input$dateto_chosen),
+    priority = -3,
     ignoreInit = TRUE, ignoreNULL = TRUE, {
       shiny::req(report_values())
       shiny::req(nrow(report_values()) > 0)
@@ -756,6 +763,10 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
             # just the QIM that is chosen
             as.numeric(stringi::stri_sub(QIM, -2, -1)) ==
               which(measure_names == input$qim_chosen)
+          ) %>>%
+          dplyr::filter(
+            # restrict to chosen date period(s)
+            DateTo %in% input$dateto_chosen
           ) %>>%
           # fill in the 'missing' demographic possiblities/rows ('n' = 0)
           dMeasureQIM::fill_demographics() %>>%

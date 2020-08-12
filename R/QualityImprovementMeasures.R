@@ -388,6 +388,8 @@ complete_demographics <- function(
 #' @export
 fill_demographics <- function(d) {
 
+  if (nrow(d) == 0) {return(d)} # nothing to fill!
+
   qim_name <- d[[1, "QIM"]] # the name of the QIM
   qim <- as.numeric(stringi::stri_sub(qim_name, -2, -1)) # the number of the QIM
   measure_name = d[[1, "Measure"]]
