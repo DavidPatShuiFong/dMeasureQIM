@@ -216,7 +216,8 @@ list_qim_diabetes <- function(dMeasureQIM_obj,
         )
     }
 
-    fluvaxList <- self$dM$influenzaVax_obs(diabetesID,
+    fluvaxList <- self$dM$influenzaVax_obs(
+      diabetesID,
       date_from = ifelse(ignoreOld,
         NA,
         as.Date(-Inf, origin = "1970-01-01")
@@ -227,19 +228,21 @@ list_qim_diabetes <- function(dMeasureQIM_obj,
     )
     # returns InternalID, FluVaxName, FluvaxDate
 
-    HbA1CList <- self$dM$HbA1C_obs(diabetesID,
+    HbA1CList <- self$dM$HbA1C_obs(
+      diabetesID,
       date_from = ifelse(
         ignoreOld,
         NA,
         as.Date(-Inf, origin = "1970-01-01")
       ),
       # if ignoreOld, then HbA1C will (given NA)
-      # calculate date_from as fifteen months before date_to
+      # calculate date_from as twelve months before date_to
       date_to = date_to
     )
     # returns dataframe of InternalID, HbA1CDate, HbA1CValue, HbA1CUnits
 
-    BPList <- self$dM$BloodPressure_obs(diabetesID,
+    BPList <- self$dM$BloodPressure_obs(
+      diabetesID,
       date_from = ifelse(
         ignoreOld,
         NA,
@@ -489,10 +492,14 @@ list_qim_diabetes_appointments <- function(dMeasureQIM_obj,
 
     if (!lazy) {
       appointments <- self$list_qim_diabetes(
-        contact, date_from, date_to, clinicians,
-        min_contact, min_date, max_date,
-        contact_type, type_diabetes, ignoreOld,
-        lazy, store
+        contact = contact,
+        date_from = date_from, date_to = date_to,
+        clinicians = clinicians,
+        min_contact = min_contact,
+        min_date = min_date, max_date = max_date,
+        contact_type = contact_type, type_diabetes = type_diabetes,
+        ignoreOld = ignoreOld,
+        lazy = lazy, store = store
       )
       self$dM$filter_appointments_time(date_from, date_to, clinicians,
         lazy = lazy
@@ -692,12 +699,16 @@ report_qim_diabetes <- function(dMeasureQIM_obj,
     # group by both demographic groupings and measures of interest
     # add a dummy string in case there are no demographic or measure groups chosen!
     # (dummy string not required?, both group_by_at accepts NULL)
-
     if (!lazy) {
       report <- self$list_qim_diabetes(
-        contact, date_from, date_to, clinicians,
-        min_contact, min_date, max_date, contact_type,
-        ignoreOld, lazy, store
+        contact = contact,
+        date_from = date_from, date_to = date_to,
+        clinicians = clinicians,
+        min_contact = min_contact,
+        min_date = min_date, max_date = max_date,
+        contact_type = contact_type, type_diabetes = type_diabetes,
+        ignoreOld = ignoreOld,
+        lazy = lazy, store = store
       )
     } else {
       report <- self$qim_diabetes_list

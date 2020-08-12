@@ -363,13 +363,13 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
   # modify choices for input$category_chosen
   shiny::observeEvent(
     c(input$series_chosen, input$stack_chosen, input$mirror_chosen,
-      report_values()),
+      report_filled()),
     ignoreInit = TRUE, ignoreNULL = FALSE, priority = 5, {
       shiny::req(report_values()) # report needs to be available!
 
       # MUST be one of input$series_chosen
       choices <- input$series_chosen
-      if (length(unique(report_values()$DateTo)) > 1) {
+      if (length(unique(report_filled()$DateTo)) > 1) {
         # if more than one date period is available
         # then allow 'DateTo' to be a category
         choices <- c(choices, "DateTo")
@@ -398,11 +398,11 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
       input$mirror_chosen, report_values()),
     priority = 5,
     ignoreInit = TRUE, ignoreNULL = FALSE, {
-      shiny::req(report_values()) # report needs to be available!
+      shiny::req(report_filled()) # report needs to be available!
 
       # MUST be one of input$series_chosen
       choices <- input$series_chosen
-      if (length(unique(report_values()$DateTo)) > 1) {
+      if (length(unique(report_filled()$DateTo)) > 1) {
         # if more than one date period is available
         # then allow to be a stack choice
         choices <- c(choices, "DateTo")
@@ -834,7 +834,11 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
         shiny::observeEvent(
           input$ok_copy_report,
           ignoreInit = TRUE, ignoreNULL = TRUE, {
-            report_values(report$report_values())
+            report_values(
+              report$report_values() %>>%
+                dplyr::mutate(DateTo = as.character(DateTo))
+              # co-erce to character (instead of numeric)
+            )
             # copy the dataframe
             shiny::removeModal()
           }

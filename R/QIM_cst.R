@@ -147,10 +147,9 @@ list_qim_cst <- function(dMeasureQIM_obj,
       } else {
         contact_cst_list <- self$dM$contact_cst_list
       }
-
       screen_cst <- contact_cst_list %>>%
         dplyr::select(-c(Count, Latest)) # don't need these fields
-      screen_cst_id <- self$dM$contact_cst_list %>>%
+      screen_cst_id <- contact_cst_list %>>%
         dplyr::pull(InternalID) %>>%
         c(-1) # make sure not empty list
     } else {
