@@ -61,7 +61,10 @@ qim_reportCharter_UI <- function(id) {
               ),
               shinyWidgets::pickerInput(
                 inputId = ns("stack_chosen"),
-                label = "Stack",
+                label = "Sub-category",
+                # this is called the 'stack' in high-charts.
+                # confusingly, the 'stacking' property doesn't really
+                #  apply to stacks.
                 choices = "None",
                 # initially no choices, but will be expanded
                 # when input$series_chosen has selections
@@ -116,11 +119,11 @@ qim_reportCharter_UI <- function(id) {
                 ),
                 shiny::column(
                   width = 4,
-                  shinyWidgets::switchInput(
-                    inputId = ns("bar"),
-                    onLabel = "Bar",
-                    offLabel = "Column",
-                    value = TRUE
+                  shinyWidgets::pickerInput(
+                    inputId = ns("chart_type"),
+                    choices = c("bar", "column", "line", "area"),
+                    selected = "bar",
+                    multiple = FALSE
                   )
                 )
               ),
@@ -363,13 +366,13 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
   # modify choices for input$category_chosen
   shiny::observeEvent(
     c(input$series_chosen, input$stack_chosen, input$mirror_chosen,
-      report_filled()),
+      report_values()),
     ignoreInit = TRUE, ignoreNULL = FALSE, priority = 5, {
       shiny::req(report_values()) # report needs to be available!
 
       # MUST be one of input$series_chosen
       choices <- input$series_chosen
-      if (length(unique(report_filled()$DateTo)) > 1) {
+      if (length(unique(report_values()$DateTo)) > 1) {
         # if more than one date period is available
         # then allow 'DateTo' to be a category
         choices <- c(choices, "DateTo")
@@ -392,17 +395,17 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
     }
   )
 
-  # modify choices for input$stack_chosen
+  # modify choices for input$stack_chosen ('sub-category')
   shiny::observeEvent(
-    c(input$series_chosen, input$category_chosen,
+    c(input$series_chosen, input$category_chosen, input$chart_type,
       input$mirror_chosen, report_values()),
     priority = 5,
     ignoreInit = TRUE, ignoreNULL = FALSE, {
-      shiny::req(report_filled()) # report needs to be available!
+      shiny::req(report_values()) # report needs to be available!
 
       # MUST be one of input$series_chosen
       choices <- input$series_chosen
-      if (length(unique(report_filled()$DateTo)) > 1) {
+      if (length(unique(report_values()$DateTo)) > 1) {
         # if more than one date period is available
         # then allow to be a stack choice
         choices <- c(choices, "DateTo")
@@ -413,7 +416,12 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
       choices <- choices[choices != input$mirror_chosen]
       # cannot be 'age'
       choices <- choices[choices != "Age"]
-      # can still be 'None'
+      if (input$chart_type == "line" || input$chart_type == "area")
+        {choices <- NULL}
+      # stack/sub-category isn't normally relevant for  line or area
+      # however, if 'area' has mirror mode, *then* the 'negative'
+      #  values will be 'stacked' elsewhere
+      # can always be 'None'
       choices <- c("None", choices)
       chosen <- intersect(choices, input$stack_chosen)
       if (length(chosen) == 0) {chosen <- "None"} # i.e. 'character(0)'
@@ -597,13 +605,18 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
       }
 
       ##### mirror ###########################
+      report$mirrored <- FALSE # default
+
       if (input$mirror_chosen == "Sex" && "Sex" %in% input$series_chosen) {
         # 'Sex' should not be an option in input$mirror_chosen if it is not
         # in $series_chosen, but unfortunately there may be a lag...
         for (x in sex_choices) {
           if (x %in% input$mirror_group) {
             report <- report %>>%
-              dplyr::mutate(n = dplyr::if_else(Sex == x, -n, n))
+              dplyr::mutate(
+                n = dplyr::if_else(Sex == x, -n, n),
+                mirrored = dplyr::if_else(Sex == x, TRUE, mirrored)
+              )
           }
         }
       }
@@ -612,7 +625,10 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
         for (x in ethnicity_choices) {
           if (x %in% input$mirror_group) {
             report <- report %>>%
-              dplyr::mutate(n = dplyr::if_else(Indigenous == x, -n, n))
+              dplyr::mutate(
+                n = dplyr::if_else(Indigenous == x, -n, n),
+                mirrored = dplyr::if_else(Indigenous == x, TRUE, mirrored)
+              )
           }
         }
       }
@@ -621,7 +637,10 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
         for (x in diabetes_choices) {
           if (x %in% input$mirror_group) {
             report <- report %>>%
-              dplyr::mutate(n = dplyr::if_else(DiabetesType == x, -n, n))
+              dplyr::mutate(
+                n = dplyr::if_else(DiabetesType == x, -n, n),
+                mirrored = dplyr::if_else(DiabetesType == x, TRUE, mirrored)
+              )
           }
         }
       }
@@ -634,7 +653,10 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
             # was a 'not done' == FALSE chosen to be 'mirrored'
           ) {
             report <- report %>>%
-              dplyr::mutate(n = dplyr::if_else(State == "FALSE", -n, n))
+              dplyr::mutate(
+                n = dplyr::if_else(State == "FALSE", -n, n),
+                mirrored = dplyr::if_else(State == "FALSE", TRUE, mirrored)
+              )
             # if 'FALSE' then 'mirror' (turn negative)
           }
           if (
@@ -647,8 +669,11 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
             )
           ) {
             report <- report %>>%
-              dplyr::mutate(n = dplyr::if_else(State == "TRUE", -n, n))
-            # if TRUE then 'mirror' (turn negative)
+              dplyr::mutate(
+                n = dplyr::if_else(State == "TRUE", -n, n),
+                mirrored = dplyr::if_else(State == "TRUE", TRUE, mirrored)
+                # if TRUE then 'mirror' (turn negative)
+              )
           }
         }
 
@@ -659,7 +684,10 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
             function(x) {
               if (x %in% input$mirror_group) {
                 report <- report %>>%
-                  dplyr::mutate(n = dplyr::if_else(State == x, -n, n))
+                  dplyr::mutate(
+                    n = dplyr::if_else(State == x, -n, n),
+                    mirrored = dplyr::if_else(State == x, TRUE, mirrored)
+                  )
               }
             }
           )
@@ -672,7 +700,10 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
             function(x) {
               if (x %in% input$mirror_group) {
                 report <- report %>>%
-                  dplyr::mutate(n = dplyr::if_else(State == x, -n, n))
+                  dplyr::mutate(
+                    n = dplyr::if_else(State == x, -n, n),
+                    mirrored = dplyr::if_else(State == x, TRUE, mirrored)
+                  )
               }
             }
           )
@@ -687,12 +718,8 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
       if (input$stack_chosen != "None") {
         proportion_groups <- c(proportion_groups, "stack")
       }
-      report$mirrored <- FALSE
       if (input$mirror_chosen != "None") {
         proportion_groups <- c(proportion_groups, "mirrored")
-        report <- report %>>%
-          dplyr::mutate(mirrored = dplyr::if_else(n < 0, TRUE, FALSE))
-        # any 'n' value less than zero has been mirrored
       }
       # categories, stacks and mirror all define separate groupings
       report <- report %>>%
@@ -717,10 +744,11 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
   )
 
   shiny::observeEvent(
-    c(report_grouped(), input$proportion, input$bar),
+    c(report_grouped(), input$proportion, input$chart_type),
     ignoreInit = TRUE, priority = -10, {
       shiny::req(report_grouped())
       shiny::req(nrow(report_grouped() > 0))
+      shiny::req(input$chart_type)
 
       if (input$proportion) {
         y_variable <- "proportion"
@@ -735,19 +763,31 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
       grouped_report <- report_grouped() %>>%
         dplyr::mutate(category = as.character(category))
 
-      type <- ifelse(input$bar, "bar", "column")
-      # bar or column chart
+      chart_type <- input$chart_type
+      # bar or column or line or area chart
+
+      if (chart_type == "area" && any(grouped_report[[y_variable]] < 0)) {
+        # if this is an area chart
+        #  *and* there is a 'mirror' (so there are negative values)
+        #  then negative and positive values should be separate stacks
+        # note that 'stack'/sub-category is disabled as a choice
+        #  for 'area' charts
+        grouped_report <- grouped_report %>>%
+          dplyr::mutate(stack = mirrored)
+      }
+
+      stack_group <- dplyr::distinct(grouped_report, series_name, stack) %>%
+        dplyr::arrange(series_name) %>%
+        dplyr::pull(stack)
 
       hc <- highcharter::hchart(
         grouped_report,
-        type = type,
+        type = chart_type,
         highcharter::hcaes(
           x = category, y = !!dplyr::sym(y_variable),
           group = series_name
         ),
-        stack = (dplyr::distinct(report_grouped(), series_name, stack) %>%
-                   dplyr::arrange(series_name) %>%
-                   dplyr::pull(stack))
+        stack = stack_group
       ) %>>%
         highcharter::hc_xAxis(
           reversed = FALSE # !!!
@@ -778,7 +818,11 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
         ) %>>%
         highcharter::hc_plotOptions(
           bar = list(stacking = "normal"),
-          column = list(stacking = "normal")
+          column = list(stacking = "normal"),
+          area = list(stacking = "normal")
+        ) %>>%
+        highcharter::hc_exporting(
+          enabled = TRUE
         )
       rendered_chart(hc)
     }
