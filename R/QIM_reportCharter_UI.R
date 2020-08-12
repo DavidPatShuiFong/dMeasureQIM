@@ -14,7 +14,6 @@ data_categories <- c(
   "Age10", "Sex", "Indigenous",
   "DiabetesType", "State"
 )
-stack_categories <- data_categories[data_categories != "Age"]
 
 #' @export
 qim_reportCharter_UI <- function(id) {
@@ -242,45 +241,73 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
   ##### dateto picker ######################################
 
   output$dateto_picker <- shiny::renderUI({
-    shinyWidgets::pickerInput(
-      inputId = ns("dateto_chosen"),
-      label = "End dates",
-      choices = NULL,
-      selected = NULL,
-      multiple = FALSE,
-      options = list(
-        style = "btn-primary",
-        `action-box` = TRUE
-      )
-    )
-  })
+    dateto_choices <- unique(report_values()$DateTo)
 
-  shiny::observeEvent(
-    c(report_values()),
-    ignoreInit = TRUE, ignoreNULL = FALSE, {
-      shiny::req(report_values())
-
-      dateto_choices <- unique(report_values()$DateTo)
-      shinyWidgets::updatePickerInput(
-        session = session,
-        inputId = "dateto_chosen",
+    if (input$category_chosen == "DateTo" || input$stack_chosen == "DateTo") {
+      # if the date periods are a category/stack then the user
+      #  can choose more than one period
+      shinyWidgets::pickerInput(
+        inputId = ns("dateto_chosen"),
+        label = "End dates",
         choices = dateto_choices,
-        selected = max(dateto_choices) # choose the most recent
+        selected = max(dateto_choices),
+        multiple = TRUE,
+        options = list(
+          style = "btn-primary",
+          `action-box` = TRUE
+        )
       )
-    })
+    } else {
+      # if the date periods are *NOT* chosen as a category/stack
+      # then the use can only choose one period
+      if (length(dateto_choices) > 0) {
+        shinyWidgets::pickerInput(
+          inputId = ns("dateto_chosen"),
+          label = "End dates",
+          choices = dateto_choices,
+          selected = max(dateto_choices),
+          multiple = FALSE,
+          options = list(
+            style = "btn-primary",
+            `action-box` = TRUE
+          )
+        )
+      } else {
+        # in this case, there is no data available anyway!
+        shinyWidgets::pickerInput(
+          inputId = ns("dateto_chosen"),
+          label = "End dates",
+          choices = NULL,
+          selected = NULL,
+          multiple = FALSE,
+          options = list(
+            style = "btn-primary",
+            `action-box` = TRUE
+          )
+        )
+      }
+    }
+  })
 
   ##### data series choices #################################
 
   # modify choices for input$category_chosen
   shiny::observeEvent(
-    c(input$series_chosen, input$stack_chosen, input$mirror_chosen),
+    c(input$series_chosen, input$stack_chosen, input$mirror_chosen,
+      report_values()),
     ignoreInit = TRUE, ignoreNULL = FALSE, priority = 5, {
+      shiny::req(report_values()) # report needs to be available!
+
       # MUST be one of input$series_chosen
       choices <- input$series_chosen
       # cannot be chosen in 'stack' or 'mirror' (except 'None'!)
       choices <- choices[choices != input$stack_chosen]
       choices <- choices[choices != input$mirror_chosen]
       choices <- c("None", choices)
+      if (length(unique(report_values()$DateTo)) > 1) {
+        # if more than one date period is available
+        choices <- c(choices, "DateTo")
+      }
       # retain previous choice
       chosen <- intersect(choices, input$category_chosen)
       if (length(chosen) == 0) {chosen <- "None"} # i.e. 'character(0)'
@@ -422,20 +449,25 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
       shiny::req(report_filled())
 
       ##### reduce the data to groups, and get a summary statistic 'n' ####
+      group_names <- input$series_chosen
+      if (input$category_chosen == "DateTo") {group_names <- c(group_names, "DateTo")}
       report <- report_filled() %>>%
-        dplyr::group_by(!!!dplyr::syms(input$series_chosen)) %>>%
+        dplyr::group_by(!!!dplyr::syms(group_names)) %>>%
         dplyr::summarise(n = sum(n)) %>>%
         dplyr::ungroup()
       ##### define series names ###########################################
       series_names <- input$series_chosen
-      if (input$category_chosen != "None" && input$category_chosen %in% input$series_chosen) {
-        # input$category_chosen should always be in input$series_chosen
-        # but sometimes the state of choices for input$category_chosen might 'lag'
-        #
-        # 'category' is removed from the 'series' description
-        # category will be on the 'x axis' (in a bar chart, 'x' is vertical!)
-        # so does not not define a separate series
-        series_names <- series_names[series_names != input$category_chosen]
+      if (input$category_chosen != "None") {
+        if (input$category_chosen %in% input$series_chosen) {
+          # input$category_chosen should always be in input$series_chosen
+          # (unless it is 'DateTo')
+          # but sometimes the state of choices for input$category_chosen might 'lag'
+          #
+          # 'category' is removed from the 'series' description
+          # category will be on the 'x axis' (in a bar chart, 'x' is vertical!)
+          # so does not not define a separate series
+          series_names <- series_names[series_names != input$category_chosen]
+        }
         report$category <- unlist(
           report[, input$category_chosen], use.names = FALSE
         )
@@ -750,8 +782,12 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
       input$diabetes_chosen, input$dateto_chosen),
     priority = -3,
     ignoreInit = TRUE, ignoreNULL = TRUE, {
+      # filter report_values() to create report_filled()
+      # filter by QIM, DateTo, Age, Sex, Indigenous, DiabetesType
+      # replace NA
       shiny::req(report_values())
       shiny::req(nrow(report_values()) > 0)
+
       if (nrow(report_values()) > 0) {
         report <- report_values() %>>%
           # just the necessary columns
