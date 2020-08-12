@@ -128,9 +128,27 @@ qim_reportCharter_UI <- function(id) {
                 )
               ),
               shiny::hr(),
-              shiny::actionButton(
-                inputId = ns("show_grouped_values"),
-                label = "Show grouped values"
+              shiny::fluidRow(
+                shiny::column(
+                  width = 7,
+                  shiny::actionButton(
+                    inputId = ns("show_grouped_values"),
+                    label = "Show grouped values"
+                  )
+                ),
+                shiny::column(
+                  width = 4,
+                  shinyWidgets::pickerInput(
+                    inputId = ns("chart_theme"),
+                    choices = c(
+                      "plain", "smpl", "538", "economist",
+                      "elementary", "ffx", "flat", "ft",
+                      "ggplot2", "google", "monokai", "tufte"
+                    ),
+                    selected = "plain",
+                    multiple = FALSE
+                  )
+                )
               )
             )
           ),
@@ -417,7 +435,7 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
       # cannot be 'age'
       choices <- choices[choices != "Age"]
       if (input$chart_type == "line" || input$chart_type == "area")
-        {choices <- NULL}
+      {choices <- NULL}
       # stack/sub-category isn't normally relevant for  line or area
       # however, if 'area' has mirror mode, *then* the 'negative'
       #  values will be 'stacked' elsewhere
@@ -744,24 +762,33 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
   )
 
   shiny::observeEvent(
-    c(report_grouped(), input$proportion, input$chart_type),
+    c(report_grouped(), input$proportion, input$chart_type, input$chart_theme),
     ignoreInit = TRUE, priority = -10, {
       shiny::req(report_grouped())
       shiny::req(nrow(report_grouped() > 0))
       shiny::req(input$chart_type)
 
+      grouped_report <- report_grouped() %>>%
+        dplyr::mutate(category = as.character(category))
+      # change from factor to character
+
       if (input$proportion) {
         y_variable <- "proportion"
         decimal_points <- 2
-        # will be a number between 0 and 1
+        # will be a number between 0 and 1 (or potentially -1 to 0 if mirrored)
+        y_max <- 1
+        if (any(grouped_report[[y_variable]] < 0)) {
+          y_min <- -1
+        } else {
+          y_min <- 0
+        }
       } else {
         y_variable <- "n"
         decimal_points <- 0
         # will be whole numbers (integers)
+        y_min <- NULL # 'flexible' y-axis limits
+        y_max <- NULL
       }
-
-      grouped_report <- report_grouped() %>>%
-        dplyr::mutate(category = as.character(category))
 
       chart_type <- input$chart_type
       # bar or column or line or area chart
@@ -802,7 +829,9 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
             color = "#C0C0C0",
             width = 3,
             value = 0
-          ))
+          )),
+          min = y_min,
+          max = y_max
         ) %>>%
         highcharter::hc_tooltip(
           shared = FALSE,
@@ -824,6 +853,25 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
         highcharter::hc_exporting(
           enabled = TRUE
         )
+
+      if (input$chart_theme != "plain") {
+        hc_theme <- switch(
+          input$chart_theme,
+          "smpl" = {highcharter::hc_theme_smpl()},
+          "538" = {highcharter::hc_theme_538()},
+          "economist" = {highcharter::hc_theme_economist()},
+          "elementary" = {highcharter::hc_theme_elementary()},
+          "ffx" = {highcharter::hc_theme_ffx()},
+          "flat" = {highcharter::hc_theme_flat()},
+          "ft" = {highcharter::hc_theme_ft()},
+          "ggplot2" = {highcharter::hc_theme_ggplot2()},
+          "google" = {highcharter::hc_theme_google()},
+          "monokai" = {highcharter::hc_theme_monokai()},
+          "tufte" = {highcharter::hc_theme_tufte()}
+        )
+        hc <- hc %>>% highcharter::hc_add_theme(hc_theme)
+      }
+
       rendered_chart(hc)
     }
   )
