@@ -104,11 +104,25 @@ qim_reportCharter_UI <- function(id) {
                 )
               ),
               shiny::uiOutput(ns("dateto_picker")),
-              shinyWidgets::switchInput(
-                inputId = ns("proportion"),
-                label = "Proportion",
-                value = FALSE,
-                labelWidth = "10 em"
+              shiny::fluidRow(
+                shiny::column(
+                  width = 7,
+                  shinyWidgets::switchInput(
+                    inputId = ns("proportion"),
+                    label = "Proportion",
+                    value = FALSE,
+                    labelWidth = "10 em"
+                  )
+                ),
+                shiny::column(
+                  width = 4,
+                  shinyWidgets::switchInput(
+                    inputId = ns("bar"),
+                    onLabel = "Bar",
+                    offLabel = "Column",
+                    value = TRUE
+                  )
+                )
               ),
               shiny::hr(),
               shiny::actionButton(
@@ -523,23 +537,27 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
         #  one DateTo available. DateTo cannot be chosen as a series
         group_names <- c(group_names, "DateTo")
       }
+      group_names <- intersect(names(report_filled()), group_names)
+      # make sure that it is possible to group these names!
+      #  occasionally the inputs (e.g. input$category_chosen) will
+      #  'lag' the contents of report_filled()
       report <- report_filled() %>>%
         dplyr::group_by(!!!dplyr::syms(group_names)) %>>%
         dplyr::summarise(n = sum(n)) %>>%
         dplyr::ungroup()
       ##### define series names ###########################################
       series_names <- input$series_chosen
-      if (input$category_chosen != "None") {
-        if (input$category_chosen %in% input$series_chosen) {
-          # input$category_chosen should always be in input$series_chosen
-          # (unless it is 'DateTo')
-          # but sometimes the state of choices for input$category_chosen might 'lag'
-          #
-          # 'category' is removed from the 'series' description
-          # category will be on the 'x axis' (in a bar chart, 'x' is vertical!)
-          # so does not not define a separate series
-          series_names <- series_names[series_names != input$category_chosen]
-        }
+      if (input$category_chosen != "None" &&
+          (input$category_chosen %in% input$series_chosen ||
+           input$category_chosen == "DateTo")) {
+        # input$category_chosen should always be in input$series_chosen
+        # (unless it is 'DateTo')
+        # but sometimes the state of choices for input$category_chosen might 'lag'
+        #
+        # 'category' is removed from the 'series' description
+        # category will be on the 'x axis' (in a bar chart, 'x' is vertical!)
+        # so does not not define a separate series
+        series_names <- series_names[series_names != input$category_chosen]
         report$category <- unlist(
           report[, input$category_chosen], use.names = FALSE
         )
@@ -699,7 +717,7 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
   )
 
   shiny::observeEvent(
-    c(report_grouped(), input$proportion),
+    c(report_grouped(), input$proportion, input$bar),
     ignoreInit = TRUE, priority = -10, {
       shiny::req(report_grouped())
       shiny::req(nrow(report_grouped() > 0))
@@ -717,9 +735,12 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
       grouped_report <- report_grouped() %>>%
         dplyr::mutate(category = as.character(category))
 
+      type <- ifelse(input$bar, "bar", "column")
+      # bar or column chart
+
       hc <- highcharter::hchart(
         grouped_report,
-        type = "bar",
+        type = type,
         highcharter::hcaes(
           x = category, y = !!dplyr::sym(y_variable),
           group = series_name
@@ -756,7 +777,8 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
           )
         ) %>>%
         highcharter::hc_plotOptions(
-          bar = list(stacking = "normal")
+          bar = list(stacking = "normal"),
+          column = list(stacking = "normal")
         )
       rendered_chart(hc)
     }
