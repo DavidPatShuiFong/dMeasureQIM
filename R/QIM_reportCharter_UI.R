@@ -991,7 +991,22 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
       # filter by QIM, DateTo, Age, Sex, Indigenous, DiabetesType
       # replace NA
       shiny::req(report_values())
-      shiny::req(nrow(report_values()) > 0)
+      if (is.null(input$dateto_chosen) &&
+          (input$category_chosen == "DateTo" ||
+           input$stack_chosen == "DateTo")) {
+        # no dates chosen. no rows will be selected in this case...
+        # show a warning if this has occurred in the context of a
+        #  'multi-select'
+        shinytoastr::toastr_error(
+          message = paste(
+            "Must choose at least one time period"
+          ),
+          position = "bottom-left",
+          closeButton = TRUE,
+          timeOut = 5000
+        )
+      }
+      shiny::req(input$dateto_chosen)
 
       if (nrow(report_values()) > 0) {
         report <- report_values() %>>%
@@ -1009,7 +1024,7 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
             # restrict to chosen date period(s)
             DateTo %in% input$dateto_chosen
           ) %>>%
-          # fill in the 'missing' demographic possiblities/rows ('n' = 0)
+          # fill in the 'missing' demographic possibilities/rows ('n' = 0)
           dMeasureQIM::fill_demographics() %>>%
           tidyr::replace_na(
             # replace 'NA' not available with various
