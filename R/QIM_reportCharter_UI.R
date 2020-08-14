@@ -983,7 +983,7 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
     })
 
   shiny::observeEvent(
-    c(report_values(), input$qim_chosen,
+    c(report_values(), input$qim_chosen, input$age_range,
       input$sex_chosen, input$ethnicity_chosen,
       input$diabetes_chosen, input$dateto_chosen),
     priority = -3,
