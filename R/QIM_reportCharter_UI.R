@@ -304,7 +304,6 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
       # from 'single' to 'multiple' mode
       #   - this happens if input$category_chosen or input$stack_chosen is
       #     changed from/to 'DateTo'
-
       dateto_choices <- unique(report_values()$DateTo)
       if (input$category_chosen == "DateTo" || input$stack_chosen == "DateTo") {
         # if the date periods are a category/stack then the user
@@ -312,7 +311,7 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
         if (is.null(dateto_picker_choices()) || # previous choices were NULL!
             # can't compare NULL with dateto_choices later on (causes an error)
             dateto_picker_state() == "single" || # switching from single to multiple
-            dateto_picker_choices() != dateto_choices) { # change in choices
+            any(dateto_picker_choices() != dateto_choices)) { # change in choices
           # there has been a change in state
           # otherwise this event can be triggered by any change in
           #  input$category_choice or input$stack_chosen
@@ -336,7 +335,7 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
         if (length(dateto_choices) > 0) {
           if (is.null(dateto_picker_choices()) || # previously no choices
               dateto_picker_state() == "multiple" || # switch from multiple to single
-              dateto_picker_choices() != dateto_choices) { # different choices
+              any(dateto_picker_choices() != dateto_choices)) { # different choices
             # only change if there is a change from
             #  1. no choices to some choices
             #  2. some choices to different choices
