@@ -9,6 +9,7 @@ complete_demographics(
   qim_name,
   age_min = 0,
   age_max = 65,
+  ageGroups = c(0, 5, 15, 25, 35, 45, 55, 65),
   include_diabetes = FALSE,
   measure,
   states = c(FALSE, TRUE),
@@ -26,6 +27,8 @@ optionally - ProportionDemographic, DateFrom, DateTo}
 \item{age_min}{minimum age group}
 
 \item{age_max}{maximum age group}
+
+\item{ageGroups}{numbers to determine age group}
 
 \item{include_diabetes}{include diabetes demographic}
 

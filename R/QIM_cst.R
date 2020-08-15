@@ -257,7 +257,12 @@ list_qim_cst <- function(dMeasureQIM_obj,
       }) %>>%
       dplyr::select(-c(TestAge, OutOfDateTest)) %>>%
       # dplyr::select(-c(TestAge, OutOfDateTest)) %>>% # don't need these columns any more
-      dMeasureQIM::add_demographics(self$dM, date_to) %>>%
+      dMeasureQIM::add_demographics(
+        self$dM, date_to,
+        ageGroups = c(25, 35, 45, 55, 65, 70)
+        # QIM 08 cervical screening is different to all other QIM measures
+        # in having a '70' age group (70 to 74)
+      ) %>>%
       dplyr::select(-DOB) %>>%
       dplyr::rename(
         CSTDate = TestDate,

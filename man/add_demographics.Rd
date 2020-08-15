@@ -4,7 +4,12 @@
 \alias{add_demographics}
 \title{add demographics}
 \usage{
-add_demographics(d, dM, reference_date)
+add_demographics(
+  d,
+  dM,
+  reference_date,
+  ageGroups = c(0, 5, 15, 25, 35, 45, 55, 65)
+)
 }
 \arguments{
 \item{d}{dataframe with InternalID}
@@ -12,6 +17,17 @@ add_demographics(d, dM, reference_date)
 \item{dM}{dMeasure object}
 
 \item{reference_date}{date to calculate age from}
+
+\item{ageGroups}{numbers to determine age group
+
+  Intervals are closed to the left and open to the right
+  i.e. includes the left-most end of the interval,
+  and does not include the right.
+
+  QIM 09 (Cervical screening) has a different age group
+  interval to other QIMs, as it includes '65' and '70'.
+  (["PIP QI Improvement Measures - Technical Specifications v1.1"](https://www1.health.gov.au/internet/main/publishing.nsf/Content/46506AF50A4824B6CA25848600113FFF/$File/PIP-QI-Technical-Specifications.pdf),
+  page 27)}
 }
 \value{
 dataframe with DOB, Age10, Sex, Indigenous, RecordNo,

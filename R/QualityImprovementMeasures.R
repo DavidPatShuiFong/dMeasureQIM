@@ -218,12 +218,24 @@ diabetes_choices <- c(
 #' @param d dataframe with InternalID
 #' @param dM dMeasure object
 #' @param reference_date date to calculate age from
+#' @param ageGroups numbers to determine age group
+#'
+#'   Intervals are closed to the left and open to the right
+#'   i.e. includes the left-most end of the interval,
+#'   and does not include the right.
+#'
+#'   QIM 09 (Cervical screening) has a different age group
+#'   interval to other QIMs, as it includes '65' and '70'.
+#'   (["PIP QI Improvement Measures - Technical Specifications v1.1"](https://www1.health.gov.au/internet/main/publishing.nsf/Content/46506AF50A4824B6CA25848600113FFF/$File/PIP-QI-Technical-Specifications.pdf),
+#'   page 27)
 #'
 #' @return dataframe with DOB, Age10, Sex, Indigenous, RecordNo,
 #'   MaritalStatus, Sexuality, Indigenous
 #' @export
-add_demographics <- function(d, dM, reference_date) {
-
+add_demographics <- function(
+  d, dM, reference_date,
+  ageGroups = c(0, 5, 15, 25, 35, 45, 55, 65)
+) {
   intID <- d %>>% dplyr::pull(InternalID) %>>% c(-1)
 
   d <- d  %>>%
@@ -243,14 +255,10 @@ add_demographics <- function(d, dM, reference_date) {
     ) %>>%
     dplyr::mutate(
       DOB = as.Date(DOB, origin = "1970-01-01"),
-      Age10 =
-        pmin(
-          pmax(
-            0,
-            floor((dMeasure::calc_age(DOB, reference_date) - 5) / 10) * 10 + 5
-          ),
-          65
-        ),
+      Age10 = ageGroups[findInterval(
+        dMeasure::calc_age(DOB, reference_date),
+        ageGroups
+      )],
       # round age group to nearest 10 years, starting age 5, minimum 0 and maximum 65
       Ethnicity = dplyr::na_if(Ethnicity, ""), # changes "" to NA
       Indigenous = dplyr::case_when(
@@ -291,6 +299,7 @@ add_demographics <- function(d, dM, reference_date) {
 #' @param qim_name name of qim
 #' @param age_min minimum age group
 #' @param age_max maximum age group
+#' @param ageGroups numbers to determine age group
 #' @param include_diabetes include diabetes demographic
 #' @param measure name of measure
 #' @param states vector of status types
@@ -305,6 +314,7 @@ complete_demographics <- function(
   qim_name,
   age_min = 0,
   age_max = 65,
+  ageGroups = c(0, 5, 15, 25, 35, 45, 55, 65),
   include_diabetes = FALSE,
   measure,
   states = c(FALSE, TRUE),
@@ -312,7 +322,7 @@ complete_demographics <- function(
 ) {
 
   # restrict by age
-  age_list <- c(0, 5, 15, 25, 35, 45, 55, 65)
+  age_list <- ageGroups
   age_list <- age_list[age_list >= age_min & age_list <= age_max]
   indigenous_list <- c("Aboriginal", "Torres Strait Islander",
                        "Both Aboriginal and Torres Strait Islander")
@@ -478,7 +488,10 @@ fill_demographics <- function(d) {
   } else if (qim == 9) { # cervical screening
     dt <- dMeasureQIM::complete_demographics(
       d, qim_name = qim_name,
-      age_min = 25, age_max = 65,
+      age_min = 25, age_max = 70,
+      ageGroups = c(25, 35, 45, 55, 65, 70),
+      # note that QIM 09 cervical screening has different
+      # age group structure than other QIMs by having a '70' group.
       include_diabetes = FALSE,
       measure = measure_name,
       states = c(FALSE, TRUE)

@@ -159,8 +159,8 @@ qim_reportCharter_UI <- function(id) {
               shinyWidgets::sliderTextInput(
                 inputId = ns("age_range"),
                 label = "Age range",
-                choices = c(0, 5, 15, 25, 35, 45, 55, 65),
-                selected = c(0, 65),
+                choices = c(0, 5, 15, 25, 35, 45, 55, 65, 70),
+                selected = c(0, 70),
                 # an age 'range'
               ),
               shinyWidgets::pickerInput(
