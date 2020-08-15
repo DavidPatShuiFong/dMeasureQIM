@@ -768,7 +768,7 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
     c(report_grouped(), input$proportion, input$chart_type, input$chart_theme),
     ignoreInit = TRUE, priority = -10, {
       shiny::req(report_grouped())
-      shiny::req(nrow(report_grouped() > 0))
+      shiny::req(nrow(report_grouped()) > 0)
       shiny::req(input$chart_type)
 
       grouped_report <- report_grouped() %>>%
@@ -995,6 +995,7 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
       # filter by QIM, DateTo, Age, Sex, Indigenous, DiabetesType
       # replace NA
       shiny::req(report_values())
+
       if (is.null(input$dateto_chosen) &&
           (input$category_chosen == "DateTo" ||
            input$stack_chosen == "DateTo")) {
