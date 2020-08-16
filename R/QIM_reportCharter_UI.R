@@ -223,11 +223,10 @@ qim_reportCharter_UI <- function(id) {
         )
       ),
       shiny::column(
-        width = 9,
+        width = 8, # tendency for chart to extend too far to right...
         highcharter::highchartOutput(
           ns("chart"),
-          height = "700px",
-          width = "90%" # tendency for chart to extend too far to right...
+          height = "700px"
         )
       )
     )
