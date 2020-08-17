@@ -779,7 +779,7 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
         decimal_points <- 2
         # will be a number between 0 and 1 (or potentially -1 to 0 if mirrored)
         y_max <- 1
-        if (any(grouped_report[[y_variable]] < 0)) {
+        if (any(grouped_report[[y_variable]] < 0, na.rm = TRUE)) {
           y_min <- -1
         } else {
           y_min <- 0
@@ -795,7 +795,7 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
       chart_type <- input$chart_type
       # bar or column or line or area chart
 
-      if (chart_type == "area" && any(grouped_report[[y_variable]] < 0)) {
+      if (chart_type == "area" && any(grouped_report[[y_variable]] < 0, na.rm = TRUE)) {
         # if this is an area chart
         #  *and* there is a 'mirror' (so there are negative values)
         #  then negative and positive values should be separate stacks

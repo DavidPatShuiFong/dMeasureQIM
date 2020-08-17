@@ -3,7 +3,7 @@
 
 ## Structure of exported `CSV` (comma-separated-value) file
 
-Based on [PIP QI Annotated Specifications (May 2020)](https://www1.health.gov.au/internet/main/publishing.nsf/Content/46506AF50A4824B6CA25848600113FFF/$File/PIP-QI-Annotated-Specifications.pdf) and [PIP QI Technical Specifications V1.1](https://www1.health.gov.au/internet/main/publishing.nsf/Content/46506AF50A4824B6CA25848600113FFF/$File/PIP-QI-Technical-Specifications.pdf).
+Based on [PIP QI Annotated Specifications (May 2020)](https://www1.health.gov.au/internet/main/publishing.nsf/Content/46506AF50A4824B6CA25848600113FFF/$File/PIP-QI-Annotated-Specifications.pdf), [PIP QI Technical Specifications V1.1](https://www1.health.gov.au/internet/main/publishing.nsf/Content/46506AF50A4824B6CA25848600113FFF/$File/PIP-QI-Technical-Specifications.pdf) and [PIP QI User Guide](https://www1.health.gov.au/internet/main/publishing.nsf/Content/46506AF50A4824B6CA25848600113FFF/$File/PIP%20QI%20-%20User%20Guide.pdf).
 
 ### Columns
 
@@ -79,14 +79,14 @@ Additional columns of information which can either be extrapolatd from columns 1
 
 ## Number of rows/groups
 
-* QIM 01/05/10 : `r 3*8*4*5*3*2`
-* QIM 02 : `r 6*4*5*4`
-* QIM 03 : `r 6*4*5*5`
-* QIM 06/07 : `r 2*6*4*5*2`
-* QIM 04 : `r 1*4*5*2`
-* QIM 08 : `r 3*4*5*2 + 4*3*2`
-* QIM 09 : `r 6*1*5*2` (or, if allows more than `Female` sex : `r 6*4*5*2`)
+* QIM 01/05/10 : <img src = "https://render.githubusercontent.com/render/math?math=3*8*4*5*3*2">
+* QIM 02 : <img src = "https://render.githubusercontent.com/render/math?math=6*4*5*4">
+* QIM 03 : <img src = "https://render.githubusercontent.com/render/math?math=6*4*5*5">
+* QIM 06/07 : <img src = "https://render.githubusercontent.com/render/math?math=2*6*4*5*2"> 
+* QIM 04 : <img src = "https://render.githubusercontent.com/render/math?math=1*4*5*2">
+* QIM 08 : <img src = "https://render.githubusercontent.com/render/math?math=3*4*5*2 + 4*3*2">
+* QIM 09 : allowing more than `Female` sex : <img src = "https://render.githubusercontent.com/render/math?math=6*4*5*2">
 
-Total : `r 960+480+6*4*5*5+4*5*2+8*4*5*3*2+6*4*5*2 + 6*4*5*2 + 3*4*5*2 + 4 * 3 *2 + 6*1*5*2 + 8*4*5*3*2` = 4684
+Total : <img src = "https://render.githubusercontent.com/render/math?math=960%2B480%2B600%2B40%2B960%2B240%2B240%2B(120%2B24)%2B240%2B960 = 4684">
 
 
