@@ -1,6 +1,7 @@
 Changelog
 
 # version 0.4.0
+18th August 2020
 
 ## New
 
