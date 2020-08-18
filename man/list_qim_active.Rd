@@ -14,7 +14,8 @@ list_qim_active(
   min_date = NA,
   max_date = NA,
   contact_type = NA,
-  lazy = FALSE
+  lazy = FALSE,
+  store = TRUE
 )
 }
 \arguments{
@@ -39,6 +40,8 @@ FALSE chooses the 'appointment' system $filter_appointments from dMeasure object
 \item{contact_type}{contact types which are accepted. default is $contact_type}
 
 \item{lazy}{recalculate the diabetes contact list?}
+
+\item{store}{keep result in self$qim_active_list}
 }
 \value{
 dataframe of Patient (name), InternalID and demographics

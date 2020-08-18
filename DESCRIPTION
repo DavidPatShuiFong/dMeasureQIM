@@ -1,7 +1,7 @@
 Package: dMeasureQIM
 Type: Package
 Title: Quality Improvement Measures for dMeasure
-Version: 0.1.6
+Version: 0.4.0
 Author: David P.S. Fong
 Maintainer: David P.S. Fong <vkelim@bigpond.com>
 Description: R6 object (and methods) to report and list Quality Improvement Measures.
@@ -14,19 +14,37 @@ Imports:
     dbplyr,
     R6,
     pipeR,
-    framinghamRiskEquation
+    framinghamRiskEquation,
+    stringi,
+    tidyr
 Suggests:
-    shiny
+    shiny (>= 1.5.0),
+    shinydashboard,
+    DT (>= 0.5.3),
+    shinyWidgets (>= 0.5.2),
+    shinytoastr,
+    highcharter (>= 0.7.0)
 RoxygenNote: 7.1.0.9000
 Collate: 
     'r6_helpers.R'
     'QualityImprovementMeasures.R'
     'QIM_15plus.R'
+    'QIM_15plus_UI.R'
     'QIM_65plus.R'
+    'QIM_65plus_UI.R'
     'QIM_active.R'
+    'QIM_active_UI.R'
     'QIM_copd.R'
+    'QIM_copd_UI.R'
     'QIM_cst.R'
+    'QIM_cst_UI.R'
     'QIM_cvdRisk.R'
+    'QIM_cvdRisk_UI.R'
     'QIM_diabetes.R'
+    'QIM_diabetes_UI.R'
+    'QIM_report.R'
+    'QIM_reportCharter_UI.R'
+    'QIM_report_UI.R'
     'introduction.R'
+    'userInterface.R'
     'utils_pipe.R'

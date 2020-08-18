@@ -17,7 +17,8 @@ report_qim_15plus(
   demographic = NA,
   measure = NA,
   ignoreOld = NA,
-  lazy = FALSE
+  lazy = FALSE,
+  store = TRUE
 )
 }
 \arguments{
@@ -54,10 +55,12 @@ currently 'Smoking', 'Weight', 'Alcohol'}
 if not supplied, reads $qim_ignoreOld}
 
 \item{lazy}{recalculate the diabetes contact list?}
+
+\item{store}{keep result in self$qim_15plus_report}
 }
 \value{
 dataframe of Patient (name), demographics, measures (done or not),
- Count (n), and proportion
+ Count (n), Proportion, Proportion_Demographic
 }
 \description{
 Filtered by date, and chosen clinicians

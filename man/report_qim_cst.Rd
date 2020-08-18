@@ -16,7 +16,8 @@ report_qim_cst(
   max_date = NA,
   demographic = NA,
   ignoreOld = NA,
-  lazy = FALSE
+  lazy = FALSE,
+  store = TRUE
 )
 }
 \arguments{
@@ -48,9 +49,12 @@ list of available demographic groups in $qim_demographicGroupings}
 if not supplied, reads $qim_ignoreOld}
 
 \item{lazy}{recalculate the diabetes contact list?}
+
+\item{store}{keep result in self$qim_cst_report}
 }
 \value{
-dataframe of Patient (name), demographics, measure (done or not), Count, Proportion
+dataframe of Patient (name), demographics, measure (done or not), Count, Proportion,
+  Proportion_Demographic
 }
 \description{
 Filtered by date, and chosen clinicians

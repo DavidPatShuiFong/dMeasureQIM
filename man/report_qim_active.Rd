@@ -15,7 +15,8 @@ report_qim_active(
   max_date = NA,
   contact_type = NA,
   demographic = NA,
-  lazy = FALSE
+  lazy = FALSE,
+  store = TRUE
 )
 }
 \arguments{
@@ -44,9 +45,11 @@ if not supplied, reads $qim_demographicGroup
 list of available demographic groups in $qim_demographicGroupings}
 
 \item{lazy}{recalculate the diabetes contact list?}
+
+\item{store}{keep result in self$qim_active_report?}
 }
 \value{
-dataframe of Patient (name), demographics, Count, Proportion
+dataframe of Patient (name), demographics, Count, Proportion, Proportion_Demographic
 }
 \description{
 Filtered by date, and chosen clinicians
