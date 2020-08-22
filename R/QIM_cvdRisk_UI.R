@@ -122,7 +122,8 @@ qim_cvdRisk <- function(input, output, session, dMQIM, contact) {
         } %>>%
           dplyr::mutate(
             CholHDLRatio = round(CholHDLRatio, 3),
-            frisk = round(frisk, 3)
+            frisk = round(frisk, 3),
+            frisk10 = round(frisk10, 3)
           )
         return(datatable_styled(
           df,
@@ -168,11 +169,12 @@ qim_cvdRisk <- function(input, output, session, dMQIM, contact) {
             CholesterolDate, Cholesterol, HDL, LDL,
             Triglycerides, CholHDLRatio,
             BPDate, BP,
-            frisk, friskHI
+            frisk, frisk10, friskHI
           ) %>>%
           dplyr::mutate(
             CholHDLRatio = round(CholHDLRatio, 3),
-            frisk = round(frisk, 3)
+            frisk = round(frisk, 3),
+            frisk10 = round(frisk10, 3),
           ) %>>%
           # re-orders the fields
           {

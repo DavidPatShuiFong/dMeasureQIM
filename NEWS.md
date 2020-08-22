@@ -1,5 +1,11 @@
 Changelog
 
+# version 0.4.1
+
+## Changes
+
+* add 10-year cardiovascular (CVD) risk `frisk10` to QIM 08.
+
 # version 0.4.0
 18th August 2020
 
