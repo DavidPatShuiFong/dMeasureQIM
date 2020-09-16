@@ -249,9 +249,9 @@ qim_reportCharter_UI <- function(id) {
 qim_reportCharter <- function(input, output, session, dMQIM, report) {
   ns <- session$ns
 
-  options(shiny.maxRequestSize = 30*1024^2)
+  options(shiny.maxRequestSize = 300*1024^2)
   # the file limit size is normally 5 megabytes for upload
-  # this increases to 30 megabytes
+  # this increases to 300 megabytes
 
   empty_result <- data.frame(
     QIM = character(),
