@@ -117,3 +117,103 @@ getReport <- function(
 
   return(qim_report)
 }
+
+
+#' writeReportJSON
+#'
+#' @md
+#'
+#' @description write reports to PIP QI Eligible Data SEt JSON Specification 1.1
+#'
+#' @param d data
+#' @param date_to chosen end date
+#' @param author_id identifier from source software of the authenticated user who
+#'   initiated the extract
+#' @param practice_id an identifier for the practice
+#' @param product the name of the software that produced the file
+#' @param report Must be "PIP QI"
+#' @param version version number of the specification used to generate the JSON
+#' @param small_cell_suppression 'suppress' (return zero, or remove
+#'   row entirely) if count is less than 5. helps de-identifiability
+#' @param indigenous_aggregate simplify indigenous groups to
+#'   INDIGENOUS, NON-INDIGENOUS, NOT STATED
+#' @param sex_aggregate simplify sex groups to
+#'   MALE, FEMALE, INDETERMINATE/INTERSEX/UNSPECIFIED/NOT STATED/INADEQUATELY DESCRIBED
+#' @export
+writeReportJSON <- function(
+  d, date_to,
+  author_id = "bpsrawdata",
+  practice_id,
+  product = "GPstat",
+  report = "PIP QI",
+  version = "1.1",
+  small_cell_suppression = TRUE,
+  indigenous_aggregate = TRUE, sex_aggregate = TRUE) {
+
+  options(digits.secs = 3) # print second component to 3 decimal places
+  x <- paste(date_to, "22:59:59.999") # one hour before midnight
+  attr(x, "tzone") <- "UTC" # convert from local timezone to UTC
+  extraction_datetime <- as.character(x)
+
+  d <- d %>>%
+    dplyr::filter(DateTo == date_to) %>>% # just keep the required date information
+    dplyr::select(QIM, Age10, Sex, Indigenous, DiabetesType, State, n)
+
+  if (indigenous_aggregate) {
+    d <- d %>>%
+      dplyr::mutate(
+        Indigenous = dplyr::if_else(
+          Indigenous %in% c("Aboriginal", "Both Aboriginal and Torres Strait Islander", "Torres Strait Islander"),
+          "INDIGENOUS", # all indigenous groups combined to 'INDIGENOUS'
+          Indigenous
+        )
+      ) %>>%
+      dplyr::mutate(
+        Indigenous = dplyr::if_else(
+          Indigenous == "Neither",
+          "NON-INDIGENOUS", # re-code 'not indigenous'
+          Indigenous
+        )
+      ) # another possible option is 'Not stated'
+  }
+
+  if (sex_aggregate) {
+    d <- d %>>%
+      dplyr::mutate(
+        Sex = dplyr::if_else(
+          Sex %in% c("Not stated", "X"), # these two are combined
+          "INDETERMINATE/INTERSEX/UNSPECIFIED/NOT STATED/INADEQUATELY DESCRIBED",
+          Sex
+        )
+      )
+  }
+
+  if (small_cell_suppression) {
+    # 'suppress' small groups to zero. helps with de-identification
+    d <- d %>>% dplyr::mutate(
+      n = dplyr::if_else(
+        n < 5,
+        0L, # force to integer
+        n
+      )
+    )
+  }
+
+  d_denominators <- d %>>%
+    dplyr::group_by(QIM, Age10, Sex, Indigenous, DiabetesType) %>>%
+    dplyr::summarise(denominator = sum(n)) %>>% # the total in each sub-group
+    dplyr::ungroup()
+
+  d <- d %>>%
+    dplyr::left_join(
+      d_denominators,
+      by = c("QIM", "Age10", "Sex", "Indigenous", "DiabetesType")
+    ) %>>% # add denominators to each group
+    dplyr::filter(State != "FALSE") %>>% # these are excluded from the report!
+    dplyr::rename(sex = Sex, age_group = Age10, indigenous_status = Indigenous,
+                  numerator = n) %>>%
+    dplyr::mutate(sex = toupper(sex), indigenous_status = toupper(indigenous_status))
+
+  return(jsonlite::toJSON(d, pretty = TRUE))
+
+}

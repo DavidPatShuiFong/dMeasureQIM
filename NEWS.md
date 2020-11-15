@@ -1,5 +1,12 @@
 Changelog
 
+# version 0.5
+15th November 2020
+
+## New
+
+* PIP QI Eligible Data set JSON specification version 1.1 export 
+
 # version 0.4.1
 16th September 2020
 

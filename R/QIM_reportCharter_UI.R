@@ -871,7 +871,7 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
           "monokai" = {highcharter::hc_theme_monokai()},
           "tufte" = {highcharter::hc_theme_tufte()}
         )
-        hc <- hc %>>% highcharter::hc_add_theme(hc_theme)
+        hc <- hc %>>% highcharter::hc_add_theme(hc_thm = hc_theme)
       }
 
       rendered_chart(hc)
@@ -948,7 +948,7 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
 
       inFile <- input$loadCSVFile
 
-      data <- read.csv(
+      d <- read.csv(
         inFile$datapath,
         stringsAsFactors = FALSE,
         na.strings = "NA"
@@ -959,7 +959,7 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
           c("QIM", "Age10", "Sex", "Indigenous",
             "DiabetesType", "Measure", "State", "n",
             "DateFrom", "DateTo")
-          %in% names(data)
+          %in% names(d)
         )
       ) {
         # absolute minimum columns are not present
@@ -973,14 +973,14 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
         )
       } else {
         # all required columns are present
-        data <- data %>>%
+        d <- d %>>%
           dplyr::mutate(
             Age10 = as.numeric(Age10),
             n = as.numeric(n),
             DateFrom = as.Date(DateFrom),
             DateFrom = as.Date(DateTo),
           )
-        report_values(data)
+        report_values(d)
       }
     })
 
