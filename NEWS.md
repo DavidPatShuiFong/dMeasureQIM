@@ -1,7 +1,7 @@
 Changelog
 
 # version 0.5
-15th November 2020
+22nd November 2020
 
 ## New
 
