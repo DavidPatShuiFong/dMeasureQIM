@@ -370,7 +370,64 @@ writeReportJSON <- function(
       ) %>>%
       dplyr::select(sex, age_group, indigenous_status,
                     influenza_immun_status, numerator, denominator)
+  }
 
+  if ("QIM 06" %in% qim_measures) {
+    qim_df[["qim06-influenza_copd"]] <- d %>>%
+      dplyr::filter(QIM == "QIM 06") %>>%
+      dplyr::mutate(influenza_immun_status = "IMMUNISED") %>>%
+      dplyr::select(sex, age_group, indigenous_status,
+                    influenza_immun_status, numerator, denominator)
+  }
+
+  if ("QIM 07" %in% qim_measures) {
+    qim_df[["qim07-alcohol"]] <- d %>>%
+      dplyr::filter(QIM == "QIM 07") %>>%
+      dplyr::mutate(alcohol_status = "RECORDED") %>>%
+      dplyr::select(sex, age_group, indigenous_status,
+                    alcohol_status, numerator, denominator)
+  }
+
+  if ("QIM 08" %in% qim_measures) {
+    qim_df[["qim08-cvd"]] <- d %>>%
+      dplyr::filter(QIM == "QIM 08") %>>%
+      dplyr::mutate(cvd_risk = "RECORDED") %>>%
+      dplyr::select(sex, age_group, indigenous_status,
+                    cvd_risk, numerator, denominator)
+  }
+
+  if ("QIM 09" %in% qim_measures) {
+    qim_df[["qim09-cervical"]] <- d %>>%
+      dplyr::filter(QIM == "QIM 09") %>>%
+      dplyr::mutate(cervical_screen_status = "SCREENED") %>>%
+      dplyr::select(sex, age_group, indigenous_status,
+                    cervical_screen_status, numerator, denominator)
+  }
+
+  if ("QIM 10" %in% qim_measures) {
+
+    d_subset <- d %>>%
+      dplyr::filter(QIM == "QIM 10") %>>%
+      dplyr::mutate(bp_result = "RECORDED") %>>%
+      dplyr::select(sex, age_group, indigenous_status, diabetes_type,
+                    bp_result, numerator, denominator)
+
+    qim_df[["qim10-diabetes_bp"]] <- d_subset %>>%
+      dplyr::group_by(sex, age_group, indigenous_status,
+                      bp_result) %>>%
+      # this QIM does not actually have diabetes sub-groups
+      dplyr::summarize(numerator = sum(numerator)) %>>%
+      dplyr::ungroup() %>>%
+      dplyr::left_join(
+        d_subset %>>%
+          dplyr::group_by(sex, age_group, indigenous_status) %>>%
+          dplyr::summarize(denominator = sum(denominator)) %>>%
+          # denominator includes those who are not immunized
+          dplyr::ungroup(),
+        by = c("sex", "age_group", "indigenous_status")
+      ) %>>%
+      dplyr::select(sex, age_group, indigenous_status,
+                    bp_result, numerator, denominator)
   }
 
   return(jsonlite::toJSON(qim_df, pretty = TRUE))
