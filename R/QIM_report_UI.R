@@ -109,7 +109,7 @@ qim_reportCreator_UI <- function(id) {
       shiny::column(
         width = 4,
         shiny::wellPanel(
-          style = "height:23em",
+          style = "height:30em",
           shiny::tags$h5("Create report"),
           shiny::fluidRow(
             shiny::column(
@@ -133,24 +133,6 @@ qim_reportCreator_UI <- function(id) {
             )
           ),
           shiny::hr(),
-          shiny::textInput(
-            inputId = ns("filename"),
-            label = "Name for file",
-            value = paste0("QIMReport-", Sys.Date(), ".csv")
-          ),
-          shinyjs::disabled(
-            # enable when there is something to save...
-            shiny::downloadButton(
-              outputId = ns("download_button"),
-              label = "Download"
-            )
-          )
-        )
-      ),
-      shiny::column(
-        width = 4,
-        shiny::wellPanel(
-          style = "height:23em",
           shiny::tags$h5("Number of reports"),
           shiny::fluidRow(
             shiny::column(
@@ -182,6 +164,42 @@ qim_reportCreator_UI <- function(id) {
             )
           )
         )
+      ),
+      shiny::column(
+        width = 4,
+        shiny::wellPanel(
+          style = "height:30em",
+          shiny::tags$h5("Report store/save"),
+          shiny::hr(),
+          shiny::tags$h6("CSV 'spreadsheet' download"),
+          shiny::textInput(
+            inputId = ns("filename"),
+            label = "Name for CSV file",
+            value = paste0("QIMReport-", Sys.Date(), ".csv")
+          ),
+          shinyjs::disabled(
+            # enable when there is something to save...
+            shiny::downloadButton(
+              outputId = ns("download_button"),
+              label = "Download"
+            )
+          ),
+          shiny::hr(),
+          shiny::tags$h6("JSON 'PIP' download"),
+          shiny::textInput(
+            inputId = ns("json_filename"),
+            label = "Name for JSON file",
+            value = paste0("QIMReport-", Sys.Date(), ".json")
+          ),
+          shinyjs::disabled(
+            # enable when there is something to save...
+            shiny::actionButton(
+              inputId = ns("json_download_button"),
+              label = "Download",
+              icon = icon("download")
+            )
+          )
+        )
       )
     )
   )
@@ -194,6 +212,8 @@ qim_reportCreator_UI <- function(id) {
 #' @param session as required by Shiny modules
 #' @param dMQIM dMeasure QIM R6 object
 #'  access to appointments lists, results, correspondence and EMR database
+#' @param report a list returned by qim_reportCharter
+#'   should contain $report_values(), which is a dataframe
 #'
 #' @return list with following components
 #' \describe{
@@ -201,7 +221,7 @@ qim_reportCreator_UI <- function(id) {
 #' }
 #'
 #' @export
-qim_reportCreator <- function(input, output, session, dMQIM) {
+qim_reportCreator <- function(input, output, session, dMQIM, report) {
   ns <- session$ns
 
   empty_result <- data.frame(
@@ -224,8 +244,10 @@ qim_reportCreator <- function(input, output, session, dMQIM) {
       if (is.null(report_values()) || nrow(report_values()) == 0) {
         # disable download button if nothing to download
         shinyjs::disable("download_button")
+        shinyjs::disable("json_download_button")
       } else {
         shinyjs::enable("download_button")
+        shinyjs::enable("json_download_button")
       }
     }
   )
@@ -492,6 +514,64 @@ qim_reportCreator <- function(input, output, session, dMQIM) {
     }
   )
 
+  # if json_download_button clicked,
+  # then ask various questions about which data to export
+  # and author/practice ID and small cell suppression
+  shiny::observeEvent(
+    input$json_download_button,
+    ignoreInit = TRUE, {
+      unique_DateTo <- unique(report_values()$DateTo)
+
+      shiny::showModal(shiny::modalDialog(
+        title = "Practice Incentive Program JSON attributes",
+        shiny::selectInput(
+          inputId = ns("json_DateTo"),
+          label = "'Date To' of period",
+          choices = unique_DateTo
+        ),
+        shiny::textInput(
+          inputId = ns("json_author_id"),
+          label = "Author ID",
+          value = "bpsrawdata"
+        ),
+        shiny::textInput(
+          inputId = ns("json_practice_id"),
+          label = "Practice ID",
+          value = "",
+          placeholder = "Your practice ID"
+        ),
+        shiny::checkboxInput(
+          inputId = ns("json_small_cell_suppression"),
+          label = "Small cell suppression",
+          value = TRUE
+        ),
+        easyClose = FALSE,
+        footer = shiny::tagList(
+          shiny::modalButton("Cancel"),
+          shiny::actionButton(inputId = ns("json_ok"), "Save JSON")
+        )
+      ))
+    })
+
+  # if 'Save JSON' button clicked in write JSON modal dialog
+  # then create JSON string and output to file
+  shiny::observeEvent(
+    input$json_ok,
+    ignoreInit = TRUE, ignoreNULL = TRUE, {
+
+      json_string <- writeReportJSON(
+        d = report_values(),
+        date_to = input$json_DateTo,
+        author_id = input$json_author_id,
+        practice_id = input$json_practice_id,
+        small_cell_suppression = input$json_small_cell_suppression,
+      )
+      write(json_string, file = input$json_filename)
+
+      shiny::removeModal()
+    }
+  )
+
   # standard QIM report is generated from
   # 3 services within a 24-month period
   #
@@ -586,6 +666,28 @@ qim_reportCreator <- function(input, output, session, dMQIM) {
           timeOut = 10000
         )
         n_report_warning(TRUE)
+      }
+    }
+  )
+
+  # if report
+  shiny::observeEvent(
+    report$report_values(),
+    ignoreInit = TRUE, ignoreNULL = TRUE, {
+      shiny::req(report$report_values())
+
+      if (nrow(report$report_values()) > 0) {
+        report_values(
+          report$report_values() %>>%
+            dplyr::mutate(DateTo = as.character(DateTo))
+          # co-erce to character (instead of numeric)
+        )
+        # copy the dataframe
+        shinytoastr::toastr_info(
+          "Copying report to Report Creator, can be saved as JSON",
+          closeButton = TRUE,
+          position = "bottom-left", title = "PIP report"
+        )
       }
     }
   )

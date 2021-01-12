@@ -42,6 +42,7 @@ NULL
 #'   row entirely) if count is less than 5.
 #' @param include_all_demographic_groups include all possible
 #'   demographic groups/subgroups, even if there was no count
+#'
 #' @export
 getReport <- function(
   report_function,
@@ -123,7 +124,7 @@ getReport <- function(
 #'
 #' @md
 #'
-#' @description write reports to PIP QI Eligible Data SEt JSON Specification 1.1
+#' @description write reports to PIP QI Eligible Data Set JSON Specification 1.1
 #'
 #' @param d data
 #' @param date_to chosen end date
@@ -139,6 +140,9 @@ getReport <- function(
 #'   INDIGENOUS, NON-INDIGENOUS, NOT STATED
 #' @param sex_aggregate simplify sex groups to
 #'   MALE, FEMALE, INDETERMINATE/INTERSEX/UNSPECIFIED/NOT STATED/INADEQUATELY DESCRIBED
+#'
+#' @return JSON string
+#'
 #' @export
 writeReportJSON <- function(
   d, date_to,
@@ -201,7 +205,7 @@ writeReportJSON <- function(
       n = dplyr::if_else(
         n < 5,
         0L, # force to integer
-        n
+        as.integer(n) # force to integer
       )
     )
   }

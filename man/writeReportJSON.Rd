@@ -42,6 +42,9 @@ INDIGENOUS, NON-INDIGENOUS, NOT STATED}
 \item{sex_aggregate}{simplify sex groups to
 MALE, FEMALE, INDETERMINATE/INTERSEX/UNSPECIFIED/NOT STATED/INADEQUATELY DESCRIBED}
 }
+\value{
+JSON string
+}
 \description{
-write reports to PIP QI Eligible Data SEt JSON Specification 1.1
+write reports to PIP QI Eligible Data Set JSON Specification 1.1
 }

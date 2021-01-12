@@ -243,7 +243,10 @@ qim_reportCharter_UI <- function(id) {
 #' @param report a list returned by qim_reportCreator
 #'   should contain $report_values(), which is a dataframe
 #'
-#' @return none
+#' @return list with following components
+#' \describe{
+#'  \item{report_values}{dataframe of report}
+#' }
 #'
 #' @export
 qim_reportCharter <- function(input, output, session, dMQIM, report) {
@@ -913,30 +916,33 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
       shiny::req(report$report_values())
 
       if (nrow(report$report_values()) > 0) {
-        shiny::showModal(
-          shiny::modalDialog(
-            title = "Detected report creation",
-            "Use created report in 'Report Charter'?",
-            easyClose = FALSE,
-            footer = shiny::tagList(
-              shiny::modalButton("Cancel"),
-              shiny::actionButton(ns("ok_copy_report"), "OK")
+        report <- report$report_values() %>>%
+          dplyr::mutate(DateTo = as.character(DateTo))
+        # co-erce to character (instead of numeric)
+
+        if (nrow(report_values()) == 0 || !identical(report, report_values())) {
+          # not an identical report
+          shiny::showModal(
+            shiny::modalDialog(
+              title = "Detected report creation",
+              "Use created report in 'Report Charter'?",
+              easyClose = FALSE,
+              footer = shiny::tagList(
+                shiny::modalButton("Cancel"),
+                shiny::actionButton(ns("ok_copy_report"), "OK")
+              )
             )
           )
-        )
 
-        shiny::observeEvent(
-          input$ok_copy_report,
-          ignoreInit = TRUE, ignoreNULL = TRUE, {
-            report_values(
-              report$report_values() %>>%
-                dplyr::mutate(DateTo = as.character(DateTo))
-              # co-erce to character (instead of numeric)
-            )
-            # copy the dataframe
-            shiny::removeModal()
-          }
-        )
+          shiny::observeEvent(
+            input$ok_copy_report,
+            ignoreInit = TRUE, ignoreNULL = TRUE, {
+              report_values(report)
+              # copy the dataframe
+              shiny::removeModal()
+            }
+          )
+        }
       }
     }
   )
@@ -1083,4 +1089,6 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
     }
   )
 
+  return(list(report_values = reactive({report_values()})))
+  # this may be used by reportCreator
 }
