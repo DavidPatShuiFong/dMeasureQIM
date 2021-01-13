@@ -172,16 +172,15 @@ qim_reportCreator_UI <- function(id) {
           shiny::tags$h5("Report store/save"),
           shiny::hr(),
           shiny::tags$h6("CSV 'spreadsheet' download"),
-          shiny::textInput(
-            inputId = ns("filename"),
-            label = "Name for CSV file",
-            value = paste0("QIMReport-", Sys.Date(), ".csv")
-          ),
+          shiny::icon("download"),
           shinyjs::disabled(
             # enable when there is something to save...
-            shiny::downloadButton(
-              outputId = ns("download_button"),
-              label = "Download"
+            shinyFiles::shinySaveButton(
+              id = ns("csv_filename"),
+              label = "Download CSV file",
+              title = "Download CSV file - choose CSV filename",
+              filename = paste0("QIMReport-", Sys.Date()),
+              filetype = list(spreadsheet = c('csv'))
             )
           ),
           shiny::hr(),
@@ -224,6 +223,12 @@ qim_reportCreator_UI <- function(id) {
 qim_reportCreator <- function(input, output, session, dMQIM, report) {
   ns <- session$ns
 
+  volumes <- c(Home = fs::path_home(), shinyFiles::getVolumes()())
+  shinyFiles::shinyFileSave(
+    input, id = "csv_filename", roots = volumes, session = session,
+    restrictions = system.file(package = "base")
+  )
+
   empty_result <- data.frame(
     QIM = character(),
     Age10 = numeric(),
@@ -243,10 +248,10 @@ qim_reportCreator <- function(input, output, session, dMQIM, report) {
     ignoreInit = FALSE, ignoreNULL = FALSE, {
       if (is.null(report_values()) || nrow(report_values()) == 0) {
         # disable download button if nothing to download
-        shinyjs::disable("download_button")
+        shinyjs::disable("csv_filename")
         shinyjs::disable("json_download_button")
       } else {
-        shinyjs::enable("download_button")
+        shinyjs::enable("csv_filename")
         shinyjs::enable("json_download_button")
       }
     }
@@ -505,12 +510,17 @@ qim_reportCreator <- function(input, output, session, dMQIM, report) {
       }
     })
 
-  output$download_button <- shiny::downloadHandler(
-    filename = function() {
-      input$filename
-    },
-    content = function(file) {
-      write.csv(report_values(), file = file, row.names = FALSE)
+  shiny::observeEvent(
+    input$csv_filename,
+    ignoreInit = TRUE, ignoreNULL = TRUE, {
+      shiny::req(input$csv_filename) # can't be NULL/empty
+
+      datapath <- shinyFiles::parseSavePath(volumes, input$csv_filename) %>>%
+        dplyr::pull(datapath)
+      if (length(datapath)) {
+        # if length 0 (i.e. datapath == character(0), then return empty string)
+        write.csv(report_values(), file = datapath, row.names = FALSE)
+      }
     }
   )
 
