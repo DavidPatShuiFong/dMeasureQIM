@@ -185,17 +185,15 @@ qim_reportCreator_UI <- function(id) {
           ),
           shiny::hr(),
           shiny::tags$h6("JSON 'PIP' download"),
-          shiny::textInput(
-            inputId = ns("json_filename"),
-            label = "Name for JSON file",
-            value = paste0("QIMReport-", Sys.Date(), ".json")
-          ),
+          shiny::icon("download"),
           shinyjs::disabled(
             # enable when there is something to save...
-            shiny::actionButton(
-              inputId = ns("json_download_button"),
-              label = "Download",
-              icon = icon("download")
+            shinyFiles::shinySaveButton(
+              id = ns("json_filename"),
+              label = "Download JSON file",
+              title = "Download JSON file - choose JSON filename",
+              filename = paste0("QIMReport-", Sys.Date()),
+              filetype = list(json = c('json'))
             )
           )
         )
@@ -228,6 +226,10 @@ qim_reportCreator <- function(input, output, session, dMQIM, report) {
     input, id = "csv_filename", roots = volumes, session = session,
     restrictions = system.file(package = "base")
   )
+  shinyFiles::shinyFileSave(
+    input, id = "json_filename", roots = volumes, session = session,
+    restrictions = system.file(package = "base")
+  )
 
   empty_result <- data.frame(
     QIM = character(),
@@ -249,10 +251,10 @@ qim_reportCreator <- function(input, output, session, dMQIM, report) {
       if (is.null(report_values()) || nrow(report_values()) == 0) {
         # disable download button if nothing to download
         shinyjs::disable("csv_filename")
-        shinyjs::disable("json_download_button")
+        shinyjs::disable("json_filename")
       } else {
         shinyjs::enable("csv_filename")
-        shinyjs::enable("json_download_button")
+        shinyjs::enable("json_filename")
       }
     }
   )
@@ -524,43 +526,51 @@ qim_reportCreator <- function(input, output, session, dMQIM, report) {
     }
   )
 
-  # if json_download_button clicked,
+  # if json_filename clicked,
   # then ask various questions about which data to export
   # and author/practice ID and small cell suppression
   shiny::observeEvent(
-    input$json_download_button,
-    ignoreInit = TRUE, {
+    input$json_filename,
+    ignoreInit = TRUE, ignoreNULL = TRUE, {
+      shiny::req(input$json_filename) # can't be NULL/empty
+      datapath <- shinyFiles::parseSavePath(volumes, input$json_filename) %>>%
+        dplyr::pull(datapath)
+
       unique_DateTo <- unique(report_values()$DateTo)
 
-      shiny::showModal(shiny::modalDialog(
-        title = "Practice Incentive Program JSON attributes",
-        shiny::selectInput(
-          inputId = ns("json_DateTo"),
-          label = "'Date To' of period",
-          choices = unique_DateTo
-        ),
-        shiny::textInput(
-          inputId = ns("json_author_id"),
-          label = "Author ID",
-          value = "bpsrawdata"
-        ),
-        shiny::textInput(
-          inputId = ns("json_practice_id"),
-          label = "Practice ID",
-          value = "",
-          placeholder = "Your practice ID"
-        ),
-        shiny::checkboxInput(
-          inputId = ns("json_small_cell_suppression"),
-          label = "Small cell suppression",
-          value = TRUE
-        ),
-        easyClose = FALSE,
-        footer = shiny::tagList(
-          shiny::modalButton("Cancel"),
-          shiny::actionButton(inputId = ns("json_ok"), "Save JSON")
-        )
-      ))
+      if (length(datapath)) {
+        # if length 0 (i.e. datapath == character(0), then return empty string)
+
+        shiny::showModal(shiny::modalDialog(
+          title = "Practice Incentive Program JSON attributes",
+          shiny::selectInput(
+            inputId = ns("json_DateTo"),
+            label = "'Date To' of period",
+            choices = unique_DateTo
+          ),
+          shiny::textInput(
+            inputId = ns("json_author_id"),
+            label = "Author ID",
+            value = "bpsrawdata"
+          ),
+          shiny::textInput(
+            inputId = ns("json_practice_id"),
+            label = "Practice ID",
+            value = "",
+            placeholder = "Your practice ID"
+          ),
+          shiny::checkboxInput(
+            inputId = ns("json_small_cell_suppression"),
+            label = "Small cell suppression",
+            value = TRUE
+          ),
+          easyClose = FALSE,
+          footer = shiny::tagList(
+            shiny::modalButton("Cancel"),
+            shiny::actionButton(inputId = ns("json_ok"), "Save JSON")
+          )
+        ))
+      }
     })
 
   # if 'Save JSON' button clicked in write JSON modal dialog
@@ -569,6 +579,9 @@ qim_reportCreator <- function(input, output, session, dMQIM, report) {
     input$json_ok,
     ignoreInit = TRUE, ignoreNULL = TRUE, {
 
+      datapath <- shinyFiles::parseSavePath(volumes, input$json_filename) %>>%
+        dplyr::pull(datapath)
+
       json_string <- writeReportJSON(
         d = report_values(),
         date_to = input$json_DateTo,
@@ -576,7 +589,7 @@ qim_reportCreator <- function(input, output, session, dMQIM, report) {
         practice_id = input$json_practice_id,
         small_cell_suppression = input$json_small_cell_suppression,
       )
-      write(json_string, file = input$json_filename)
+      write(json_string, file = datapath)
 
       shiny::removeModal()
     }
