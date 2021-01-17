@@ -33,8 +33,10 @@ initiated the extract}
 
 \item{version}{version number of the specification used to generate the JSON}
 
-\item{small_cell_suppression}{'suppress' (return zero, or remove
-row entirely) if count is less than 5. helps de-identifiability}
+\item{small_cell_suppression}{'suppress' (return NA, or remove
+row entirely) if count is denominator less than 5 OR numerator 2 or less
+OR difference between numerator and denomiator is less than or equal to 2.
+helps de-identifiability}
 
 \item{indigenous_aggregate}{simplify indigenous groups to
 INDIGENOUS, NON-INDIGENOUS, NOT STATED}

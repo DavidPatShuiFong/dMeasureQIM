@@ -134,8 +134,10 @@ getReport <- function(
 #' @param product the name of the software that produced the file
 #' @param report Must be "PIP QI"
 #' @param version version number of the specification used to generate the JSON
-#' @param small_cell_suppression 'suppress' (return zero, or remove
-#'   row entirely) if count is less than 5. helps de-identifiability
+#' @param small_cell_suppression 'suppress' (return NA, or remove
+#'   row entirely) if count is denominator less than 5 OR numerator 2 or less
+#'   OR difference between numerator and denomiator is less than or equal to 2.
+#'   helps de-identifiability
 #' @param indigenous_aggregate simplify indigenous groups to
 #'   INDIGENOUS, NON-INDIGENOUS, NOT STATED
 #' @param sex_aggregate simplify sex groups to
@@ -201,13 +203,28 @@ writeReportJSON <- function(
 
   if (small_cell_suppression) {
     # 'suppress' small groups to zero. helps with de-identification
-    d <- d %>>% dplyr::mutate(
-      n = dplyr::if_else(
-        n < 5,
-        0L, # force to integer
-        as.integer(n) # force to integer
+    suppress_small_cells <- function(d) {
+      return(
+        d %>>%
+          dplyr::mutate(
+            numerator = dplyr::if_else(
+              denominator != 0 &
+                (denominator < 5 |
+                   numerator <= 2 | (denominator - numerator) <= 2),
+              # potentially identifying information if group size < 5
+              # or numerator is 2 or less, or very close to the denominator
+              # avoid 'suppression' if the denominator is zero!
+              as.integer(NA),
+              as.integer(numerator)
+            )
+          )
       )
-    )
+    }
+  } else {
+    suppress_small_cells <- function(d) {
+      # no suppression, just return the current dataframe
+      return(d)
+    }
   }
 
   d_denominators <- d %>>%
@@ -249,7 +266,8 @@ writeReportJSON <- function(
       dplyr::filter(QIM == "QIM 01") %>>%
       dplyr::mutate(hba1c_result = "RECORDED") %>>%
       dplyr::select(sex, age_group, indigenous_status, diabetes_type,
-                    hba1c_result, numerator, denominator)
+                    hba1c_result, numerator, denominator) %>>%
+      suppress_small_cells()
   }
 
   if ("QIM 02" %in% qim_measures) {
@@ -297,7 +315,8 @@ writeReportJSON <- function(
           dplyr::ungroup() %>>%
           dplyr::select(sex, age_group, indigenous_status, denominator),
         by = c("sex", "age_group", "indigenous_status")
-      )
+      ) %>>%
+      suppress_small_cells()
   }
 
   if ("QIM 03" %in% qim_measures) {
@@ -339,7 +358,8 @@ writeReportJSON <- function(
           dplyr::ungroup() %>>%
           dplyr::select(sex, age_group, indigenous_status, denominator),
         by = c("sex", "age_group", "indigenous_status")
-      )
+      ) %>>%
+      suppress_small_cells()
   }
 
   if ("QIM 04" %in% qim_measures) {
@@ -347,7 +367,8 @@ writeReportJSON <- function(
       dplyr::filter(QIM == "QIM 04") %>>%
       dplyr::mutate(influenza_immun_status = "IMMUNISED") %>>%
       dplyr::select(sex, age_group, indigenous_status,
-                    influenza_immun_status, numerator, denominator)
+                    influenza_immun_status, numerator, denominator) %>>%
+      suppress_small_cells()
   }
 
   if ("QIM 05" %in% qim_measures) {
@@ -373,7 +394,8 @@ writeReportJSON <- function(
         by = c("sex", "age_group", "indigenous_status")
       ) %>>%
       dplyr::select(sex, age_group, indigenous_status,
-                    influenza_immun_status, numerator, denominator)
+                    influenza_immun_status, numerator, denominator) %>>%
+      suppress_small_cells()
   }
 
   if ("QIM 06" %in% qim_measures) {
@@ -381,7 +403,8 @@ writeReportJSON <- function(
       dplyr::filter(QIM == "QIM 06") %>>%
       dplyr::mutate(influenza_immun_status = "IMMUNISED") %>>%
       dplyr::select(sex, age_group, indigenous_status,
-                    influenza_immun_status, numerator, denominator)
+                    influenza_immun_status, numerator, denominator) %>>%
+      suppress_small_cells()
   }
 
   if ("QIM 07" %in% qim_measures) {
@@ -389,7 +412,8 @@ writeReportJSON <- function(
       dplyr::filter(QIM == "QIM 07") %>>%
       dplyr::mutate(alcohol_status = "RECORDED") %>>%
       dplyr::select(sex, age_group, indigenous_status,
-                    alcohol_status, numerator, denominator)
+                    alcohol_status, numerator, denominator) %>>%
+      suppress_small_cells()
   }
 
   if ("QIM 08" %in% qim_measures) {
@@ -397,7 +421,8 @@ writeReportJSON <- function(
       dplyr::filter(QIM == "QIM 08") %>>%
       dplyr::mutate(cvd_risk = "RECORDED") %>>%
       dplyr::select(sex, age_group, indigenous_status,
-                    cvd_risk, numerator, denominator)
+                    cvd_risk, numerator, denominator) %>>%
+      suppress_small_cells()
   }
 
   if ("QIM 09" %in% qim_measures) {
@@ -405,7 +430,8 @@ writeReportJSON <- function(
       dplyr::filter(QIM == "QIM 09") %>>%
       dplyr::mutate(cervical_screen_status = "SCREENED") %>>%
       dplyr::select(sex, age_group, indigenous_status,
-                    cervical_screen_status, numerator, denominator)
+                    cervical_screen_status, numerator, denominator) %>>%
+      suppress_small_cells()
   }
 
   if ("QIM 10" %in% qim_measures) {
@@ -431,9 +457,10 @@ writeReportJSON <- function(
         by = c("sex", "age_group", "indigenous_status")
       ) %>>%
       dplyr::select(sex, age_group, indigenous_status,
-                    bp_result, numerator, denominator)
+                    bp_result, numerator, denominator) %>>%
+      suppress_small_cells()
   }
 
-  return(jsonlite::toJSON(qim_df, pretty = TRUE))
-
+  return(jsonlite::toJSON(qim_df, na = "string", pretty = TRUE))
+  # 'NA' values have been small cell suppressed
 }

@@ -109,7 +109,7 @@ qim_reportCreator_UI <- function(id) {
       shiny::column(
         width = 4,
         shiny::wellPanel(
-          style = "height:30em",
+          style = "height:25em",
           shiny::tags$h5("Create report"),
           shiny::fluidRow(
             shiny::column(
@@ -168,7 +168,7 @@ qim_reportCreator_UI <- function(id) {
       shiny::column(
         width = 4,
         shiny::wellPanel(
-          style = "height:30em",
+          style = "height:25em",
           shiny::tags$h5("Report store/save"),
           shiny::hr(),
           shiny::tags$h6("CSV 'spreadsheet' download"),
