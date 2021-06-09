@@ -68,7 +68,7 @@ NULL
     ),
     GlucoseValue = double(),
     GlucoseUnits = character(),
-    frisk = double(), friskHI = character(),
+    frisk = double(), frisk10 = double(), friskHI = character(),
     stringsAsFactors = FALSE
   )
 )
@@ -315,7 +315,6 @@ list_qim_cvdRisk <- function(dMeasureQIM_obj,
       self$dM$familialHypercholesterolaemia_list(data.frame(InternalID = cvdRiskID, Date = date_to))
     lvhID <-
       self$dM$LVH_list(data.frame(InternalID = cvdRiskID, Date = date_to))
-
     cvdRisk_list <- cvdRisk_list %>>%
       dplyr::mutate(CardiovascularDisease = InternalID %in% cvdID) %>>%
       dplyr::mutate(Diabetes = InternalID %in% diabetesID) %>>%
@@ -406,7 +405,15 @@ list_qim_cvdRisk <- function(dMeasureQIM_obj,
         dplyr::left_join(
           ., framinghamRiskEquation::framingham_riskequation(.),
           by = "InternalID"
-        )
+        ) %>>%
+          dplyr::left_join(
+            framinghamRiskEquation::framingham_riskequation(
+              ., years = 10
+            ) %>>%
+              dplyr::select(InternalID, frisk) %>>%
+              dplyr::rename(frisk10 = frisk),
+            by = "InternalID"
+          )
       } %>>%
       # round age group to nearest 10 years (starting age 5)
       dplyr::select(
@@ -420,7 +427,7 @@ list_qim_cvdRisk <- function(dMeasureQIM_obj,
         BPDate, BP,
         HbA1CDate, HbA1CValue, HbA1CUnits,
         GlucoseDate, GlucoseValue, GlucoseUnits,
-        frisk, friskHI
+        frisk, frisk10, friskHI
       )
 
     if (store) {
@@ -511,7 +518,7 @@ list_qim_cvdRisk <- function(dMeasureQIM_obj,
     ),
     GlucoseValue = double(),
     GlucoseUnits = character(),
-    frisk = double(), friskHI = character(),
+    frisk = double(), frisk10 = double(), friskHI = character(),
     stringsAsFactors = FALSE
   )
 )

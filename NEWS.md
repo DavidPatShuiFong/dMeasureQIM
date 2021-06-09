@@ -1,5 +1,20 @@
 Changelog
 
+# version 0.5.0
+12th January 2021
+
+## New
+
+* PIP QI Eligible Data set JSON specification version 1.1 export 
+
+# version 0.4.1
+16th September 2020
+
+## Changes
+
+* add 10-year cardiovascular (CVD) risk `frisk10` to QIM 08.
+* increase maximum upload filesize to 300 megabytes
+
 # version 0.4.0
 18th August 2020
 

@@ -254,12 +254,14 @@ datatableServer <- function(id, dMQIM, contact) {
     if (contact) {
       # only in 'contact' mode
       callModule(dMeasureQIM::qim_active, "qim_active", dMQIM, contact)
-      report <- callModule(
-        dMeasureQIM::qim_reportCreator, "qim_reportCreator", dMQIM
+      report_creator <- callModule(
+        dMeasureQIM::qim_reportCreator, "qim_reportCreator",
+        dMQIM, report_charter
       )
-      callModule(
+      report_charter <- callModule(
         dMeasureQIM::qim_reportCharter, "qim_reportCharter",
-        dMQIM, report)
+        dMQIM, report_creator
+      )
     }
 
     initial_demographic <- dMQIM$qim_demographicGroup

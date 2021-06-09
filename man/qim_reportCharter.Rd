@@ -20,7 +20,10 @@ access to appointments lists, results, correspondence and EMR database}
 should contain $report_values(), which is a dataframe}
 }
 \value{
-none
+list with following components
+\describe{
+ \item{report_values}{dataframe of report}
+}
 }
 \description{
 Quality Improvement report charter - server

@@ -4,7 +4,7 @@
 \alias{qim_reportCreator}
 \title{Quality Improvement report creation - server}
 \usage{
-qim_reportCreator(input, output, session, dMQIM)
+qim_reportCreator(input, output, session, dMQIM, report)
 }
 \arguments{
 \item{input}{as required by Shiny modules}
@@ -15,6 +15,9 @@ qim_reportCreator(input, output, session, dMQIM)
 
 \item{dMQIM}{dMeasure QIM R6 object
 access to appointments lists, results, correspondence and EMR database}
+
+\item{report}{a list returned by qim_reportCharter
+should contain $report_values(), which is a dataframe}
 }
 \value{
 list with following components

@@ -42,6 +42,7 @@ NULL
 #'   row entirely) if count is less than 5.
 #' @param include_all_demographic_groups include all possible
 #'   demographic groups/subgroups, even if there was no count
+#'
 #' @export
 getReport <- function(
   report_function,
@@ -116,4 +117,350 @@ getReport <- function(
   }
 
   return(qim_report)
+}
+
+
+#' writeReportJSON
+#'
+#' @md
+#'
+#' @description write reports to PIP QI Eligible Data Set JSON Specification 1.1
+#'
+#' @param d data
+#' @param date_to chosen end date
+#' @param author_id identifier from source software of the authenticated user who
+#'   initiated the extract
+#' @param practice_id an identifier for the practice
+#' @param product the name of the software that produced the file
+#' @param report Must be "PIP QI"
+#' @param version version number of the specification used to generate the JSON
+#' @param small_cell_suppression 'suppress' (return NA, or remove
+#'   row entirely) if count is denominator less than 5 OR numerator 2 or less
+#'   OR difference between numerator and denomiator is less than or equal to 2.
+#'   helps de-identifiability
+#' @param indigenous_aggregate simplify indigenous groups to
+#'   INDIGENOUS, NON-INDIGENOUS, NOT STATED
+#' @param sex_aggregate simplify sex groups to
+#'   MALE, FEMALE, INDETERMINATE/INTERSEX/UNSPECIFIED/NOT STATED/INADEQUATELY DESCRIBED
+#'
+#' @return JSON string
+#'
+#' @export
+writeReportJSON <- function(
+  d, date_to,
+  author_id = "bpsrawdata",
+  practice_id,
+  product = "GPstat",
+  report = "PIP QI",
+  version = "1.1",
+  small_cell_suppression = TRUE,
+  indigenous_aggregate = TRUE, sex_aggregate = TRUE) {
+
+  options(digits.secs = 3) # print second component to 3 decimal places
+  x <- paste(date_to, "22:59:59.999") # one hour before midnight
+  attr(x, "tzone") <- "UTC" # convert from local timezone to UTC
+  extraction_datetime <- as.character(x)
+
+  d <- d %>>%
+    dplyr::filter(DateTo == date_to) %>>% # just keep the required date information
+    dplyr::select(QIM, Age10, Sex, Indigenous, DiabetesType, State, n)
+
+  if (indigenous_aggregate) {
+    # INDIGENOUS, NON-INDIGENSOUS or 'Not stated'
+    d <- d %>>%
+      dplyr::mutate(
+        Indigenous = dplyr::if_else(
+          Indigenous %in% c("Aboriginal", "Both Aboriginal and Torres Strait Islander", "Torres Strait Islander"),
+          "INDIGENOUS", # all indigenous groups combined to 'INDIGENOUS'
+          Indigenous
+        )
+      ) %>>%
+      dplyr::mutate(
+        Indigenous = dplyr::if_else(
+          Indigenous == "Neither",
+          "NON-INDIGENOUS", # re-code 'not indigenous'
+          Indigenous
+        )
+      ) %>>%
+      dplyr::group_by(QIM, Age10, Sex, Indigenous, DiabetesType, State) %>>%
+      dplyr::summarize(n = sum(n)) %>>% # aggregate indigenous classifications
+      dplyr::ungroup()
+  }
+
+  if (sex_aggregate) {
+    d <- d %>>%
+      dplyr::mutate(
+        Sex = dplyr::if_else(
+          Sex %in% c("Not stated", "X"), # these two are combined
+          "INDETERMINATE/INTERSEX/UNSPECIFIED/NOT STATED/INADEQUATELY DESCRIBED",
+          Sex
+        )
+      ) %>>%
+      dplyr::group_by(QIM, Age10, Sex, Indigenous, DiabetesType, State) %>>%
+      dplyr::summarize(n = sum(n)) %>>% # aggregate sex classifications
+      dplyr::ungroup()
+  }
+
+  if (small_cell_suppression) {
+    # 'suppress' small groups to zero. helps with de-identification
+    suppress_small_cells <- function(d) {
+      return(
+        d %>>%
+          dplyr::mutate(
+            numerator = dplyr::if_else(
+              denominator != 0 &
+                (denominator < 5 |
+                   numerator <= 2 | (denominator - numerator) <= 2),
+              # potentially identifying information if group size < 5
+              # or numerator is 2 or less, or very close to the denominator
+              # avoid 'suppression' if the denominator is zero!
+              as.integer(NA),
+              as.integer(numerator)
+            )
+          )
+      )
+    }
+  } else {
+    suppress_small_cells <- function(d) {
+      # no suppression, just return the current dataframe
+      return(d)
+    }
+  }
+
+  d_denominators <- d %>>%
+    dplyr::group_by(QIM, Age10, Sex, Indigenous, DiabetesType) %>>%
+    dplyr::summarise(denominator = sum(n)) %>>% # the total in each sub-group
+    dplyr::ungroup()
+
+  d <- d %>>%
+    dplyr::left_join(
+      d_denominators,
+      by = c("QIM", "Age10", "Sex", "Indigenous", "DiabetesType")
+    ) %>>% # add denominators to each group
+    dplyr::filter(State != "FALSE") %>>% # these are excluded from the report!
+    dplyr::rename(sex = Sex, age_group = Age10,
+                  indigenous_status = Indigenous, diabetes_type = DiabetesType,
+                  numerator = n) %>>%
+    dplyr::mutate(sex = toupper(sex),
+                  indigenous_status = toupper(indigenous_status))
+
+  qim_df <- list(
+    extraction_datetime = jsonlite::unbox(extraction_datetime),
+    author_id = jsonlite::unbox(author_id),
+    practice_id = jsonlite::unbox(practice_id),
+    product = jsonlite::unbox(product),
+    report = jsonlite::unbox(report),
+    version = jsonlite::unbox(version)
+  )
+  # all these single elements are 'unboxed'
+  # an alternative is to define as dataframe
+  #  in which case all the 'qim' names below will need to be
+  #  defined as lists instead of dataframes
+  #  (appending '%>>% list()' is enough)
+
+  qim_measures <- unique(d %>>% dplyr::pull(QIM))
+  # the measures included in the report
+
+  if ("QIM 01" %in% qim_measures) {
+    qim_df[["qim01-diabetes"]] <- d %>>%
+      dplyr::filter(QIM == "QIM 01") %>>%
+      dplyr::mutate(hba1c_result = "RECORDED") %>>%
+      dplyr::select(sex, age_group, indigenous_status, diabetes_type,
+                    hba1c_result, numerator, denominator) %>>%
+      suppress_small_cells()
+  }
+
+  if ("QIM 02" %in% qim_measures) {
+    qim_df[["qim02a-smoking"]] <- d %>>%
+      dplyr::filter(QIM == "QIM 02") %>>%
+      dplyr::mutate(smoking_status = "RECORDED") %>>%
+      dplyr::select(sex, age_group, indigenous_status,
+                    smoking_status, State, numerator, denominator) %>>%
+      dplyr::mutate(
+        State = dplyr::if_else(
+          State %in% c("Ex smoker", "Non smoker", "Smoker"), # these three are combined
+          TRUE,
+          NA
+        )
+      ) %>>%
+      dplyr::filter(!is.na(State)) %>>%
+      dplyr::group_by(sex, age_group, indigenous_status,
+                      smoking_status, State, denominator) %>>%
+      dplyr::summarize(numerator = sum(numerator)) %>>%
+      dplyr::ungroup() %>>%
+      dplyr::select(sex, age_group, indigenous_status,
+                    smoking_status, numerator, denominator)
+
+    d_subset <- d %>>%
+      dplyr::filter(QIM == "QIM 02") %>>%
+      dplyr::select(sex, age_group, indigenous_status,
+                    smoking_status = State, numerator, denominator) %>>%
+      dplyr::filter(smoking_status %in% c("Ex smoker", "Non smoker", "Smoker")) %>>%
+      dplyr::mutate(
+        smoking_status = dplyr::case_when(
+          smoking_status == "Ex smoker" ~ "EX",
+          smoking_status == "Non smoker" ~ "NEVER",
+          smoking_status == "Smoker" ~ "CURRENT"
+        )
+      )
+
+    qim_df[["qim02b-smoking"]] <- d_subset %>>%
+      dplyr::select(sex, age_group, indigenous_status,
+                    smoking_status, numerator) %>>%
+      # re-calculate the denominator (does not include the NA 'not recorded')
+      dplyr::left_join(
+        d_subset %>>%
+          dplyr::group_by(sex, age_group, indigenous_status) %>>%
+          dplyr::summarize(denominator = sum(numerator)) %>>%
+          dplyr::ungroup() %>>%
+          dplyr::select(sex, age_group, indigenous_status, denominator),
+        by = c("sex", "age_group", "indigenous_status")
+      ) %>>%
+      suppress_small_cells()
+  }
+
+  if ("QIM 03" %in% qim_measures) {
+    qim_df[["qim03a-bmi"]] <- d %>>%
+      dplyr::filter(QIM == "QIM 03") %>>%
+      dplyr::mutate(bmi = "RECORDED") %>>%
+      dplyr::select(sex, age_group, indigenous_status,
+                    bmi, State, numerator, denominator) %>>%
+      dplyr::mutate(
+        State = dplyr::if_else(
+          State %in% c("Healthy", "Obese", "Overweight", "Underweight"), # these three are combined
+          TRUE,
+          NA
+        )
+      ) %>>%
+      dplyr::filter(!is.na(State)) %>>%
+      dplyr::group_by(sex, age_group, indigenous_status,
+                      bmi, State, denominator) %>>%
+      dplyr::summarize(numerator = sum(numerator)) %>>%
+      dplyr::ungroup() %>>%
+      dplyr::select(sex, age_group, indigenous_status,
+                    bmi, numerator, denominator)
+
+    d_subset <- d %>>%
+      dplyr::filter(QIM == "QIM 03") %>>%
+      dplyr::select(sex, age_group, indigenous_status,
+                    bmi = State, numerator, denominator) %>>%
+      dplyr::filter(bmi %in% c("Healthy", "Obese", "Overweight", "Underweight")) %>>%
+      dplyr::mutate(bmi = toupper(bmi))
+
+    qim_df[["qim03b-bmi"]] <- d_subset %>>%
+      dplyr::select(sex, age_group, indigenous_status,
+                    bmi, numerator) %>>%
+      # re-calculate the denominator (does not include the NA 'not recorded')
+      dplyr::left_join(
+        d_subset %>>%
+          dplyr::group_by(sex, age_group, indigenous_status) %>>%
+          dplyr::summarize(denominator = sum(numerator)) %>>%
+          dplyr::ungroup() %>>%
+          dplyr::select(sex, age_group, indigenous_status, denominator),
+        by = c("sex", "age_group", "indigenous_status")
+      ) %>>%
+      suppress_small_cells()
+  }
+
+  if ("QIM 04" %in% qim_measures) {
+    qim_df[["qim04-influenza_65years"]] <- d %>>%
+      dplyr::filter(QIM == "QIM 04") %>>%
+      dplyr::mutate(influenza_immun_status = "IMMUNISED") %>>%
+      dplyr::select(sex, age_group, indigenous_status,
+                    influenza_immun_status, numerator, denominator) %>>%
+      suppress_small_cells()
+  }
+
+  if ("QIM 05" %in% qim_measures) {
+
+    d_subset <- d %>>%
+      dplyr::filter(QIM == "QIM 05") %>>%
+      dplyr::mutate(influenza_immun_status = "IMMUNISED") %>>%
+      dplyr::select(sex, age_group, indigenous_status, diabetes_type,
+                    influenza_immun_status, numerator, denominator)
+
+    qim_df[["qim05-influenza_diabetes"]] <- d_subset %>>%
+      dplyr::group_by(sex, age_group, indigenous_status,
+                      influenza_immun_status) %>>%
+      # this QIM does not actually have diabetes sub-groups
+      dplyr::summarize(numerator = sum(numerator)) %>>%
+      dplyr::ungroup() %>>%
+      dplyr::left_join(
+        d_subset %>>%
+          dplyr::group_by(sex, age_group, indigenous_status) %>>%
+          dplyr::summarize(denominator = sum(denominator)) %>>%
+          # denominator includes those who are not immunized
+          dplyr::ungroup(),
+        by = c("sex", "age_group", "indigenous_status")
+      ) %>>%
+      dplyr::select(sex, age_group, indigenous_status,
+                    influenza_immun_status, numerator, denominator) %>>%
+      suppress_small_cells()
+  }
+
+  if ("QIM 06" %in% qim_measures) {
+    qim_df[["qim06-influenza_copd"]] <- d %>>%
+      dplyr::filter(QIM == "QIM 06") %>>%
+      dplyr::mutate(influenza_immun_status = "IMMUNISED") %>>%
+      dplyr::select(sex, age_group, indigenous_status,
+                    influenza_immun_status, numerator, denominator) %>>%
+      suppress_small_cells()
+  }
+
+  if ("QIM 07" %in% qim_measures) {
+    qim_df[["qim07-alcohol"]] <- d %>>%
+      dplyr::filter(QIM == "QIM 07") %>>%
+      dplyr::mutate(alcohol_status = "RECORDED") %>>%
+      dplyr::select(sex, age_group, indigenous_status,
+                    alcohol_status, numerator, denominator) %>>%
+      suppress_small_cells()
+  }
+
+  if ("QIM 08" %in% qim_measures) {
+    qim_df[["qim08-cvd"]] <- d %>>%
+      dplyr::filter(QIM == "QIM 08") %>>%
+      dplyr::mutate(cvd_risk = "RECORDED") %>>%
+      dplyr::select(sex, age_group, indigenous_status,
+                    cvd_risk, numerator, denominator) %>>%
+      suppress_small_cells()
+  }
+
+  if ("QIM 09" %in% qim_measures) {
+    qim_df[["qim09-cervical"]] <- d %>>%
+      dplyr::filter(QIM == "QIM 09") %>>%
+      dplyr::mutate(cervical_screen_status = "SCREENED") %>>%
+      dplyr::select(sex, age_group, indigenous_status,
+                    cervical_screen_status, numerator, denominator) %>>%
+      suppress_small_cells()
+  }
+
+  if ("QIM 10" %in% qim_measures) {
+
+    d_subset <- d %>>%
+      dplyr::filter(QIM == "QIM 10") %>>%
+      dplyr::mutate(bp_result = "RECORDED") %>>%
+      dplyr::select(sex, age_group, indigenous_status, diabetes_type,
+                    bp_result, numerator, denominator)
+
+    qim_df[["qim10-diabetes_bp"]] <- d_subset %>>%
+      dplyr::group_by(sex, age_group, indigenous_status,
+                      bp_result) %>>%
+      # this QIM does not actually have diabetes sub-groups
+      dplyr::summarize(numerator = sum(numerator)) %>>%
+      dplyr::ungroup() %>>%
+      dplyr::left_join(
+        d_subset %>>%
+          dplyr::group_by(sex, age_group, indigenous_status) %>>%
+          dplyr::summarize(denominator = sum(denominator)) %>>%
+          # denominator includes those who are not immunized
+          dplyr::ungroup(),
+        by = c("sex", "age_group", "indigenous_status")
+      ) %>>%
+      dplyr::select(sex, age_group, indigenous_status,
+                    bp_result, numerator, denominator) %>>%
+      suppress_small_cells()
+  }
+
+  return(jsonlite::toJSON(qim_df, na = "string", pretty = TRUE))
+  # 'NA' values have been small cell suppressed
 }

@@ -243,15 +243,18 @@ qim_reportCharter_UI <- function(id) {
 #' @param report a list returned by qim_reportCreator
 #'   should contain $report_values(), which is a dataframe
 #'
-#' @return none
+#' @return list with following components
+#' \describe{
+#'  \item{report_values}{dataframe of report}
+#' }
 #'
 #' @export
 qim_reportCharter <- function(input, output, session, dMQIM, report) {
   ns <- session$ns
 
-  options(shiny.maxRequestSize = 30*1024^2)
+  options(shiny.maxRequestSize = 300*1024^2)
   # the file limit size is normally 5 megabytes for upload
-  # this increases to 30 megabytes
+  # this increases to 300 megabytes
 
   empty_result <- data.frame(
     QIM = character(),
@@ -871,7 +874,7 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
           "monokai" = {highcharter::hc_theme_monokai()},
           "tufte" = {highcharter::hc_theme_tufte()}
         )
-        hc <- hc %>>% highcharter::hc_add_theme(hc_theme)
+        hc <- hc %>>% highcharter::hc_add_theme(hc_thm = hc_theme)
       }
 
       rendered_chart(hc)
@@ -913,30 +916,33 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
       shiny::req(report$report_values())
 
       if (nrow(report$report_values()) > 0) {
-        shiny::showModal(
-          shiny::modalDialog(
-            title = "Detected report creation",
-            "Use created report in 'Report Charter'?",
-            easyClose = FALSE,
-            footer = shiny::tagList(
-              shiny::modalButton("Cancel"),
-              shiny::actionButton(ns("ok_copy_report"), "OK")
+        report <- report$report_values() %>>%
+          dplyr::mutate(DateTo = as.character(DateTo))
+        # co-erce to character (instead of numeric)
+
+        if (nrow(report_values()) == 0 || !identical(report, report_values())) {
+          # not an identical report
+          shiny::showModal(
+            shiny::modalDialog(
+              title = "Detected report creation",
+              "Use created report in 'Report Charter'?",
+              easyClose = FALSE,
+              footer = shiny::tagList(
+                shiny::modalButton("Cancel"),
+                shiny::actionButton(ns("ok_copy_report"), "OK")
+              )
             )
           )
-        )
 
-        shiny::observeEvent(
-          input$ok_copy_report,
-          ignoreInit = TRUE, ignoreNULL = TRUE, {
-            report_values(
-              report$report_values() %>>%
-                dplyr::mutate(DateTo = as.character(DateTo))
-              # co-erce to character (instead of numeric)
-            )
-            # copy the dataframe
-            shiny::removeModal()
-          }
-        )
+          shiny::observeEvent(
+            input$ok_copy_report,
+            ignoreInit = TRUE, ignoreNULL = TRUE, {
+              report_values(report)
+              # copy the dataframe
+              shiny::removeModal()
+            }
+          )
+        }
       }
     }
   )
@@ -948,7 +954,7 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
 
       inFile <- input$loadCSVFile
 
-      data <- read.csv(
+      d <- read.csv(
         inFile$datapath,
         stringsAsFactors = FALSE,
         na.strings = "NA"
@@ -959,7 +965,7 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
           c("QIM", "Age10", "Sex", "Indigenous",
             "DiabetesType", "Measure", "State", "n",
             "DateFrom", "DateTo")
-          %in% names(data)
+          %in% names(d)
         )
       ) {
         # absolute minimum columns are not present
@@ -973,14 +979,14 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
         )
       } else {
         # all required columns are present
-        data <- data %>>%
+        d <- d %>>%
           dplyr::mutate(
             Age10 = as.numeric(Age10),
             n = as.numeric(n),
             DateFrom = as.Date(DateFrom),
             DateFrom = as.Date(DateTo),
           )
-        report_values(data)
+        report_values(d)
       }
     })
 
@@ -1083,4 +1089,6 @@ qim_reportCharter <- function(input, output, session, dMQIM, report) {
     }
   )
 
+  return(list(report_values = reactive({report_values()})))
+  # this may be used by reportCreator
 }
