@@ -1,7 +1,7 @@
 Package: dMeasureQIM
 Type: Package
 Title: Quality Improvement Measures for dMeasure
-Version: 0.5
+Version: 0.5.0
 Author: David P.S. Fong
 Maintainer: David P.S. Fong <vkelim@bigpond.com>
 Description: R6 object (and methods) to report and list Quality Improvement Measures.
@@ -27,7 +27,7 @@ Suggests:
     highcharter (>= 0.7.0),
     shinyFiles,
     fs
-RoxygenNote: 7.1.0.9000
+RoxygenNote: 7.1.1
 Collate: 
     'r6_helpers.R'
     'QualityImprovementMeasures.R'

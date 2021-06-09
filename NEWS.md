@@ -1,6 +1,6 @@
 Changelog
 
-# version 0.5
+# version 0.5.0
 12th January 2021
 
 ## New
