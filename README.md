@@ -3,7 +3,7 @@
 
 ## Structure of exported `CSV` (comma-separated-value) file
 
-Based on [PIP QI Annotated Specifications (May 2020)](https://www1.health.gov.au/internet/main/publishing.nsf/Content/46506AF50A4824B6CA25848600113FFF/$File/PIP-QI-Annotated-Specifications.pdf), [PIP QI Technical Specifications V1.1](https://www1.health.gov.au/internet/main/publishing.nsf/Content/46506AF50A4824B6CA25848600113FFF/$File/PIP-QI-Technical-Specifications.pdf) and [PIP QI User Guide](https://www1.health.gov.au/internet/main/publishing.nsf/Content/46506AF50A4824B6CA25848600113FFF/$File/PIP%20QI%20-%20User%20Guide.pdf).
+Based on [PIP QI Annotated Specifications (May 2020)](https://www1.health.gov.au/internet/main/publishing.nsf/Content/46506AF50A4824B6CA25848600113FFF/$File/PIP-QI-Annotated-Specifications.pdf), [PIP QI Technical Specifications V1.2](https://www1.health.gov.au/internet/main/publishing.nsf/Content/46506AF50A4824B6CA25848600113FFF/$File/PIP-QI-Technical-Specifications%20v1.2.pdf) and [PIP QI User Guide](https://www1.health.gov.au/internet/main/publishing.nsf/Content/46506AF50A4824B6CA25848600113FFF/$File/PIP%20QI%20-%20User%20Guide.pdf).
 
 ### Columns
 

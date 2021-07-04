@@ -27,6 +27,8 @@ NULL
 #' @param date_to end date
 #' @param contact_type types of contacts e.g. Services,
 #' @param min_contact minimum number of contacts to be 'valid'
+#' @param min_date most recent contact must be at least min_date
+#' @param max_date most recent contact at most max_date
 #' @param progress object for displaying progress. Leave as `NA` if
 #'   not required
 #' @param progress_detail message to report in the 'progress' window
@@ -48,6 +50,9 @@ getReport <- function(
   report_function,
   date_from, date_to,
   contact_type, min_contact,
+  min_date = as.Date("2000-01-01"),
+  max_date = Sys.Date(),
+  # no effective limitations on min/max date by default
   progress = NA,
   progress_detail,
   measure = NA,
@@ -65,8 +70,7 @@ getReport <- function(
     contact = TRUE, date_from = date_from, date_to = date_to,
     min_contact = min_contact,
     # 'default' is clinician list chosen in right panel
-    min_date = as.Date("2000-01-01"), max_date = Sys.Date(),
-    # no limitations on min/max date essentially
+    min_date = min_date, max_date = max_date,
     contact_type = contact_type,
     demographic = c("Age10", "Sex", "Indigenous"),
     ignoreOld = TRUE, lazy = FALSE, store = FALSE

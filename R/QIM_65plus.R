@@ -417,7 +417,7 @@ list_qim_65plus_appointments <- function(dMeasureQIM_obj,
 #' @param date_to end date (inclusive). default is $date_b
 #' @param clinicians list of clinicians to view. default is $clinicians
 #' @param min_contact minimum number of contacts. default is $contact_min, initially one (1)
-#' @param min_date most recent contact must be at least min_date. default is $contact_minDate, initially -
+#' @param min_date most recent contact must be at least min_date. default is $contact_minDate
 #' @param max_date most recent contact at most max_date. default is $contact_maxDate
 #' @param contact_type contact types which are accepted. default is $contact_type
 #' @param demographic demographic groupings for reporting.
@@ -528,6 +528,22 @@ report_qim_65plus <- function(dMeasureQIM_obj,
     }
 
     report <- report %>>%
+      dplyr::filter(
+        # according to PIP QI Improvement Measures Technical Specifications V1.2 (22102020)
+        # QIM 04, page 16
+        #
+        # Exclude clients from the calculation if they:
+        #  - did not have the immunisation due to documented medical reasons (e.g. allergy),
+        #    system reasons (vaccine not available),or patient reasons (e.g. refusal);
+        #  - or had results from measurements conducted outside of the service which were not available to the service
+        #    and had not visited the service in the previous 15 months.
+        !(InternalID %in%
+          (self$dM$db$preventive_health %>>%
+            dplyr::filter(ITEMID == 1) %>>%
+            # those who have been marked as not for influenza reminders
+            dplyr::pull(InternalID))
+        )
+      ) %>>%
       dplyr::mutate(InfluenzaDone = !is.na(FluvaxDate)) %>>%
       # a measure is 'done' if it exists (not NA)
       # if ignoreOld = TRUE, the the observation must fall within

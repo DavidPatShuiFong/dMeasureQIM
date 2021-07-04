@@ -10,6 +10,8 @@ getReport(
   date_to,
   contact_type,
   min_contact,
+  min_date = as.Date("2000-01-01"),
+  max_date = Sys.Date(),
   progress = NA,
   progress_detail,
   measure = NA,
@@ -31,6 +33,10 @@ getReport(
 \item{contact_type}{types of contacts e.g. Services,}
 
 \item{min_contact}{minimum number of contacts to be 'valid'}
+
+\item{min_date}{most recent contact must be at least min_date}
+
+\item{max_date}{most recent contact at most max_date}
 
 \item{progress}{object for displaying progress. Leave as \code{NA} if
 not required}

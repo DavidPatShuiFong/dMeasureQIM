@@ -367,6 +367,22 @@ qim_reportCreator <- function(input, output, session, dMQIM, report) {
             dMQIM$report_qim_65plus,
             date_from = date_from, date_to = date_to,
             contact_type = contact_type, min_contact = min_contact,
+            min_date = dMeasure::add_age(date_to, 1, "-15 month"),
+            # according to PIP QI Improvement Measures Technical Specifications V1.2 (22102020)
+            # QIM 04, page 16
+            #
+            # Exclude clients from the calculation if they:
+            #  - did not have the immunisation due to documented medical reasons (e.g. allergy),
+            #    system reasons (vaccine not available),or patient reasons (e.g. refusal);
+            #  - or had results from measurements conducted outside of the service which were not available to the service
+            #    and had not visited the service in the previous 15 months.
+            #
+            # by the second exclusion criteria, the most recent contact must be within 15 months
+            # of the 'date_to' report date (although 'date_from' could be different to that, as
+            # by default the period for contact calculation is 2 years before 'date_to')
+            #
+            # presumably if a person *was* vaccinated at the clinic within the past 15 months,
+            # then the person has also visited the clinic within the last 15 months
             progress = progress, progress_detail = "QIM 04 - 65+ Influenza",
             measure = NA, require_type_diabetes = FALSE,
             qim_name = "QIM 04", measure_name = "InfluenzaDone",

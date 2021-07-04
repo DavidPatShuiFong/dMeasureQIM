@@ -1,5 +1,16 @@
 Changelog
 
+# version 0.6.0
+4th July 2021
+
+## Change
+
+* `getReport` accepts `min_date` and `max_date` parameters
+* QIM 04 (influenza 65+) `report_qim_65plus` - exclude patients who have been marked not to have an influenza immunization remidner
+  + as per PIP QI Improvement Measures Technical Specifications V1.2 (22102020)
+* QIM report (called from `QIM_report_UI.R`) - do not include patients who have not visited within the last 15 months
+  + as per PIP QI Improvement Measures Technical Specifications V1.2 (22102020)
+
 # version 0.5.0
 12th January 2021
 

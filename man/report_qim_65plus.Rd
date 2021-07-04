@@ -37,7 +37,7 @@ FALSE chooses the 'appointment' system $diabetes_list from dMeasure object.}
 
 \item{contact_type}{contact types which are accepted. default is $contact_type}
 
-\item{min_date}{most recent contact must be at least min_date. default is $contact_minDate, initially -}
+\item{min_date}{most recent contact must be at least min_date. default is $contact_minDate}
 
 \item{max_date}{most recent contact at most max_date. default is $contact_maxDate}
 
