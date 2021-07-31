@@ -25,16 +25,16 @@ NULL
     MaritalStatus = character(),
     Sexuality = character(),
     HbA1CDate = as.Date(integer(0),
-      origin = "1970-01-01"
+                        origin = "1970-01-01"
     ),
     HbA1CValue = double(),
     HbA1CUnits = character(),
     FluvaxDate = as.Date(integer(0),
-      origin = "1970-01-01"
+                         origin = "1970-01-01"
     ),
     FluvaxName = character(),
     BPDate = as.Date(integer(0),
-      origin = "1970-01-01"
+                     origin = "1970-01-01"
     ),
     BP = character(),
     stringsAsFactors = FALSE
@@ -192,13 +192,13 @@ list_qim_diabetes <- function(dMeasureQIM_obj,
       intID_type1 <- c(
         self$dM$diabetes_type1_list(
           data.frame(InternalID = diabetesID, Date = date_to)
-          ),
+        ),
         -1
       )
       intID_type2 <- c(
         self$dM$diabetes_type2_list(
           data.frame(InternalID = diabetesID, Date = date_to)
-          ),
+        ),
         -1
       )
 
@@ -219,8 +219,8 @@ list_qim_diabetes <- function(dMeasureQIM_obj,
     fluvaxList <- self$dM$influenzaVax_obs(
       diabetesID,
       date_from = ifelse(ignoreOld,
-        NA,
-        as.Date(-Inf, origin = "1970-01-01")
+                         NA,
+                         as.Date(-Inf, origin = "1970-01-01")
       ),
       # if ignoreOld, then influenza_vax will (given NA)
       # calculate date_from as fifteen months before date_to
@@ -256,18 +256,18 @@ list_qim_diabetes <- function(dMeasureQIM_obj,
 
     diabetes_list <- diabetes_list %>>%
       dplyr::left_join(HbA1CList,
-        by = "InternalID",
-        copy = TRUE
+                       by = "InternalID",
+                       copy = TRUE
       ) %>>%
       dplyr::mutate(HbA1CValue = as.double(HbA1CValue)) %>>%
       # was a character. can't be converted to double within the MSSQL query
       dplyr::left_join(fluvaxList,
-        by = "InternalID",
-        copy = TRUE
+                       by = "InternalID",
+                       copy = TRUE
       ) %>>%
       dplyr::left_join(BPList,
-        by = "InternalID",
-        copy = TRUE
+                       by = "InternalID",
+                       copy = TRUE
       ) %>>%
       dMeasureQIM::add_demographics(self$dM, date_to) %>>%
       dplyr::select(-c(DOB))
@@ -348,7 +348,7 @@ list_qim_diabetes <- function(dMeasureQIM_obj,
     Patient = character(),
     RecordNo = character(),
     AppointmentDate = as.Date(integer(0),
-      origin = "1970-01-01"
+                              origin = "1970-01-01"
     ),
     AppointmentTime = character(0),
     Provider = character(0),
@@ -360,16 +360,16 @@ list_qim_diabetes <- function(dMeasureQIM_obj,
     MaritalStatus = character(0),
     Sexuality = character(0),
     HbA1CDate = as.Date(integer(0),
-      origin = "1970-01-01"
+                        origin = "1970-01-01"
     ),
     HbA1CValue = double(0),
     HbA1CUnits = character(0),
     FluvaxDate = as.Date(integer(0),
-      origin = "1970-01-01"
+                         origin = "1970-01-01"
     ),
     FluvaxName = character(),
     BPDate = as.Date(integer(0),
-      origin = "1970-01-01"
+                     origin = "1970-01-01"
     ),
     BP = character(0),
     stringsAsFactors = FALSE
@@ -502,7 +502,7 @@ list_qim_diabetes_appointments <- function(dMeasureQIM_obj,
         lazy = lazy, store = store
       )
       self$dM$filter_appointments_time(date_from, date_to, clinicians,
-        lazy = lazy
+                                       lazy = lazy
       )
     } else {
       appointments <- self$qim_diabetes_list
@@ -510,8 +510,8 @@ list_qim_diabetes_appointments <- function(dMeasureQIM_obj,
 
     appointments <- appointments %>>%
       dplyr::left_join(self$dM$appointments_filtered_time,
-        by = c("InternalID", "Patient"),
-        copy = TRUE
+                       by = c("InternalID", "Patient"),
+                       copy = TRUE
       ) %>>%
       dplyr::select(
         Patient, RecordNo, AppointmentDate, AppointmentTime,
@@ -545,7 +545,7 @@ list_qim_diabetes_appointments <- function(dMeasureQIM_obj,
 .public(
   dMeasureQIM, "qim_diabetes_report",
   data.frame(NULL,
-    stringsAsFactors = FALSE
+             stringsAsFactors = FALSE
   )
 )
 # empty data frame, number of columns dynamically change
@@ -579,7 +579,9 @@ list_qim_diabetes_appointments <- function(dMeasureQIM_obj,
 #' @param measure measures to report
 #'  if not supplied, reads $qim_diabetes_measure
 #'  list of available measures in $qim_diabetes_measureTypes
-#'  currently 'HbA1C', 'Influenza' and 'BP'
+#'  currently 'HbA1C', 'Influenza' and 'BP'.
+#'  if 'Influenza' alone, then patients are excluded from
+#'  the list if patient is marked to be excluded from influenza reminders.
 #' @param type_diabetes separate diabetes by type?
 #' @param ignoreOld ignore results/observatioins that don't qualify
 #'  for quality improvement measures.
@@ -589,7 +591,8 @@ list_qim_diabetes_appointments <- function(dMeasureQIM_obj,
 #'
 #' @return dataframe of Patient (name), demographics, measure (done or not),
 #'  InternalID, Count, Proportion, Proportion_demographic.
-#'  if type_diabetes set to 'TRUE' then add type_diabetes
+#'  if type_diabetes set to 'TRUE' then add type_diabetes.
+#'  'InfluenzaDone' can return 'NA' is patient is excluded from influenza reminders.
 #' @export
 report_qim_diabetes <- function(dMeasureQIM_obj,
                                 contact = NA,
@@ -690,9 +693,9 @@ report_qim_diabetes <- function(dMeasureQIM_obj,
     }
 
     measure <- dplyr::recode(measure,
-      "HbA1C" = "HbA1CDone",
-      "Influenza" = "InfluenzaDone",
-      "BP" = "BPDone"
+                             "HbA1C" = "HbA1CDone",
+                             "Influenza" = "InfluenzaDone",
+                             "BP" = "BPDone"
     )
     report_groups <- c(demographic, measure)
     # report_groups <- c(demographic, measure, "")
@@ -716,13 +719,41 @@ report_qim_diabetes <- function(dMeasureQIM_obj,
 
     report <- report %>>%
       dplyr::mutate(
+        # a measure is 'done' if it exists (not NA)
+        # if ignoreOld = TRUE, the the observation must fall within
+        #  the required timeframe
         HbA1CDone = !is.na(HbA1CDate),
         InfluenzaDone = !is.na(FluvaxDate),
         BPDone = !is.na(BPDate)
       ) %>>%
-      # a measure is 'done' if it exists (not NA)
-      # if ignoreOld = TRUE, the the observation must fall within
-      #  the required timeframe
+      dplyr::mutate(
+        # according to PIP QI Improvement Measures Technical Specifications V1.2 (22102020)
+        # QIM 05, page 18
+        #
+        # Exclude clients from the calculation if they:
+        #  - did not have the immunisation due to documented medical reasons (e.g. allergy),
+        #    system reasons (vaccine not available),or patient reasons (e.g. refusal);
+        #  - or had results from measurements conducted outside of the service which were not available to the service
+        #    and had not visited the service in the previous 12 months.
+        InfluenzaDone = dplyr::if_else(
+          !(InternalID %in%
+              (self$dM$db$preventive_health %>>%
+                 dplyr::filter(ITEMID == 1) %>>%
+                 # those who have been marked as not for influenza reminders
+                 dplyr::pull(InternalID))
+          ),
+          InfluenzaDone,
+          NA
+        )
+      )
+
+    if (measure == "InfluenzaDone") {
+      # only in the case that 'Influenza' is the *only* measure group, then remove all the 'NA'
+      report <- report %>>%
+        dplyr::filter(!is.na(InfluenzaDone))
+    }
+
+    report <- report %>>%
       dplyr::group_by_at(report_groups) %>>%
       # group_by_at takes a vector of strings
       dplyr::summarise(n = dplyr::n()) %>>%

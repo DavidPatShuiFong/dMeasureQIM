@@ -50,7 +50,9 @@ list of available demographic groups in $qim_demographicGroupings}
 \item{measure}{measures to report
 if not supplied, reads $qim_diabetes_measure
 list of available measures in $qim_diabetes_measureTypes
-currently 'HbA1C', 'Influenza' and 'BP'}
+currently 'HbA1C', 'Influenza' and 'BP'.
+if 'Influenza' alone, then patients are excluded from
+the list if patient is marked to be excluded from influenza reminders.}
 
 \item{type_diabetes}{separate diabetes by type?}
 
@@ -65,7 +67,8 @@ if not supplied, reads $qim_ignoreOld}
 \value{
 dataframe of Patient (name), demographics, measure (done or not),
  InternalID, Count, Proportion, Proportion_demographic.
- if type_diabetes set to 'TRUE' then add type_diabetes
+ if type_diabetes set to 'TRUE' then add type_diabetes.
+ 'InfluenzaDone' can return 'NA' is patient is excluded from influenza reminders.
 }
 \description{
 Filtered by date, and chosen clinicians
