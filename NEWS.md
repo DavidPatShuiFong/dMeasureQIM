@@ -1,7 +1,14 @@
 Changelog
 
 # version 0.6.0
-31st July 2021
+1st August 2021
+
+## New
+
+* `group_identification_suppression` option for `writeReportJSON`
+  + suppress if numerator 2 or less OR difference between numerator and denominator is less than or equal to 2.
+  + This is a simple probability-based disclosure suppression (l-diversity) against homogeneity attack,
+    which overlaps with 'small cell suppression' of cells where the denominator is less than 5.
 
 ## Change
 
@@ -23,6 +30,10 @@ Changelog
   + Does not include if 'No longer requires cervical screening' is set
     OR 'Opt out of cervical screening' (reasons excluded include 'has screening at another clinic/elsewhere' and
     'refuses'  but does not include "Doesn't want reminders sent")
+
+## Fix
+
+* Add 'small cell suppression' and 'group identification suppression' to QIM 02a and QIM 03a
 
 # version 0.5.0
 12th January 2021

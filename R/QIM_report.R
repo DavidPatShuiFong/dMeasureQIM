@@ -139,9 +139,11 @@ getReport <- function(
 #' @param report Must be "PIP QI"
 #' @param version version number of the specification used to generate the JSON
 #' @param small_cell_suppression 'suppress' (return NA, or remove
-#'   row entirely) if count is denominator less than 5 OR numerator 2 or less
-#'   OR difference between numerator and denomiator is less than or equal to 2.
-#'   helps de-identifiability
+#'   row entirely) if count is denominator less than 5
+#' @param group_identification_suppression numerator 2 or less
+#'   OR difference between numerator and denominator is less than or equal to 2.
+#'   This is a simple probability-based disclosure suppression
+#'   (l-diversity) against homogeneity attack.
 #' @param indigenous_aggregate simplify indigenous groups to
 #'   INDIGENOUS, NON-INDIGENOUS, NOT STATED
 #' @param sex_aggregate simplify sex groups to
@@ -158,6 +160,7 @@ writeReportJSON <- function(
   report = "PIP QI",
   version = "1.1",
   small_cell_suppression = TRUE,
+  group_identification_suppression = FALSE,
   indigenous_aggregate = TRUE, sex_aggregate = TRUE) {
 
   options(digits.secs = 3) # print second component to 3 decimal places
@@ -205,19 +208,25 @@ writeReportJSON <- function(
       dplyr::ungroup()
   }
 
-  if (small_cell_suppression) {
+  if (small_cell_suppression | group_identification_suppression) {
     # 'suppress' small groups to zero. helps with de-identification
     suppress_small_cells <- function(d) {
       return(
         d %>>%
           dplyr::mutate(
             numerator = dplyr::if_else(
-              denominator != 0 &
-                (denominator < 5 |
-                   numerator <= 2 | (denominator - numerator) <= 2),
+              denominator != 0 & denominator < 5 & small_cell_suppression,
               # potentially identifying information if group size < 5
-              # or numerator is 2 or less, or very close to the denominator
               # avoid 'suppression' if the denominator is zero!
+              as.integer(NA),
+              as.integer(numerator)
+            )
+          ) %>>%
+          dplyr::mutate(
+            numerator = dplyr::if_else(
+              denominator != 0 & (numerator <= 2 | (denominator - numerator) <= 2) & group_identification_suppression,
+              # numerator is 2 or less, or very close to the denominator
+              # this is a type of probability-based disclosure suppression
               as.integer(NA),
               as.integer(numerator)
             )
@@ -293,7 +302,8 @@ writeReportJSON <- function(
       dplyr::summarize(numerator = sum(numerator)) %>>%
       dplyr::ungroup() %>>%
       dplyr::select(sex, age_group, indigenous_status,
-                    smoking_status, numerator, denominator)
+                    smoking_status, numerator, denominator) %>>%
+      suppress_small_cells()
 
     d_subset <- d %>>%
       dplyr::filter(QIM == "QIM 02") %>>%
@@ -342,7 +352,8 @@ writeReportJSON <- function(
       dplyr::summarize(numerator = sum(numerator)) %>>%
       dplyr::ungroup() %>>%
       dplyr::select(sex, age_group, indigenous_status,
-                    bmi, numerator, denominator)
+                    bmi, numerator, denominator) %>>%
+      suppress_small_cells()
 
     d_subset <- d %>>%
       dplyr::filter(QIM == "QIM 03") %>>%

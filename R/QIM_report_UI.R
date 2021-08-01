@@ -576,9 +576,18 @@ qim_reportCreator <- function(input, output, session, dMQIM, report) {
             placeholder = "Your practice ID"
           ),
           shiny::checkboxInput(
+            # denominator less than five
             inputId = ns("json_small_cell_suppression"),
             label = "Small cell suppression",
             value = TRUE
+          ),
+          shiny::checkboxInput(
+            # this is a type of probability-based suppression
+            # where 'almost' all of the group shares the same characteristic
+            # i.e. almost all 'FALSE' or all 'TRUE'
+            inputId = ns("json_group_identification_suppression"),
+            label = "Group identification suppression",
+            value = FALSE
           ),
           easyClose = FALSE,
           footer = shiny::tagList(
@@ -604,6 +613,7 @@ qim_reportCreator <- function(input, output, session, dMQIM, report) {
         author_id = input$json_author_id,
         practice_id = input$json_practice_id,
         small_cell_suppression = input$json_small_cell_suppression,
+        group_identification_suppression = input$json_group_identification_suppression,
       )
       write(json_string, file = datapath)
 
