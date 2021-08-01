@@ -553,6 +553,22 @@ report_qim_copd <- function(dMeasureQIM_obj,
     }
 
     report <- report %>>%
+      dplyr::filter(
+        # according to PIP QI Improvement Measures Technical Specifications V1.2 (22102020)
+        # QIM 06, page 20
+        #
+        # Exclude clients from the calculation if they:
+        #  - did not have the immunisation due to documented medical reasons (e.g. allergy),
+        #    system reasons (vaccine not available),or patient reasons (e.g. refusal);
+        #  - or had results from measurements conducted outside of the service which were not available to the service
+        #    and had not visited the service in the previous 12 months.
+        !(InternalID %in%
+            (self$dM$db$preventive_health %>>%
+               dplyr::filter(ITEMID == 1) %>>%
+               # those who have been marked as not for influenza reminders
+               dplyr::pull(InternalID))
+        )
+      ) %>>%
       dplyr::mutate(InfluenzaDone = !is.na(FluvaxDate)) %>>%
       # a measure is 'done' if it exists (not NA)
       # if ignoreOld = TRUE, the the observation must fall within

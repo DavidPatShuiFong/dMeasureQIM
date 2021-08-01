@@ -8,13 +8,15 @@ Changelog
 * `getReport` accepts `min_date` and `max_date` parameters
 * QIM 04 (influenza 65+) `report_qim_65plus` - exclude patients who have been marked not to have an influenza immunization reminder
   + as per PIP QI Improvement Measures Technical Specifications V1.2 (22102020)
-* QIM report (called from `QIM_report_UI.R`) - do not include patients who have not visited within the last 15 months
+  + QIM report (called from `QIM_report_UI.R`) - do not include patients who have not visited within the last 15 months
   + as per PIP QI Improvement Measures Technical Specifications V1.2 (22102020)
 * QIM 05 (influenza diabetes) `report_qim_diabetes`
   + if only 'influenza' measure chosen then exclude patients who have been marked not to have an influenza immunization reminder
   + if 'influenza' *and* another measure chosen, then if a patient has been marked as not to have an influenza immunization reminder,
     then the 'InfluenzaDone' value will be set to `NA`
   + as per PIP QI Improvement Meausres Technical Specifications V1.2 (22102020)
+* QIM 06 (influenza COPD) `report_qim_copd` - exclude patients who have been marked not to have an influenza immunization reminder
+  + as per PIP QI Improvement Measures Technical Specifications V1.2 (22102020)
 
 # version 0.5.0
 12th January 2021
