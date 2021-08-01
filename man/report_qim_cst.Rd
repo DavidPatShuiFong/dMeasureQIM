@@ -55,6 +55,10 @@ if not supplied, reads $qim_ignoreOld}
 \value{
 dataframe of Patient (name), demographics, measure (done or not), Count, Proportion,
   Proportion_Demographic
+
+  Does not include if 'No longer requires cervical screening' is set
+  OR 'Opt out of cervical screening' (reasons excluded include 'has screening elsewhere' and
+  'refuses'  but does not include "Doesn't want reminders sent")
 }
 \description{
 Filtered by date, and chosen clinicians

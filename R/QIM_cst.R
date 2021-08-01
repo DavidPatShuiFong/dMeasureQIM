@@ -25,7 +25,7 @@ NULL
     MaritalStatus = character(),
     Sexuality = character(),
     CSTDate = as.Date(integer(0),
-      origin = "1970-01-01"
+                      origin = "1970-01-01"
     ),
     CSTName = character(),
     # CStName is expected to be 'CST' or 'PAP', but might
@@ -183,7 +183,7 @@ list_qim_cst <- function(dMeasureQIM_obj,
             dplyr::filter(
               InternalID %in% screen_cst_id,
               (TestName %like% "%CERVICAL SCREENING%" |
-                  TestName %like% "%PAP SMEAR%")
+                 TestName %like% "%PAP SMEAR%")
             ) %>>%
             dplyr::rename(
               TestDate = Reported,
@@ -198,14 +198,14 @@ list_qim_cst <- function(dMeasureQIM_obj,
       dplyr::mutate(
         TestDate = as.Date(TestDate),
         TestDate = as.Date(ifelse(TestDate > date_to,
-          -Inf,
-          TestDate
+                                  -Inf,
+                                  TestDate
         ),
         origin = "1970-01-01"
         ),
         TestDate = as.Date(ifelse(is.na(TestDate),
-          -Inf,
-          TestDate
+                                  -Inf,
+                                  TestDate
         ),
         origin = "1970-01-01"
         )
@@ -240,16 +240,16 @@ list_qim_cst <- function(dMeasureQIM_obj,
       (if (ignoreOld && nrow(.) > 0) {
         # remove out-of-date tests
         dplyr::mutate(.,
-          TestDate = dplyr::if_else(
-            OutOfDateTest == 2,
-            as.Date(-Inf, origin = "1970-01-01"),
-            TestDate
-          ),
-          TestName = dplyr::if_else(
-            OutOfDateTest == 2,
-            as.character(NA),
-            as.character(TestName)
-          )
+                      TestDate = dplyr::if_else(
+                        OutOfDateTest == 2,
+                        as.Date(-Inf, origin = "1970-01-01"),
+                        TestDate
+                      ),
+                      TestName = dplyr::if_else(
+                        OutOfDateTest == 2,
+                        as.character(NA),
+                        as.character(TestName)
+                      )
         )
       }
       else {
@@ -303,7 +303,7 @@ list_qim_cst <- function(dMeasureQIM_obj,
     Patient = character(),
     RecordNo = character(),
     AppointmentDate = as.Date(integer(0),
-      origin = "1970-01-01"
+                              origin = "1970-01-01"
     ),
     AppointmentTime = character(0),
     Provider = character(0),
@@ -315,7 +315,7 @@ list_qim_cst <- function(dMeasureQIM_obj,
     MaritalStatus = character(),
     Sexuality = character(),
     CSTDate = as.Date(integer(0),
-      origin = "1970-01-01"
+                      origin = "1970-01-01"
     ),
     CSTName = character(),
     # CStName is expected to be 'CST' or 'PAP', but might
@@ -434,7 +434,7 @@ list_qim_cst_appointments <- function(dMeasureQIM_obj,
         lazy, store
       )
       self$dM$filter_appointments_time(date_from, date_to, clinicians,
-        lazy = lazy
+                                       lazy = lazy
       )
     } else {
       appointments <- self$qim_cst_list
@@ -442,8 +442,8 @@ list_qim_cst_appointments <- function(dMeasureQIM_obj,
 
     appointments <- appointments %>>%
       dplyr::left_join(self$dM$appointments_filtered_time,
-        by = c("InternalID", "Patient"),
-        copy = TRUE
+                       by = c("InternalID", "Patient"),
+                       copy = TRUE
       ) %>>%
       dplyr::select(
         Patient, RecordNo, AppointmentDate, AppointmentTime,
@@ -478,7 +478,7 @@ list_qim_cst_appointments <- function(dMeasureQIM_obj,
 .public(
   dMeasureQIM, "qim_cst_report",
   data.frame(NULL,
-    stringsAsFactors = FALSE
+             stringsAsFactors = FALSE
   )
 )
 # empty data frame, number of columns dynamically change
@@ -514,6 +514,10 @@ list_qim_cst_appointments <- function(dMeasureQIM_obj,
 #'
 #' @return dataframe of Patient (name), demographics, measure (done or not), Count, Proportion,
 #'   Proportion_Demographic
+#'
+#'   Does not include if 'No longer requires cervical screening' is set
+#'   OR 'Opt out of cervical screening' (reasons excluded include 'has screening elsewhere' and
+#'   'refuses'  but does not include "Doesn't want reminders sent")
 #' @export
 report_qim_cst <- function(dMeasureQIM_obj,
                            contact = NA,
@@ -612,6 +616,37 @@ report_qim_cst <- function(dMeasureQIM_obj,
     }
 
     report <- report %>>%
+      dplyr::filter(
+        # according to PIP QI Improvement Measures Technical Specifications V1.2 (22102020)
+        # QIM 09, page 27
+        #
+        # Exclude clients from the calculation if they:
+        #  - Have had a complete hysterectomy
+        #  - did not have the test due to documented medical reasons, system
+        #    reasons (test not available), or patient reasons (e.g. refusal); or
+        #  - had results from measurements conducted outside of the service which
+        #    were not available to the service; or
+        #  - no longer require testing.
+        !(InternalID %in%
+            (self$dM$db$obgyndetail %>>%
+               dplyr::filter(NoPap == 1) %>>%
+               # those who have been marked as not for influenza reminders
+               dplyr::pull(InternalID))
+        ) &
+          !(InternalID %in%
+              (self$dM$db$obgyndetail %>>%
+                 dplyr::filter(
+                   toupper(OptOutReason) %in%
+                     !!c(toupper("Has screening at another practice"),
+                         toupper("Has screening done by specialist"),
+                         toupper("Refuses to have screening")
+                     ) # the !! evaluates c() and 'toupper' in the R session
+                   # (rather than translate to SQL)
+                   # note that this does *not* include "Doesn't want reminders sent"
+                 ) %>>%
+                 dplyr::pull(InternalID))
+          )
+      ) %>>%
       dplyr::mutate(CSTDone = (CSTDate != -Inf)) %>>%
       # a measure is 'done' if it exists (not equal to Infinity)
       # if ignoreOld = TRUE, the the observation must fall within

@@ -17,6 +17,12 @@ Changelog
   + as per PIP QI Improvement Meausres Technical Specifications V1.2 (22102020)
 * QIM 06 (influenza COPD) `report_qim_copd` - exclude patients who have been marked not to have an influenza immunization reminder
   + as per PIP QI Improvement Measures Technical Specifications V1.2 (22102020)
+* QIM 09 (cervical screening) `repot_qim_cost` - excludes patients who have been marked not have cervical screening or
+  an indication that result may only be available elsewhere
+  + as per PIP QI Improvement Measures Technical Specifications V1.2 (22102020)
+  + Does not include if 'No longer requires cervical screening' is set
+    OR 'Opt out of cervical screening' (reasons excluded include 'has screening at another clinic/elsewhere' and
+    'refuses'  but does not include "Doesn't want reminders sent")
 
 # version 0.5.0
 12th January 2021
