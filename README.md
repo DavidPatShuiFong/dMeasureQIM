@@ -89,4 +89,6 @@ Additional columns of information which can either be extrapolatd from columns 1
 
 Total : <img src = "https://render.githubusercontent.com/render/math?math=960%2B480%2B600%2B40%2B960%2B240%2B240%2B(120%2B24)%2B240%2B960 = 4684">
 
+## Structure of exported `JSON` (JavaScript Objection Notation) file
 
+Based on [PIP QI Eligible Data Set - JSON Specification - version 1.1](https://www1.health.gov.au/internet/main/publishing.nsf/Content/46506AF50A4824B6CA25848600113FFF/$File/PIPQI-Eligible-Data-Set-JSON-Specification-v1.1.pdf)
