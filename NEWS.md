@@ -13,6 +13,7 @@ Changelog
 ## Change
 
 * `getReport` accepts `min_date` and `max_date` parameters
+* compliance with [version 1.2 of PIP QI Improvement Measures - Technical Specifications](https://www1.health.gov.au/internet/main/publishing.nsf/Content/46506AF50A4824B6CA25848600113FFF/$File/PIP-QI-Technical-Specifications%20v1.2.pdf)
 * QIM 04 (influenza 65+) `report_qim_65plus` - exclude patients who have been marked not to have an influenza immunization reminder
   + as per PIP QI Improvement Measures Technical Specifications V1.2 (22102020)
   + QIM report (called from `QIM_report_UI.R`) - do not include patients who have not visited within the last 15 months

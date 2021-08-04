@@ -60,7 +60,7 @@ getReport <- function(
   qim_name, measure_name,
   state_variable_name,
   small_cell_suppression = FALSE,
-  include_all_demographic_groups = FALSE
+  include_all_demographic_groups = TRUE
 ) {
   if (is.environment(progress)) { # a OOP object (as opposed to 'NA')
     progress$inc(amount = 1, detail = progress_detail)
@@ -140,10 +140,19 @@ getReport <- function(
 #' @param version version number of the specification used to generate the JSON
 #' @param small_cell_suppression 'suppress' (return NA, or remove
 #'   row entirely) if count is denominator less than 5
+#'
+#'   This measure is explictly allowed under '[Practice Incentives Program Quality Improvement Incentives Quality Improvement Measures User Guide for General Practices (2020)](https://www1.health.gov.au/internet/main/publishing.nsf/Content/46506AF50A4824B6CA25848600113FFF/$File/PIP-QI-User-Guide-Practices.pdf)',
+#'   Section 2.7 'Is the data de-identified?', page 8.
+#'
 #' @param group_identification_suppression numerator 2 or less
 #'   OR difference between numerator and denominator is less than or equal to 2.
 #'   This is a simple probability-based disclosure suppression
-#'   (l-diversity) against homogeneity attack.
+#'   (l-diversity) against homogeneity attack e.g. ALL or NONE of the
+#'   patients in a sub-group have a specified state.
+#'
+#'   This measure is not explicitly mentioned under the PIP QIM User Guide, but
+#'   is consistent with avoiding disclosure of information about individual
+#'   patients.
 #' @param indigenous_aggregate simplify indigenous groups to
 #'   INDIGENOUS, NON-INDIGENOUS, NOT STATED
 #' @param sex_aggregate simplify sex groups to
@@ -158,7 +167,7 @@ writeReportJSON <- function(
   practice_id,
   product = "GPstat",
   report = "PIP QI",
-  version = "1.1",
+  version = "1.2",
   small_cell_suppression = TRUE,
   group_identification_suppression = FALSE,
   indigenous_aggregate = TRUE, sex_aggregate = TRUE) {

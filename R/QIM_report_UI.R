@@ -121,14 +121,54 @@ qim_reportCreator_UI <- function(id) {
             ),
             shiny::column(
               width = 9,
-              shinyWidgets::awesomeCheckboxGroup(
-                inputId = ns("report_filter_options"),
-                label = "",
-                choices = c(
-                  "Small cell suppression",
-                  "Include all demographics groups"
+              shiny::div(
+                class = "parent",
+                style = "text-align: left",
+                shiny::div(
+                  style = "display: inline-block; vertical-align: top",
+                  shinyWidgets::awesomeCheckboxGroup(
+                    inputId = ns("report_filter_options"),
+                    label = "",
+                    choices = c(
+                      "Small cell suppression",
+                      "Include all demographics groups"
+                    ),
+                    selected = c("Include all demographics groups")
+                  )
                 ),
-                selected = "Small cell suppression"
+                shiny::div(
+                  style = "display: inline-block; vertical-align:-50%",
+                  # '-50%' still results in a '+50%' compared to the h3 title!
+                  # '-100%' results in a dropdown widget roughly in line with the title
+                  shinyWidgets::dropdown(
+                    shiny::tags$h4("Small cell suppression"),
+                    "Suppress (return NA 'not available') if group size (i.e. denominator) is less than 5",
+                    shiny::br(),shiny::br(),
+                    "This means of avoiding disclosure of information regarding specific patients is explictly allowed under",
+                    shiny::tags$a(
+                      href = "https://www1.health.gov.au/internet/main/publishing.nsf/Content/46506AF50A4824B6CA25848600113FFF/$File/PIP-QI-User-Guide-Practices.pdf",
+                      "Practice Incentives Program Quality Improvement Incentives Quality Improvement Measures User Guide for General Practices (2020)",
+                    ),
+                    " Section 2.7 'Is the data de-identified?', page 8.",
+                    shiny::br(),shiny::br(),
+                    shiny::tags$h4("Include all demographics groups"),
+                    "Include all possible groups and subgroups, even if",
+                    "there are no patients in the group.",
+                    shiny::br(), shiny::br(),
+                    status = "primary",
+                    size = "xs",
+                    width = "600px",
+                    icon = icon("question-circle"),
+                    animate = shinyWidgets::animateOptions(
+                      enter = shinyWidgets::animations$fading_entrances$fadeIn,
+                      exit = shinyWidgets::animations$fading_exits$fadeOut
+                    ),
+                    tooltip = shinyWidgets::tooltipOptions(
+                      placement = "top",
+                      title = "Server description details"
+                    )
+                  )
+                )
               )
             )
           ),
@@ -575,19 +615,95 @@ qim_reportCreator <- function(input, output, session, dMQIM, report) {
             value = "",
             placeholder = "Your practice ID"
           ),
-          shiny::checkboxInput(
-            # denominator less than five
-            inputId = ns("json_small_cell_suppression"),
-            label = "Small cell suppression",
-            value = TRUE
+          shiny::div(
+            class = "parent",
+            style = "text-align: left",
+            shiny::div(
+              style = "display: inline-block; vertical-align: top",
+              shiny::checkboxInput(
+                # denominator less than five
+                inputId = ns("json_small_cell_suppression"),
+                label = "Small cell suppression",
+                width = "100%",
+                value = TRUE
+              )
+            ),
+            shiny::div(
+              style = "display: inline-block; vertical-align:-50%",
+              # '-50%' still results in a '+50%' compared to the h3 title!
+              # '-100%' results in a dropdown widget roughly in line with the title
+              shinyWidgets::dropdown(
+                shiny::tags$h4("Small cell suppression"),
+                "Suppress (return NA 'not available') if group size (i.e. denominator) is less than 5",
+                shiny::br(),shiny::br(),
+                "This means of avoiding disclosure of information regarding specific patients is explictly allowed under",
+                shiny::tags$a(
+                  href = "https://www1.health.gov.au/internet/main/publishing.nsf/Content/46506AF50A4824B6CA25848600113FFF/$File/PIP-QI-User-Guide-Practices.pdf",
+                  "Practice Incentives Program Quality Improvement Incentives Quality Improvement Measures User Guide for General Practices (2020)",
+                ),
+                " Section 2.7 'Is the data de-identified?', page 8.",
+                shiny::br(),shiny::br(),
+                status = "primary",
+                size = "xs",
+                width = "600px",
+                icon = icon("question-circle"),
+                animate = shinyWidgets::animateOptions(
+                  enter = shinyWidgets::animations$fading_entrances$fadeIn,
+                  exit = shinyWidgets::animations$fading_exits$fadeOut
+                ),
+                tooltip = shinyWidgets::tooltipOptions(
+                  placement = "top",
+                  title = "Server description details"
+                )
+              )
+            )
           ),
-          shiny::checkboxInput(
-            # this is a type of probability-based suppression
-            # where 'almost' all of the group shares the same characteristic
-            # i.e. almost all 'FALSE' or all 'TRUE'
-            inputId = ns("json_group_identification_suppression"),
-            label = "Group identification suppression",
-            value = FALSE
+          shiny::div(
+            class = "parent",
+            style = "text-align: left",
+            shiny::div(
+              style = "display: inline-block; vertical-align: top",
+              shiny::checkboxInput(
+                # this is a type of probability-based suppression
+                # where 'almost' all of the group shares the same characteristic
+                # i.e. almost all 'FALSE' or all 'TRUE'
+                inputId = ns("json_group_identification_suppression"),
+                label = "Group identification suppression",
+                value = FALSE,
+                width = "100%"
+              )
+            ),
+            shiny::div(
+              style = "display: inline-block; vertical-align:-50%",
+              # '-50%' still results in a '+50%' compared to the h3 title!
+              # '-100%' results in a dropdown widget roughly in line with the title
+              shinyWidgets::dropdown(
+                shiny::tags$h4("Group identification suppression"),
+                "Suppress (return NA 'not available') if numerator 2 or less",
+                "OR difference between numerator and denominator is less than or equal to 2.",
+                shiny::br(), shiny::br(),
+                "This is a simple probability-based disclosure suppression",
+                "(l-diversity) against homogeneity attack e.g. ALL or NONE (or almost ALL/NONE) of the",
+                "patients in a sub-group have a specified state.",
+                shiny::br(), shiny::br(),
+                "This measure is not explicitly mentioned under the PIP QIM User Guide, but",
+                "is consistent with avoiding disclosure of information about individual",
+                "patients.",
+                shiny::br(), shiny::br(),
+                status = "primary",
+                size = "xs",
+                width = "600px",
+                icon = icon("question-circle"),
+                animate = shinyWidgets::animateOptions(
+                  enter = shinyWidgets::animations$fading_entrances$fadeIn,
+                  exit = shinyWidgets::animations$fading_exits$fadeOut
+                ),
+                tooltip = shinyWidgets::tooltipOptions(
+                  placement = "top",
+                  title = "Server description details"
+                )
+              )
+            )
           ),
           easyClose = FALSE,
           footer = shiny::tagList(

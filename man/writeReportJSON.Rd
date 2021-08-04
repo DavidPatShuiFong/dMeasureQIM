@@ -11,7 +11,7 @@ writeReportJSON(
   practice_id,
   product = "GPstat",
   report = "PIP QI",
-  version = "1.1",
+  version = "1.2",
   small_cell_suppression = TRUE,
   group_identification_suppression = FALSE,
   indigenous_aggregate = TRUE,
@@ -35,12 +35,20 @@ initiated the extract}
 \item{version}{version number of the specification used to generate the JSON}
 
 \item{small_cell_suppression}{'suppress' (return NA, or remove
-row entirely) if count is denominator less than 5}
+row entirely) if count is denominator less than 5
+
+This measure is explictly allowed under '\href{https://www1.health.gov.au/internet/main/publishing.nsf/Content/46506AF50A4824B6CA25848600113FFF/$File/PIP-QI-User-Guide-Practices.pdf}{Practice Incentives Program Quality Improvement Incentives Quality Improvement Measures User Guide for General Practices (2020)}',
+Section 2.7 'Is the data de-identified?', page 8.}
 
 \item{group_identification_suppression}{numerator 2 or less
 OR difference between numerator and denominator is less than or equal to 2.
 This is a simple probability-based disclosure suppression
-(l-diversity) against homogeneity attack.}
+(l-diversity) against homogeneity attack e.g. ALL or NONE of the
+patients in a sub-group have a specified state.
+
+This measure is not explicitly mentioned under the PIP QIM User Guide, but
+is consistent with avoiding disclosure of information about individual
+patients.}
 
 \item{indigenous_aggregate}{simplify indigenous groups to
 INDIGENOUS, NON-INDIGENOUS, NOT STATED}
