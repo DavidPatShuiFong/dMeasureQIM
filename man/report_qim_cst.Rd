@@ -13,9 +13,11 @@ report_qim_cst(
   min_contact = NA,
   contact_type = NA,
   min_date = NA,
+  max_date = NA,
   demographic = NA,
   ignoreOld = NA,
-  lazy = FALSE
+  lazy = FALSE,
+  store = TRUE
 )
 }
 \arguments{
@@ -37,6 +39,8 @@ FALSE chooses the 'appointment' system $diabetes_list from dMeasure object.}
 
 \item{min_date}{most recent contact must be at least min_date. default is $contact_minDate, initially -Inf}
 
+\item{max_date}{most recent contact at most max_date. default is $contact_maxDate}
+
 \item{demographic}{demographic groupings for reporting.
 if not supplied, reads $qim_demographicGroup
 list of available demographic groups in $qim_demographicGroupings}
@@ -45,9 +49,16 @@ list of available demographic groups in $qim_demographicGroupings}
 if not supplied, reads $qim_ignoreOld}
 
 \item{lazy}{recalculate the diabetes contact list?}
+
+\item{store}{keep result in self$qim_cst_report}
 }
 \value{
-dataframe of Patient (name), demographics, measure (done or not), Count, Proportion
+dataframe of Patient (name), demographics, measure (done or not), Count, Proportion,
+  Proportion_Demographic
+
+  Does not include if 'No longer requires cervical screening' is set
+  OR 'Opt out of cervical screening' (reasons excluded include 'has screening elsewhere' and
+  'refuses'  but does not include "Doesn't want reminders sent")
 }
 \description{
 Filtered by date, and chosen clinicians

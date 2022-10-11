@@ -12,9 +12,12 @@ list_qim_diabetes(
   clinicians = NA,
   min_contact = NA,
   min_date = NA,
+  max_date = NA,
   contact_type = NA,
+  type_diabetes = NA,
   ignoreOld = NA,
-  lazy = FALSE
+  lazy = FALSE,
+  store = TRUE
 )
 }
 \arguments{
@@ -34,23 +37,23 @@ FALSE chooses the 'appointment' system $diabetes_list from dMeasure object.}
 
 \item{min_date}{most recent contact must be at least min_date. default is dM$contact_minDate, initially -Inf}
 
+\item{max_date}{most recent contact at most max_date. default is $contact_maxDate}
+
 \item{contact_type}{contact types which are accepted. default is dM$$contact_type}
+
+\item{type_diabetes}{add type of diabetes?}
 
 \item{ignoreOld}{ignore results/observatioins that don't qualify for quality improvement measures
 if not supplied, reads $qim_ignoreOld}
 
 \item{lazy}{recalculate the diabetes contact list?}
+
+\item{store}{keep result in self$qim_diabetes_report?}
 }
 \value{
 dataframe of Patient (name), InternalID and measures
+if type_diabetes is TRUE, also add DiabetesType ('Type 1', 'Type 2', \code{NA})
 }
 \description{
-Filtered by date, and chosen clinicians
-}
-\details{
-QIM 01 - HbA1C - most recent. the QIM measure is within last twelve months
-QIM 05 - Influenza immunization - most recent. the QIM measure is within last 15 months
-QIM 10 - Blood pressure - most recent. the QIM measure is within the last six months
-
-the reference date for 'most recent' measurement is 'date_to'
+List of diabetics, with Quality Improvement Measures, in the contact list
 }

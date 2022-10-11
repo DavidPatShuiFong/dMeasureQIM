@@ -17,8 +17,9 @@ NULL
     Patient = character(),
     InternalID = integer(),
     RecordNo = character(),
-    Age5 = integer(),
+    Age10 = integer(),
     Sex = character(),
+    Indigenous = character(),
     Ethnicity = character(),
     MaritalStatus = character(),
     Sexuality = character(),
@@ -48,10 +49,12 @@ NULL
 #' @param clinicians list of clinicians to view. default is $clinicians
 #' @param min_contact minimum number of contacts. default is $contact_min, initially one (1)
 #' @param min_date most recent contact must be at least min_date. default is $contact_minDate, initially -Inf
+#' @param max_date most recent contact at most max_date. default is $contact_maxDate
 #' @param contact_type contact types which are accepted. default is $contact_type
 #' @param ignoreOld ignore results/observatioins that don't qualify for quality improvement measures
 #'  if not supplied, reads $qim_ignoreOld
 #' @param lazy recalculate the 65+ contact list?
+#' @param store keep result in self$qim_65plus_list
 #'
 #' @return dataframe of Patient (name), InternalID and measures
 #' @export
@@ -62,14 +65,16 @@ list_qim_65plus <- function(dMeasureQIM_obj,
                             clinicians = NA,
                             min_contact = NA,
                             min_date = NA,
+                            max_date = NA,
                             contact_type = NA,
                             ignoreOld = NA,
-                            lazy = FALSE) {
+                            lazy = FALSE,
+                            store = TRUE) {
   dMeasureQIM_obj$list_qim_65plus(
     contact, date_from, date_to, clinicians,
-    min_contact, min_date, contact_type,
+    min_contact, min_date, max_date, contact_type,
     ignoreOld,
-    lazy
+    lazy, store
   )
 }
 
@@ -79,9 +84,11 @@ list_qim_65plus <- function(dMeasureQIM_obj,
                                                  clinicians = NA,
                                                  min_contact = NA,
                                                  min_date = NA,
+                                                 max_date = NA,
                                                  contact_type = NA,
                                                  ignoreOld = NA,
-                                                 lazy = FALSE) {
+                                                 lazy = FALSE,
+                                                 store = TRUE) {
   if (is.na(contact)) {
     contact <- self$qim_contact
   }
@@ -103,6 +110,9 @@ list_qim_65plus <- function(dMeasureQIM_obj,
   if (is.na(min_date)) {
     min_date <- self$dM$contact_minDate
   }
+  if (is.na(max_date)) {
+    max_date <- self$dM$contact_maxDate
+  }
   if (is.na(ignoreOld)) {
     ignoreOld <- self$qim_ignoreOld
   }
@@ -112,6 +122,8 @@ list_qim_65plus <- function(dMeasureQIM_obj,
   if (all(is.na(clinicians)) || length(clinicians) == 0) {
     clinicians <- c("") # dplyr::filter does not work on zero-length list()
   }
+
+  sixtyfiveplus_list <- self$qim_65plus_list
 
   if (self$dM$emr_db$is_open()) {
     # only if EMR database is open
@@ -124,14 +136,16 @@ list_qim_65plus <- function(dMeasureQIM_obj,
 
     if (contact) {
       if (!lazy) {
-        self$dM$list_contact_65plus(
+        sixtyfiveplus_list <- self$dM$list_contact_65plus(
           date_from, date_to, clinicians,
-          min_contact, min_date,
+          min_contact, min_date, max_date,
           contact_type,
-          lazy
+          lazy, store
         )
+      } else {
+        sixtyfiveplus_list <- self$dM$contact_65plus_list
       }
-      sixtyfiveplus_list <- self$dM$contact_65plus_list %>>%
+      sixtyfiveplus_list <- sixtyfiveplus_list %>>%
         dplyr::select(-c(Count, Latest)) # don't need these fields
       sixtyfiveplusID <- sixtyfiveplus_list %>>%
         dplyr::pull(InternalID) %>>%
@@ -161,37 +175,26 @@ list_qim_65plus <- function(dMeasureQIM_obj,
     )
     # returns InternalID, FluVaxName, FluvaxDate
 
-    self$qim_65plus_list <- sixtyfiveplus_list %>>%
+    sixtyfiveplus_list <- sixtyfiveplus_list %>>%
       dplyr::left_join(fluvaxList,
         by = "InternalID",
         copy = TRUE
       ) %>>%
-      dplyr::left_join(self$dM$db$patients %>>%
-        dplyr::filter(InternalID %in% sixtyfiveplusID) %>>%
-        dplyr::select(InternalID, DOB, Sex, Ethnicity, RecordNo),
-      by = "InternalID",
-      copy = TRUE
-      ) %>>%
-      dplyr::left_join(self$dM$db$clinical %>>%
-        dplyr::filter(InternalID %in% sixtyfiveplusID) %>>%
-        dplyr::select(InternalID, MaritalStatus, Sexuality),
-      by = "InternalID",
-      copy = TRUE
-      ) %>>%
-      dplyr::mutate(Age5 = floor(dMeasure::calc_age(as.Date(DOB), date_to) / 5) * 5) %>>%
-      # round age group to nearest 5 years
+      dMeasureQIM::add_demographics(self$dM, date_to) %>>%
       dplyr::select(
-        Patient, InternalID, RecordNo, Sex, Ethnicity, MaritalStatus, Sexuality,
-        Age5,
+        Patient, InternalID, RecordNo, Sex, Ethnicity, Indigenous,
+        MaritalStatus, Sexuality, Age10,
         FluvaxDate, FluvaxName
       )
+
+    self$qim_65plus_list <- sixtyfiveplus_list
 
     if (self$dM$Log) {
       self$dM$config_db$duration_log_db(log_id)
     }
   }
 
-  return(self$qim_65plus_list)
+  return(sixtyfiveplus_list)
 })
 .reactive_event(
   dMeasureQIM, "qim_65plus_listR",
@@ -224,8 +227,9 @@ list_qim_65plus <- function(dMeasureQIM_obj,
     AppointmentTime = character(0),
     Provider = character(0),
     Status = character(0),
-    Age5 = integer(),
+    Age10 = integer(),
     Sex = character(),
+    Indigenous = character(),
     Ethnicity = character(),
     MaritalStatus = character(),
     Sexuality = character(),
@@ -254,10 +258,12 @@ list_qim_65plus <- function(dMeasureQIM_obj,
 #' @param clinicians list of clinicians to view. default is $clinicians
 #' @param min_contact minimum number of contacts. default is $contact_min, initially one (1)
 #' @param min_date most recent contact must be at least min_date. default is $contact_minDate, initially -Inf
+#' @param max_date most recent contact at most max_date. default is $contact_maxDate
 #' @param contact_type contact types which are accepted. default is $contact_type
 #' @param ignoreOld ignore results/observatioins that don't qualify for quality improvement measures
 #'  if not supplied, reads $qim_ignoreOld
 #' @param lazy recalculate the 65+ contact list?
+#' @param store keep result in self$qim_65plus_list_appointments
 #'
 #' @return dataframe of Patient (name), InternalID and measures
 #' @export
@@ -268,14 +274,16 @@ list_qim_65plus_appointments <- function(dMeasureQIM_obj,
                                          clinicians = NA,
                                          min_contact = NA,
                                          min_date = NA,
+                                         max_date = NA,
                                          contact_type = NA,
                                          ignoreOld = NA,
-                                         lazy = FALSE) {
+                                         lazy = FALSE,
+                                         store = TRUE) {
   dMeasureQIM_obj$list_qim_65plus_appointments(
     contact, date_from, date_to, clinicians,
-    min_contact, min_date, contact_type,
+    min_contact, min_date, max_date, contact_type,
     ignoreOld,
-    lazy
+    lazy, store
   )
 }
 
@@ -285,9 +293,11 @@ list_qim_65plus_appointments <- function(dMeasureQIM_obj,
                                                               clinicians = NA,
                                                               min_contact = NA,
                                                               min_date = NA,
+                                                              max_date = NA,
                                                               contact_type = NA,
                                                               ignoreOld = NA,
-                                                              lazy = FALSE) {
+                                                              lazy = FALSE,
+                                                              store = TRUE) {
   if (is.na(contact)) {
     contact <- self$qim_contact
   }
@@ -309,6 +319,9 @@ list_qim_65plus_appointments <- function(dMeasureQIM_obj,
   if (is.na(min_date)) {
     min_date <- self$dM$contact_minDate
   }
+  if (is.na(max_date)) {
+    max_date <- self$dM$contact_maxDate
+  }
   if (is.na(ignoreOld)) {
     ignoreOld <- self$qim_ignoreOld
   }
@@ -318,6 +331,8 @@ list_qim_65plus_appointments <- function(dMeasureQIM_obj,
   if (all(is.na(clinicians)) || length(clinicians) == 0) {
     clinicians <- c("") # dplyr::filter does not work on zero-length list()
   }
+
+  appointments <- self$qim_65plus_list_appointments
 
   if (self$dM$emr_db$is_open()) {
     # only if EMR database is open
@@ -329,18 +344,20 @@ list_qim_65plus_appointments <- function(dMeasureQIM_obj,
     }
 
     if (!lazy) {
-      self$list_qim_65plus(
+      appointments <- self$list_qim_65plus(
         contact, date_from, date_to, clinicians,
-        min_contact, min_date,
+        min_contact, min_date, max_date,
         contact_type, ignoreOld,
-        lazy
+        lazy, store
       )
       self$dM$filter_appointments_time(date_from, date_to, clinicians,
         lazy = lazy
       )
+    } else {
+      appointments <- self$qim_65plus_list
     }
 
-    self$qim_65plus_list_appointments <- self$qim_65plus_list %>>%
+    appointments <- appointments %>>%
       dplyr::left_join(self$dM$appointments_filtered_time,
         by = c("InternalID", "Patient"),
         copy = TRUE
@@ -350,12 +367,14 @@ list_qim_65plus_appointments <- function(dMeasureQIM_obj,
         Provider, Status, tidyselect::everything()
       )
 
+    self$qim_65plus_list_appointments <- appointments
+
     if (self$dM$Log) {
       self$dM$config_db$duration_log_db(log_id)
     }
   }
 
-  return(self$qim_65plus_list_appointments)
+  return(appointments)
 })
 .reactive_event(
   dMeasureQIM, "qim_65plus_list_appointmentsR",
@@ -398,7 +417,8 @@ list_qim_65plus_appointments <- function(dMeasureQIM_obj,
 #' @param date_to end date (inclusive). default is $date_b
 #' @param clinicians list of clinicians to view. default is $clinicians
 #' @param min_contact minimum number of contacts. default is $contact_min, initially one (1)
-#' @param min_date most recent contact must be at least min_date. default is $contact_minDate, initially -Inf
+#' @param min_date most recent contact must be at least min_date. default is $contact_minDate
+#' @param max_date most recent contact at most max_date. default is $contact_maxDate
 #' @param contact_type contact types which are accepted. default is $contact_type
 #' @param demographic demographic groupings for reporting.
 #'  if not supplied, reads $qim_demographicGroup
@@ -406,8 +426,9 @@ list_qim_65plus_appointments <- function(dMeasureQIM_obj,
 #' @param ignoreOld ignore results/observatioins that don't qualify for quality improvement measures
 #'  if not supplied, reads $qim_ignoreOld
 #' @param lazy recalculate the 65+ contact list?
+#' @param store keep result in self$qim_65plus_report?
 #'
-#' @return dataframe of Patient (name), demographic, Count, proportion
+#' @return dataframe of Patient (name), demographic, Count, Proportion, Proportion_Demographic
 #' @export
 report_qim_65plus <- function(dMeasureQIM_obj,
                               contact = NA,
@@ -417,14 +438,16 @@ report_qim_65plus <- function(dMeasureQIM_obj,
                               min_contact = NA,
                               contact_type = NA,
                               min_date = NA,
+                              max_date = NA,
                               demographic = NA,
                               ignoreOld = NA,
-                              lazy = FALSE) {
+                              lazy = FALSE,
+                              store = TRUE) {
   dMeasureQIM_obj$report_qim_65plus(
     contact, date_from, date_to, clinicians,
-    min_contact, min_date, contact_type,
+    min_contact, min_date, max_date, contact_type,
     demographic,
-    ignoreOld, lazy
+    ignoreOld, lazy, store
   )
 }
 .public(dMeasureQIM, "report_qim_65plus", function(contact = NA,
@@ -433,10 +456,12 @@ report_qim_65plus <- function(dMeasureQIM_obj,
                                                    clinicians = NA,
                                                    min_contact = NA,
                                                    min_date = NA,
+                                                   max_date = NA,
                                                    contact_type = NA,
                                                    demographic = NA,
                                                    ignoreOld = NA,
-                                                   lazy = FALSE) {
+                                                   lazy = FALSE,
+                                                   store = TRUE) {
   if (is.na(contact)) {
     contact <- self$qim_contact
   }
@@ -458,10 +483,13 @@ report_qim_65plus <- function(dMeasureQIM_obj,
   if (is.na(min_date)) {
     min_date <- self$dM$contact_minDate
   }
+  if (is.na(max_date)) {
+    max_date <- self$dM$contact_maxDate
+  }
   if (is.na(contact_type[[1]])) {
     contact_type <- self$dM$contact_type
   }
-  if (is.na(demographic)) {
+  if (length(demographic) == 1 && is.na(demographic)) {
     demographic <- self$qim_demographicGroup
   }
   if (is.na(ignoreOld)) {
@@ -474,6 +502,8 @@ report_qim_65plus <- function(dMeasureQIM_obj,
     clinicians <- c("") # dplyr::filter does not work on zero-length list()
   }
 
+  report <- self$qim_65plus_report
+
   if (self$dM$emr_db$is_open()) {
     # only if EMR database is open
     if (self$dM$Log) {
@@ -483,39 +513,64 @@ report_qim_65plus <- function(dMeasureQIM_obj,
       )
     }
 
-    if (!lazy) {
-      self$list_qim_65plus(
-        contact, date_from, date_to, clinicians,
-        min_contact, min_date, contact_type,
-        ignoreOld, lazy
-      )
-    }
-
     report_groups <- c(demographic, "InfluenzaDone")
     # group by both demographic groupings and measures of interest
     # add a dummy string in case there are no demographic or measure groups chosen!
 
-    self$qim_65plus_report <- self$qim_65plus_list %>>%
+    if (!lazy) {
+      report <- self$list_qim_65plus(
+        contact, date_from, date_to, clinicians,
+        min_contact, min_date, max_date, contact_type,
+        ignoreOld, lazy, store
+      )
+    } else {
+      report <- self$qim_65plus_list
+    }
+
+    report <- report %>>%
+      dplyr::filter(
+        # according to PIP QI Improvement Measures Technical Specifications V1.2 (22102020)
+        # QIM 04, page 16
+        #
+        # Exclude clients from the calculation if they:
+        #  - did not have the immunisation due to documented medical reasons (e.g. allergy),
+        #    system reasons (vaccine not available),or patient reasons (e.g. refusal);
+        #  - or had results from measurements conducted outside of the service which were not available to the service
+        #    and had not visited the service in the previous 15 months.
+        !(InternalID %in%
+          (self$dM$db$preventive_health %>>%
+            dplyr::filter(ITEMID == 1) %>>%
+            # those who have been marked as not for influenza reminders
+            dplyr::pull(InternalID))
+        )
+      ) %>>%
       dplyr::mutate(InfluenzaDone = !is.na(FluvaxDate)) %>>%
       # a measure is 'done' if it exists (not NA)
       # if ignoreOld = TRUE, the the observation must fall within
       #  the required timeframe
       dplyr::group_by_at(report_groups) %>>%
       # group_by_at takes a vector of strings
-      dplyr::summarise(n = n()) %>>%
+      dplyr::summarise(n = dplyr::n()) %>>%
       dplyr::ungroup() %>>% {
         dplyr::select(., intersect(names(.), c(report_groups, "n")))
       } %>>%
       # if no rows, then grouping will not remove unnecessary columns
-      dplyr::mutate(Proportion = prop.table(n))
+      dplyr::mutate(Proportion = prop.table(n)) %>>%
+      dplyr::group_by_at(demographic) %>>%
+      dplyr::mutate(Proportion_Demographic = prop.table(n)) %>>%
+      dplyr::ungroup()
     # proportion (an alternative would be proportion = n / sum(n))
+
+    if (store) {
+      self$qim_65plus_report <- report
+    }
 
     if (self$dM$Log) {
       self$dM$config_db$duration_log_db(log_id)
     }
   }
 
-  return(self$qim_65plus_report)
+  return(report)
 })
 .reactive_event(
   dMeasureQIM, "qim_65plus_reportR",

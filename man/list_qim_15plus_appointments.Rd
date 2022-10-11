@@ -12,9 +12,11 @@ list_qim_15plus_appointments(
   clinicians = NA,
   min_contact = NA,
   min_date = NA,
+  max_date = NA,
   contact_type = NA,
   ignoreOld = NA,
-  lazy = FALSE
+  lazy = FALSE,
+  store = TRUE
 )
 }
 \arguments{
@@ -34,12 +36,16 @@ FALSE chooses the 'appointment' system $diabetes_list from dMeasure object.}
 
 \item{min_date}{most recent contact must be at least min_date. default is $contact_minDate, initially -Inf}
 
+\item{max_date}{most recent contact at most max_date. default is $contact_maxDate}
+
 \item{contact_type}{contact types which are accepted. default is $contact_type}
 
 \item{ignoreOld}{ignore results/observatioins that don't qualify for quality improvement measures
 if not supplied, reads $qim_ignoreOld}
 
 \item{lazy}{recalculate the diabetes contact list?}
+
+\item{store}{keep result in self$qim_15plus_list_appointments}
 }
 \value{
 dataframe of Patient (name), InternalID, appointment details and measures
@@ -50,7 +56,7 @@ Filtered by date, and chosen clinicians
 \details{
 QIM 02 - Proportion of patients with a smoking status result
 QIM 03 - Proportion of patients with a weight classification (12 months)
-QIM 07 - Proportionof patients with an alcohol consumption status
+QIM 07 - Proportion of patients with an alcohol consumption status
 
 the reference date for 'most recent' measurement is 'date_to'
 }

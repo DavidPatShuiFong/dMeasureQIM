@@ -12,9 +12,11 @@ report_qim_active(
   clinicians = NA,
   min_contact = NA,
   min_date = NA,
+  max_date = NA,
   contact_type = NA,
   demographic = NA,
-  lazy = FALSE
+  lazy = FALSE,
+  store = TRUE
 )
 }
 \arguments{
@@ -34,6 +36,8 @@ FALSE chooses the 'appointment' system $filter_appointments from dMeasure object
 
 \item{min_date}{most recent contact must be at least min_date. default is $contact_minDate, initially -Inf}
 
+\item{max_date}{most recent contact at most max_date. default is $contact_maxDate}
+
 \item{contact_type}{contact types which are accepted. default is $contact_type}
 
 \item{demographic}{demographic groupings for reporting.
@@ -41,9 +45,11 @@ if not supplied, reads $qim_demographicGroup
 list of available demographic groups in $qim_demographicGroupings}
 
 \item{lazy}{recalculate the diabetes contact list?}
+
+\item{store}{keep result in self$qim_active_report?}
 }
 \value{
-dataframe of Patient (name), demographics, Count, Proportion
+dataframe of Patient (name), demographics, Count, Proportion, Proportion_Demographic
 }
 \description{
 Filtered by date, and chosen clinicians

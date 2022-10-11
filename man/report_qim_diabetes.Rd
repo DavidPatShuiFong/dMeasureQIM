@@ -13,10 +13,13 @@ report_qim_diabetes(
   min_contact = NA,
   contact_type = NA,
   min_date = NA,
+  max_date = NA,
   demographic = NA,
   measure = NA,
+  type_diabetes = NA,
   ignoreOld = NA,
-  lazy = FALSE
+  lazy = FALSE,
+  store = TRUE
 )
 }
 \arguments{
@@ -38,6 +41,8 @@ FALSE chooses the 'appointment' system $diabetes_list from dMeasure object.}
 
 \item{min_date}{most recent contact must be at least min_date. default is $contact_minDate, initially -Inf}
 
+\item{max_date}{most recent contact at most max_date. default is $contact_maxDate}
+
 \item{demographic}{demographic groupings for reporting.
 if not supplied, reads $qim_demographicGroup
 list of available demographic groups in $qim_demographicGroupings}
@@ -45,15 +50,25 @@ list of available demographic groups in $qim_demographicGroupings}
 \item{measure}{measures to report
 if not supplied, reads $qim_diabetes_measure
 list of available measures in $qim_diabetes_measureTypes
-currently 'HbA1C', 'Influenza' and 'BP'}
+currently 'HbA1C', 'Influenza' and 'BP'.
+if 'Influenza' alone, then patients are excluded from
+the list if patient is marked to be excluded from influenza reminders.}
 
-\item{ignoreOld}{ignore results/observatioins that don't qualify for quality improvement measures
+\item{type_diabetes}{separate diabetes by type?}
+
+\item{ignoreOld}{ignore results/observatioins that don't qualify
+for quality improvement measures.
 if not supplied, reads $qim_ignoreOld}
 
 \item{lazy}{recalculate the diabetes contact list?}
+
+\item{store}{keep result in self$qim_diabetes_report?}
 }
 \value{
-dataframe of Patient (name), demographics, measure (done or not), InternalID, Count, proportion
+dataframe of Patient (name), demographics, measure (done or not),
+ InternalID, Count, Proportion, Proportion_demographic.
+ if type_diabetes set to 'TRUE' then add type_diabetes.
+ 'InfluenzaDone' can return 'NA' is patient is excluded from influenza reminders.
 }
 \description{
 Filtered by date, and chosen clinicians

@@ -13,10 +13,12 @@ report_qim_15plus(
   min_contact = NA,
   contact_type = NA,
   min_date = NA,
+  max_date = NA,
   demographic = NA,
   measure = NA,
   ignoreOld = NA,
-  lazy = FALSE
+  lazy = FALSE,
+  store = TRUE
 )
 }
 \arguments{
@@ -38,6 +40,8 @@ FALSE chooses the 'appointment' system $diabetes_list from dMeasure object.}
 
 \item{min_date}{most recent contact must be at least min_date. default is $contact_minDate, initially -Inf}
 
+\item{max_date}{most recent contact at most max_date. default is $contact_maxDate}
+
 \item{demographic}{demographic groupings for reporting.
 if not supplied, reads $qim_demographicGroup
 list of available demographic groups in $qim_demographicGroupings}
@@ -51,10 +55,12 @@ currently 'Smoking', 'Weight', 'Alcohol'}
 if not supplied, reads $qim_ignoreOld}
 
 \item{lazy}{recalculate the diabetes contact list?}
+
+\item{store}{keep result in self$qim_15plus_report}
 }
 \value{
 dataframe of Patient (name), demographics, measures (done or not),
- Count (n), and proportion
+ Count (n), Proportion, Proportion_Demographic
 }
 \description{
 Filtered by date, and chosen clinicians
