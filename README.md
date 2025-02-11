@@ -79,8 +79,8 @@ Additional columns of information which can either be extrapolatd from columns 1
 
 ## Number of rows/groups
 
-* QIM 01/05/10 : $\8\times\4\times5\times3\times2$ each
-* QIM 02 : <img src = "https://render.githubusercontent.com/render/math?math=6*4*5*4">
+* QIM 01/05/10 : $8\times4\times5\times3\times2$ each
+* QIM 02 : $6\times4\times5\times4$
 * QIM 03 : <img src = "https://render.githubusercontent.com/render/math?math=6*4*5*5">
 * QIM 06/07 : <img src = "https://render.githubusercontent.com/render/math?math=6*4*5*2"> each 
 * QIM 04 : <img src = "https://render.githubusercontent.com/render/math?math=1*4*5*2">
