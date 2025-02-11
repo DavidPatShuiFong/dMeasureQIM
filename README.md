@@ -79,15 +79,15 @@ Additional columns of information which can either be extrapolatd from columns 1
 
 ## Number of rows/groups
 
-* QIM 01/05/10 : <img src = "https://render.githubusercontent.com/render/math?math=8*4*5*3*2"> each
-* QIM 02 : <img src = "https://render.githubusercontent.com/render/math?math=6*4*5*4">
-* QIM 03 : <img src = "https://render.githubusercontent.com/render/math?math=6*4*5*5">
-* QIM 06/07 : <img src = "https://render.githubusercontent.com/render/math?math=6*4*5*2"> each 
-* QIM 04 : <img src = "https://render.githubusercontent.com/render/math?math=1*4*5*2">
-* QIM 08 : <img src = "https://render.githubusercontent.com/render/math?math=3*4*5*2%2B4*3*2">
-* QIM 09 : allowing more than `Female` sex : <img src = "https://render.githubusercontent.com/render/math?math=6*4*5*2">
+* QIM 01/05/10 : $8\times4\times5\times3\times2$ each
+* QIM 02 : $6\times4\times5\times4$
+* QIM 03 : $6\times4\times5\times5$
+* QIM 06/07 : $6\times4\times5\times2$ each 
+* QIM 04 : $1\times4\times5\times2$
+* QIM 08 : $3\times4\times5\times2+4\times3\times2$
+* QIM 09 : allowing more than `Female` sex : $6\times4\times5\times2$
 
-Total : <img src = "https://render.githubusercontent.com/render/math?math=960%2B480%2B600%2B40%2B960%2B240%2B240%2B(120%2B24)%2B240%2B960 = 4684">
+Total : $960+480+600+40+960+240+240+(120+24)+240+960=4684$
 
 ## Structure of exported `JSON` (JavaScript Objection Notation) file
 
